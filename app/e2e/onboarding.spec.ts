@@ -6,9 +6,9 @@ import { join } from 'node:path'
 const main = join(import.meta.dirname, '../out/main/index.js')
 
 test('first run: progress while the models arrive, then the home screen', async () => {
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
   // slow enough to see the bar (only the speech model is waited for)
-  const app = await electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData, YOGURT_FAKE_STEP_MS: '500' } })
+  const app = await electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData, NOETAKER_FAKE_STEP_MS: '500' } })
   try {
     const page = await app.firstWindow()
     await expect(page.getByTestId('onboarding')).toBeVisible()
@@ -27,8 +27,8 @@ test('first run: progress while the models arrive, then the home screen', async 
 })
 
 test('with fake downloads setup finishes by itself, and the second launch goes straight to home', async () => {
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
-  const env = { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData }
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
+  const env = { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData }
   for (let i = 0; i < 2; i++) {
     const app = await electron.launch({ args: [main], env })
     try {
@@ -39,25 +39,25 @@ test('with fake downloads setup finishes by itself, and the second launch goes s
 })
 
 test('first run records as soon as speech and speakers are in; notes say they are getting ready, then write themselves once the notes model lands', async () => {
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
   // the notes model takes its time: everything else is quick; it lands well after the meeting and the question, however slow the machine
-  const app = await electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData, YOGURT_FAKE_NOTES_MODEL_MS: '40000' } })
+  const app = await electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData, NOETAKER_FAKE_NOTES_MODEL_MS: '40000' } })
   try {
     const page = await app.firstWindow()
     await expect(page.getByTestId('home')).toBeVisible({ timeout: 10_000 })
     expect(readdirSync(join(userData, 'models')).includes('llm') && readdirSync(join(userData, 'models', 'llm')).some((f) => f.endsWith('.gguf'))).toBe(false)
     await page.getByTestId('new-note').or(page.getByTestId('past-empty').getByRole('button')).first().click()
     await expect(page.getByTestId('note-state')).toHaveAttribute('data-state', 'recording')
-    const id = (await page.evaluate(() => window.yogurt.nav.current())).slice('/note/'.length)
-    await expect.poll(async () => (await page.evaluate((id) => window.yogurt.transcript.get(id), id)).length, { timeout: 30_000 }).toBeGreaterThanOrEqual(2)
+    const id = (await page.evaluate(() => window.noetaker.nav.current())).slice('/note/'.length)
+    await expect.poll(async () => (await page.evaluate((id) => window.noetaker.transcript.get(id), id)).length, { timeout: 30_000 }).toBeGreaterThanOrEqual(2)
     await page.getByTestId('note-stop').click()
     await page.getByRole('tab', { name: 'Summary', exact: true }).click()
-    await expect(page.getByTestId('note-enhanced-model-download')).toContainText("Your summary is waiting for Yogurt's AI to download.")
+    await expect(page.getByTestId('note-enhanced-model-download')).toContainText("Your summary is waiting for Noe Taker's AI to download.")
     // a question waits too, and says why (never as if notes were being written)
     await page.getByTestId('chat-open').click()
     await page.getByTestId('chat-input').fill('What was decided?')
     await page.getByTestId('chat-input').press('Enter')
-    await expect(page.getByTestId('chat-turn').last()).toContainText("Your question is waiting for Yogurt's AI to download.")
+    await expect(page.getByTestId('chat-turn').last()).toContainText("Your question is waiting for Noe Taker's AI to download.")
     await expect(page.getByTestId('chat-turn').last()).not.toContainText('Generating notes')
     // the notes model lands: the notes are written without anyone asking, and the question is answered
     await expect(page.getByTestId('note-enhanced')).toHaveAttribute('data-status', 'done', { timeout: 60_000 })
@@ -68,27 +68,27 @@ test('first run records as soon as speech and speakers are in; notes say they ar
 // ---- the launch screen, the intro, each permission step, Finish setup and the recording's own message ----
 
 const launchWith = (userData: string, env: Record<string, string> = {}) =>
-  electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData, ...env } })
+  electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData, ...env } })
 const fake = (app: ElectronApplication, fn: string, arg?: unknown) =>
   app.evaluate((_e, [fn, arg]) => (globalThis as any).__fake__[fn as string](arg), [fn, arg] as const)
 const settingsOf = (dir: string) => JSON.parse(readFileSync(join(dir, 'settings.json'), 'utf8'))
-const firstRun = { YOGURT_FAKE_PERMISSIONS: 'unknown', YOGURT_FAKE_CALENDAR: 'notDetermined' }
+const firstRun = { NOETAKER_FAKE_PERMISSIONS: 'unknown', NOETAKER_FAKE_CALENDAR: 'notDetermined' }
 const focus = (page: Page) => page.evaluate(() => window.dispatchEvent(new Event('focus')))
 
-test('a slow start shows the launch screen until Yogurt is ready, then goes', async () => {
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
-  const app = await launchWith(userData, { YOGURT_FAKE_BOOT_MS: '2000' })
+test('a slow start shows the launch screen until Noe Taker is ready, then goes', async () => {
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
+  const app = await launchWith(userData, { NOETAKER_FAKE_BOOT_MS: '2000' })
   try {
     const page = await app.firstWindow()
     await expect(page.getByTestId('boot-screen')).toBeVisible()
-    await expect(page.getByTestId('boot-screen')).toHaveAttribute('aria-label', 'Yogurt')
+    await expect(page.getByTestId('boot-screen')).toHaveAttribute('aria-label', 'Noe Taker')
     await expect(page.getByTestId('home')).toBeVisible({ timeout: 15_000 })
     await expect(page.getByTestId('boot-screen')).toHaveCount(0)
   } finally { await app.close() }
 })
 
 test('a quick start goes straight to home, with the launch screen gone', async () => {
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
   const app = await launchWith(userData)
   try {
     const page = await app.firstWindow()
@@ -97,8 +97,8 @@ test('a quick start goes straight to home, with the launch screen gone', async (
   } finally { await app.close() }
 })
 
-test('the welcome says what Yogurt is on one screen, and Get started goes on to the permissions', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
+test('the welcome says what Noe Taker is on one screen, and Get started goes on to the permissions', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
   const app = await launchWith(dir, firstRun)
   try {
     const page = await app.firstWindow()
@@ -123,7 +123,7 @@ test('the welcome says what Yogurt is on one screen, and Get started goes on to 
 })
 
 test('every screen keeps Allow and the quiet Not now action centered in the same place', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
+  const dir = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
   const app = await launchWith(dir, firstRun)
   try {
     const page = await app.firstWindow()
@@ -167,7 +167,7 @@ test('every screen keeps Allow and the quiet Not now action centered in the same
 })
 
 test('every permission step leads with what it gives, Allow asks the Mac, and Accessibility goes through System Settings and back', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
+  const dir = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
   const app = await launchWith(dir, firstRun)
   try {
     const page = await app.firstWindow()
@@ -198,7 +198,7 @@ test('every permission step leads with what it gives, Allow asks the Mac, and Ac
     expect(await fake(app, 'permissions')).toMatchObject({ mic: 'granted', systemAudio: 'unknown' })
     for (const kind of ['systemAudio', 'calendar', 'notifications']) {
       await expect(step).toHaveAttribute('data-kind', kind)
-      await expect(page.getByTestId('step-title')).not.toHaveText(/^Can Yogurt/)
+      await expect(page.getByTestId('step-title')).not.toHaveText(/^Can Noe Taker/)
       await expect(page.getByTestId('step-later')).toHaveText('Not now')
       await expect(page.getByTestId('step-allow')).toHaveText('Allow')
       await page.getByTestId('step-allow').click()
@@ -215,8 +215,8 @@ test('every permission step leads with what it gives, Allow asks the Mac, and Ac
     // only System Settings turns it on: the pane opens, with where to click
     await expect(page.getByTestId('settings-guide')).toBeVisible()
     await expect(page.getByTestId('settings-window-art')).toContainText('Accessibility')
-    await expect(page.getByTestId('step-title')).toHaveText('Turn on Yogurt in System Settings')
-    await expect(page.getByTestId('step-reason')).toHaveText('In Accessibility, find Yogurt and turn it on.')
+    await expect(page.getByTestId('step-title')).toHaveText('Turn on Noe Taker in System Settings')
+    await expect(page.getByTestId('step-reason')).toHaveText('In Accessibility, find Noe Taker and turn it on.')
     expect((await fake(app, 'main') as { systemSettings: string[] }).systemSettings).toEqual([expect.stringContaining('Privacy_Accessibility')])
     // turned on there: noticed without a click (the poll), and Continue goes on
     await fake(app, 'permission', ['accessibility', 'granted'])
@@ -232,9 +232,9 @@ test('every permission step leads with what it gives, Allow asks the Mac, and Ac
   } finally { await app.close() }
 })
 
-test('turned off before: the step says so, opens System Settings with the guide, notices it on return, and can reopen Yogurt', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
-  const app = await launchWith(dir, { YOGURT_FAKE_PERMISSIONS: 'denied', YOGURT_FAKE_CALENDAR: 'granted' })
+test('turned off before: the step says so, opens System Settings with the guide, notices it on return, and can reopen Noe Taker', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
+  const app = await launchWith(dir, { NOETAKER_FAKE_PERMISSIONS: 'denied', NOETAKER_FAKE_CALENDAR: 'granted' })
   try {
     const page = await app.firstWindow()
     await page.getByTestId('intro-next').click()
@@ -244,7 +244,7 @@ test('turned off before: the step says so, opens System Settings with the guide,
     await expect(page.getByTestId('step-access-status')).toContainText('only System Settings can turn it on')
     await page.getByTestId('step-allow').click()
     await expect(page.getByTestId('settings-guide')).toBeVisible()
-    await expect(page.getByTestId('step-reason')).toHaveText('In Microphone, find Yogurt and turn it on.')
+    await expect(page.getByTestId('step-reason')).toHaveText('In Microphone, find Noe Taker and turn it on.')
     await expect(page.getByTestId('settings-window-art')).toContainText('Microphone')
     expect((await fake(app, 'main') as { systemSettings: string[] }).systemSettings).toEqual([expect.stringContaining('Privacy_Microphone')])
     await page.getByText('Still not working?', { exact: true }).click()
@@ -259,14 +259,14 @@ test('turned off before: the step says so, opens System Settings with the guide,
     await expect(page.getByTestId('step-allow')).toHaveText('Open System Settings')
     // the call audio pane, and its own list
     await page.getByTestId('step-allow').click()
-    await expect(page.getByTestId('step-reason')).toContainText('under System Audio Recording Only, turn on Yogurt.')
+    await expect(page.getByTestId('step-reason')).toContainText('under System Audio Recording Only, turn on Noe Taker.')
     await page.getByTestId('step-later').click()
     await expect(page.getByTestId('onboarding-step')).toHaveAttribute('data-step', 'notifications')
   } finally { await app.close() }
 })
 
 test('"Not now" everywhere: home lists what is missing, essentials first, and can be put away until something new goes missing', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
+  const dir = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
   const app = await launchWith(dir, firstRun)
   try {
     const page = await app.firstWindow()
@@ -347,9 +347,9 @@ test('"Not now" everywhere: home lists what is missing, essentials first, and ca
 })
 
 test('starting a recording without the mic says so under the note, with a button that turns it on; one never asked is asked then', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
+  const dir = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
   // the mic was turned off; call audio was put off in the first run
-  const app = await launchWith(dir, { YOGURT_FAKE_PERMISSIONS: 'granted', YOGURT_FAKE_MIC: 'denied' })
+  const app = await launchWith(dir, { NOETAKER_FAKE_PERMISSIONS: 'granted', NOETAKER_FAKE_MIC: 'denied' })
   try {
     const page = await app.firstWindow()
     await page.getByTestId('intro-next').click()
@@ -359,7 +359,7 @@ test('starting a recording without the mic says so under the note, with a button
     await page.getByTestId('new-note').or(page.getByTestId('past-empty').getByRole('button')).first().click()
     const hint = page.getByTestId('rec-hint')
     await expect(hint).toHaveAttribute('data-code', 'no-mic')
-    await expect(hint).toContainText("Yogurt can't hear your mic.")
+    await expect(hint).toContainText("Noe Taker can't hear your mic.")
     // call audio was never asked: asked as the recording started (the fake Mac says yes), so no message for it
     await expect.poll(async () => (await fake(app, 'permissions') as Record<string, string>).systemAudio).toBe('granted')
     await hint.getByTestId('rec-hint-fix').click()
@@ -373,8 +373,8 @@ test('starting a recording without the mic says so under the note, with a button
 })
 
 test('a "no" at the Mac\'s prompt when recording starts says so too', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
-  const app = await launchWith(dir, { YOGURT_FAKE_PERMISSIONS: 'granted', YOGURT_FAKE_ANSWER: 'deny' })
+  const dir = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
+  const app = await launchWith(dir, { NOETAKER_FAKE_PERMISSIONS: 'granted', NOETAKER_FAKE_ANSWER: 'deny' })
   try {
     const page = await app.firstWindow()
     // nothing to ask: the intro, then home

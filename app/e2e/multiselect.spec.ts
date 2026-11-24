@@ -5,7 +5,7 @@ import { join } from 'node:path'
 
 async function launch() {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-e2e-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-e2e-')),
   } })
   const page = await app.firstWindow()
   await expect(page.getByTestId('home')).toBeVisible()
@@ -60,10 +60,10 @@ test('folder checks show mixed membership, toggle the selection, and dragging re
   const { app, page } = await launch()
   try {
     const { target, other, ids } = await page.evaluate(async () => {
-      const target = (await window.yogurt.folders.create('Launch'))!
-      const other = (await window.yogurt.folders.create('Hiring'))!
-      const cards = await window.yogurt.meetings.cards({ limit: 4 })
-      await window.yogurt.folders.add(other.id, cards[0].id)
+      const target = (await window.noetaker.folders.create('Launch'))!
+      const other = (await window.noetaker.folders.create('Hiring'))!
+      const cards = await window.noetaker.meetings.cards({ limit: 4 })
+      await window.noetaker.folders.add(other.id, cards[0].id)
       return { target, other, ids: cards.map(card => card.id) }
     })
     await expect(page.getByTestId('past-note').first().getByTestId('past-note-folder')).toHaveText('Hiring')
@@ -77,7 +77,7 @@ test('folder checks show mixed membership, toggle the selection, and dragging re
     await expect(launch).toHaveAttribute('aria-checked', 'false')
     await expect(hiring).toHaveAttribute('aria-checked', 'mixed')
     await launch.click()
-    const memberships = () => page.evaluate(async ids => Promise.all(ids.slice(0, 2).map(async id => (await window.yogurt.folders.of(id)).map(folder => folder.id).sort())), ids)
+    const memberships = () => page.evaluate(async ids => Promise.all(ids.slice(0, 2).map(async id => (await window.noetaker.folders.of(id)).map(folder => folder.id).sort())), ids)
     await expect.poll(memberships).toEqual([[other.id, target.id].sort(), [target.id]])
     await expect(page.getByTestId('past-note').nth(1).getByTestId('past-note-folder')).toHaveText('Launch')
     await expect(launch).toHaveAttribute('aria-checked', 'true')
@@ -123,10 +123,10 @@ for (const theme of ['light', 'dark'] as const) test(`one selected meeting has t
   try {
     await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' })
     const { id, launch, hiring } = await page.evaluate(async () => {
-      const launch = (await window.yogurt.folders.create('Launch'))!.id
-      const hiring = (await window.yogurt.folders.create('Hiring'))!.id
-      const id = (await window.yogurt.meetings.cards({ limit: 1 }))[0].id
-      await window.yogurt.folders.add(hiring, id)
+      const launch = (await window.noetaker.folders.create('Launch'))!.id
+      const hiring = (await window.noetaker.folders.create('Hiring'))!.id
+      const id = (await window.noetaker.meetings.cards({ limit: 1 }))[0].id
+      await window.noetaker.folders.add(hiring, id)
       return { id, launch, hiring }
     })
     const row = page.getByTestId('past-note').first()
@@ -137,7 +137,7 @@ for (const theme of ['light', 'dark'] as const) test(`one selected meeting has t
     const picker = page.getByTestId('selection-folders')
     const first = picker.getByRole('menuitemcheckbox', { name: 'Launch', exact: true })
     const second = picker.getByRole('menuitemcheckbox', { name: 'Hiring', exact: true })
-    const memberships = () => page.evaluate(async id => (await window.yogurt.folders.of(id)).map(folder => folder.id).sort(), id)
+    const memberships = () => page.evaluate(async id => (await window.noetaker.folders.of(id)).map(folder => folder.id).sort(), id)
     await expect(first).toHaveAttribute('aria-checked', 'false')
     await expect(second).toHaveAttribute('aria-checked', 'true')
     await first.click()

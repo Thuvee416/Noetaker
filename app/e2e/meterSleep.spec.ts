@@ -7,7 +7,7 @@ import { join } from 'node:path'
 // The meter's frame loop is most of the app's own work while recording: it runs only while it can be seen and something moves.
 test('the level meter stops drawing while its window is hidden and once the room goes quiet', async () => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_BACKGROUND: '1', YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-meter-')),
+    ...process.env, NOETAKER_BACKGROUND: '1', NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-meter-')),
   } })
   app.context().setDefaultTimeout(15_000)
   try {

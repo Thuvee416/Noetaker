@@ -6,14 +6,14 @@ import { join } from 'node:path'
 
 const main = join(import.meta.dirname, '../out/main/index.js')
 const launch = (userData: string, env: Record<string, string> = {}) =>
-  electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData, ...env } })
+  electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData, ...env } })
 const fake = (app: ElectronApplication, fn: string, arg?: unknown) =>
   app.evaluate((_e, [fn, arg]) => (globalThis as any).__fake__[fn as string](arg), [fn, arg] as const)
 const settingsOf = (dir: string) => JSON.parse(readFileSync(join(dir, 'settings.json'), 'utf8'))
-const firstRun = { YOGURT_FAKE_PERMISSIONS: 'unknown', YOGURT_FAKE_CALENDAR: 'notDetermined' }
+const firstRun = { NOETAKER_FAKE_PERMISSIONS: 'unknown', NOETAKER_FAKE_CALENDAR: 'notDetermined' }
 
 test('first run asks one thing at a time, then home; the next launch asks nothing', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
+  const dir = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
   const app = await launch(dir, firstRun)
   try {
     const page = await app.firstWindow()
@@ -50,7 +50,7 @@ test('first run asks one thing at a time, then home; the next launch asks nothin
 })
 
 test('"Not now" on every step still reaches home, with open at login left off', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
+  const dir = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
   const app = await launch(dir, firstRun)
   try {
     const page = await app.firstWindow()
@@ -64,8 +64,8 @@ test('"Not now" on every step still reaches home, with open at login left off', 
 })
 
 test('turned off before: the step opens System Settings instead', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
-  const app = await launch(dir, { YOGURT_FAKE_PERMISSIONS: 'denied', YOGURT_FAKE_CALENDAR: 'granted' })
+  const dir = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
+  const app = await launch(dir, { NOETAKER_FAKE_PERMISSIONS: 'denied', NOETAKER_FAKE_CALENDAR: 'granted' })
   try {
     const page = await app.firstWindow()
     await page.getByTestId('intro-next').click()
@@ -84,7 +84,7 @@ test('turned off before: the step opens System Settings instead', async () => {
 })
 
 test('settings: granted permissions offer Manage, with open at login and theme controls', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
+  const dir = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
   const app = await launch(dir)
   try {
     const page = await app.firstWindow()
@@ -104,13 +104,13 @@ test('settings: granted permissions offer Manage, with open at login and theme c
     await page.getByTestId('login-toggle').click()
     await expect(page.getByTestId('login-toggle')).toHaveAttribute('aria-checked', 'true')
     await expect.poll(() => settingsOf(dir).openAtLogin).toBe(true)
-    const visibility = page.getByRole('combobox', { name: 'Show Yogurt in', exact: true })
+    const visibility = page.getByRole('combobox', { name: 'Show Noe Taker in', exact: true })
     await expect(visibility).toHaveValue('both')
     await expect(visibility.locator('option')).toHaveText(['Menu bar and Dock', 'Menu bar only', 'Dock only'])
     await visibility.selectOption('dock')
     await expect(visibility).toHaveValue('dock')
     await expect.poll(() => settingsOf(dir).showInMenuBar).toBe(false)
-    expect(await fake(app, 'tray')).toContain('Open Yogurt')
+    expect(await fake(app, 'tray')).toContain('Open Noe Taker')
     await visibility.selectOption('menu-bar')
     await expect(visibility).toHaveValue('menu-bar')
     await expect.poll(() => settingsOf(dir).showInDock).toBe(false)
@@ -129,8 +129,8 @@ test('settings: granted permissions offer Manage, with open at login and theme c
 })
 
 test('settings: your name, the Mac\'s full name until changed; cleared, it goes back to that', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
-  const app = await launch(dir, { YOGURT_FAKE_FULL_NAME: 'Dana Reyes' })
+  const dir = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
+  const app = await launch(dir, { NOETAKER_FAKE_FULL_NAME: 'Dana Reyes' })
   try {
     const page = await app.firstWindow()
     await expect(page.getByTestId('home')).toBeVisible()
@@ -148,8 +148,8 @@ test('settings: your name, the Mac\'s full name until changed; cleared, it goes 
 })
 
 test('music pauses while recording and plays again after, only if it was playing', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
-  const app = await launch(dir, { YOGURT_FAKE_MUSIC: '1' })
+  const dir = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
+  const app = await launch(dir, { NOETAKER_FAKE_MUSIC: '1' })
   try {
     const page = await app.firstWindow()
     await expect(page.getByTestId('home')).toBeVisible()
@@ -161,23 +161,23 @@ test('music pauses while recording and plays again after, only if it was playing
   } finally { await app.close() }
 })
 
-test('menu bar: shows recording, and Yogurt keeps running with its window closed', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
+test('menu bar: shows recording, and Noe Taker keeps running with its window closed', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
   const app = await launch(dir)
   try {
     const page = await app.firstWindow()
     await expect(page.getByTestId('home')).toBeVisible()
     await fake(app, 'calendarEvents', [])
-    await expect.poll(() => fake(app, 'tray')).toEqual(['New recording', 'Ask Yogurt', 'Recent', '', 'Open Yogurt', 'Settings…', '', 'Quit Yogurt'])
+    await expect.poll(() => fake(app, 'tray')).toEqual(['New recording', 'Ask Noe Taker', 'Recent', '', 'Open Noe Taker', 'Settings…', '', 'Quit Noe Taker'])
     await fake(app, 'trayClick', 'new')
     await expect(page.getByTestId('note')).toBeVisible({ timeout: 15_000 })
-    await expect.poll(() => fake(app, 'tray')).toEqual([expect.stringMatching(/^Recording · /), 'Pause recording', 'Stop recording', '', 'Ask Yogurt', 'Open Yogurt', 'Recent', 'Settings…', '', 'Quit Yogurt'])
+    await expect.poll(() => fake(app, 'tray')).toEqual([expect.stringMatching(/^Recording · /), 'Pause recording', 'Stop recording', '', 'Ask Noe Taker', 'Open Noe Taker', 'Recent', 'Settings…', '', 'Quit Noe Taker'])
     await fake(app, 'trayClick', 'pause')
     await expect.poll(() => fake(app, 'tray')).toContain('Resume recording')
     await fake(app, 'trayClick', 'pause')
     await expect.poll(() => fake(app, 'tray')).toContain('Pause recording')
     await fake(app, 'trayClick', 'stop')
-    await expect.poll(() => fake(app, 'tray')).toEqual(['New recording', 'Ask Yogurt', 'Recent', '', 'Open Yogurt', 'Settings…', '', 'Quit Yogurt'])
+    await expect.poll(() => fake(app, 'tray')).toEqual(['New recording', 'Ask Noe Taker', 'Recent', '', 'Open Noe Taker', 'Settings…', '', 'Quit Noe Taker'])
     await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().forEach((w) => w.close()))
     await expect.poll(() => app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().filter(w => w.isVisible()).length)).toBe(0)
     // the main window again (not the widget or the card)
@@ -190,12 +190,12 @@ test('menu bar: shows recording, and Yogurt keeps running with its window closed
 })
 
 test('the dock icon and a second launch bring back a closed main window with the tray hidden, even while recording', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
+  const dir = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
   const app = await launch(dir)
   try {
     const page = await app.firstWindow()
     await expect(page.getByTestId('home')).toBeVisible()
-    await page.evaluate(() => window.yogurt.settings.setAppVisibility('dock'))
+    await page.evaluate(() => window.noetaker.settings.setAppVisibility('dock'))
     expect(settingsOf(dir).showInMenuBar).toBe(false)
     await fake(app, 'trayClick', 'new')
     await expect(page.getByTestId('note')).toBeVisible({ timeout: 15_000 })
@@ -222,8 +222,8 @@ test('the dock icon and a second launch bring back a closed main window with the
 })
 
 test('the first run never asks about music, even with a player running', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
-  const app = await launch(dir, { ...firstRun, YOGURT_FAKE_PLAYER: '1' })
+  const dir = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
+  const app = await launch(dir, { ...firstRun, NOETAKER_FAKE_PLAYER: '1' })
   try {
     const page = await app.firstWindow()
     await page.getByTestId('intro-next').click()
@@ -240,8 +240,8 @@ test('the first run never asks about music, even with a player running', async (
 })
 
 test('quitting while recording plays the music again', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
-  const app = await launch(dir, { YOGURT_FAKE_MUSIC: '1' })
+  const dir = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
+  const app = await launch(dir, { NOETAKER_FAKE_MUSIC: '1' })
   const page = await app.firstWindow()
   await expect(page.getByTestId('home')).toBeVisible()
   await fake(app, 'trayClick', 'new')
@@ -251,8 +251,8 @@ test('quitting while recording plays the music again', async () => {
 })
 
 test('managed Macs and notifications already asked read plainly in Settings', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
-  const app = await launch(dir, { YOGURT_FAKE_PERMISSIONS: 'unknown', YOGURT_FAKE_MIC: 'restricted', YOGURT_FAKE_CALENDAR: 'granted' })
+  const dir = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
+  const app = await launch(dir, { NOETAKER_FAKE_PERMISSIONS: 'unknown', NOETAKER_FAKE_MIC: 'restricted', NOETAKER_FAKE_CALENDAR: 'granted' })
   try {
     const page = await app.firstWindow()
     await page.getByTestId('intro-next').click()
@@ -273,13 +273,13 @@ test('managed Macs and notifications already asked read plainly in Settings', as
 })
 
 test('names from calls: optional, asked with the Mac\'s own prompt once, then only System Settings turns it on', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
-  const app = await launch(dir, { YOGURT_FAKE_PERMISSIONS: 'granted', YOGURT_FAKE_NOTIFICATIONS: 'granted', YOGURT_FAKE_AX: 'denied' })
+  const dir = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
+  const app = await launch(dir, { NOETAKER_FAKE_PERMISSIONS: 'granted', NOETAKER_FAKE_NOTIFICATIONS: 'granted', NOETAKER_FAKE_AX: 'denied' })
   try {
     const page = await app.firstWindow()
     await page.getByTestId('intro-next').click()
     await expect(page.getByTestId('onboarding-step')).toHaveAttribute('data-step', 'accessibility')
-    await expect(page.getByTestId('step-reason')).toHaveText('With Accessibility access, Yogurt reads speaker names from supported call windows and adds them to the transcript.')
+    await expect(page.getByTestId('step-reason')).toHaveText('With Accessibility access, Noe Taker reads speaker names from supported call windows and adds them to the transcript.')
     await page.getByTestId('step-allow').click()
     await expect(page.getByTestId('settings-guide')).toBeVisible()
     await page.getByTestId('step-later').click()
@@ -297,21 +297,21 @@ test('names from calls: optional, asked with the Mac\'s own prompt once, then on
 })
 
 test('notifications asked once are not asked again', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
-  const app = await launch(dir, { YOGURT_FAKE_PERMISSIONS: 'granted', YOGURT_FAKE_NOTIFICATIONS: 'unknown' })
+  const dir = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
+  const app = await launch(dir, { NOETAKER_FAKE_PERMISSIONS: 'granted', NOETAKER_FAKE_NOTIFICATIONS: 'unknown' })
   try {
     const page = await app.firstWindow()
     await page.getByTestId('intro-next').click()
     await expect(page.getByTestId('onboarding-step')).toHaveAttribute('data-step', 'notifications')
     await page.getByTestId('step-allow').click()
     await expect(page.getByTestId('home')).toBeVisible({ timeout: 15_000 })
-    expect((await page.evaluate(() => window.yogurt.permissions.status())).notifications).toBe('granted')
+    expect((await page.evaluate(() => window.noetaker.permissions.status())).notifications).toBe('granted')
   } finally { await app.close() }
 })
 
 test('Accessibility is rechecked on return from Settings before continuing', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
-  const app = await launch(dir, { YOGURT_FAKE_PERMISSIONS: 'granted', YOGURT_FAKE_AX: 'denied' })
+  const dir = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
+  const app = await launch(dir, { NOETAKER_FAKE_PERMISSIONS: 'granted', NOETAKER_FAKE_AX: 'denied' })
   try {
     const page = await app.firstWindow()
     await page.getByTestId('intro-next').click()
@@ -334,7 +334,7 @@ test('Accessibility is rechecked on return from Settings before continuing', asy
 })
 
 test('appearance: one compact select changes and saves all three choices', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
+  const dir = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
   const app = await launch(dir)
   try {
     const page = await app.firstWindow()
@@ -358,7 +358,7 @@ test('appearance: one compact select changes and saves all three choices', async
 })
 
 test('settings permission statuses and actions stay consistent without claiming unknown grants', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
+  const dir = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
   const app = await launch(dir)
   try {
     const page = await app.firstWindow()
@@ -402,14 +402,14 @@ test('settings permission statuses and actions stay consistent without claiming 
     await expect(row('notifications').getByTestId('permission-status')).toHaveCount(0)
     await expect(row('notifications').getByRole('button')).toHaveText('Turn on')
     await row('notifications').getByTestId('permission-ask').click()
-    expect((await page.evaluate(() => window.yogurt.permissions.status())).notifications).toBe('granted')
+    expect((await page.evaluate(() => window.noetaker.permissions.status())).notifications).toBe('granted')
     await expect(row('notifications').getByTestId('permission-status')).toHaveText('On')
     await expect(row('notifications').getByRole('button')).toHaveText('Manage')
   } finally { await app.close() }
 })
 
 test('menu bar: the meeting heading is informational, Join records its prepared note, Ask and Recent use the note', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
+  const dir = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
   const app = await launch(dir)
   try {
     const page = await app.firstWindow()
@@ -421,10 +421,10 @@ test('menu bar: the meeting heading is informational, Join records its prepared 
     await expect.poll(() => fake(app, 'tray')).toContain('Join and record')
     await fake(app, 'trayClick', 'next')
     await expect(page.getByTestId('home')).toBeVisible()
-    await page.evaluate(day => window.yogurt.meetings.prepare('tray-event', day), now)
+    await page.evaluate(day => window.noetaker.meetings.prepare('tray-event', day), now)
     await expect(page.getByTestId('note-title')).toHaveText('Launch planning')
     await expect(page.getByTestId('note-start')).toBeVisible()
-    const route = await page.evaluate(() => window.yogurt.nav.current())
+    const route = await page.evaluate(() => window.noetaker.nav.current())
     await fake(app, 'trayClick', 'ask')
     await expect(page.getByTestId('chat-panel')).toBeVisible()
     await page.keyboard.press('Escape')
@@ -434,7 +434,7 @@ test('menu bar: the meeting heading is informational, Join records its prepared 
     await expect(page.getByTestId('note-title')).toHaveText('Launch planning')
     await fake(app, 'trayClick', 'join')
     await expect(page.getByTestId('note-state')).toHaveAttribute('data-state', 'recording')
-    expect(await page.evaluate(() => window.yogurt.nav.current())).toBe(route)
+    expect(await page.evaluate(() => window.noetaker.nav.current())).toBe(route)
     await fake(app, 'trayClick', 'stop')
     await fake(app, 'calendarEvents', [{ ...event, id: 'review', title: 'Design review' }])
     await expect.poll(() => fake(app, 'tray')).toContain('Record Design review')

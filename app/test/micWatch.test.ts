@@ -171,7 +171,7 @@ describe.skipIf(process.platform === 'win32')('spawnMicWatch', () => {
     await ended
   })
   it('a helper that cannot start ends once', async () => {
-    const p = spawnMicWatch(() => '/nonexistent/yogurt-mac')()
+    const p = spawnMicWatch(() => '/nonexistent/noetaker-mac')()
     let ends = 0
     await new Promise<void>((r) => p.onExit(() => { ends++; r() }))
     await new Promise((r) => setTimeout(r, 50))

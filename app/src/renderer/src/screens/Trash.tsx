@@ -33,14 +33,14 @@ export function Trash({ open }: { open: (id: string) => void }) {
   const sequence = useRef(0)
   const reload = useCallback(() => {
     const mine = ++sequence.current
-    void readMeetingRows(() => window.yogurt.meetings.trashed()).then(cards => {
+    void readMeetingRows(() => window.noetaker.meetings.trashed()).then(cards => {
       if (mine !== sequence.current) return
       setFailed(false); animateRows(cards); setCards(cards)
     }).catch(() => { if (mine === sequence.current) setFailed(true) })
   }, [animateRows])
   useEffect(() => {
     reload()
-    const off = window.yogurt.meetings.onChange(reload)
+    const off = window.noetaker.meetings.onChange(reload)
     return () => { off(); sequence.current++ }
   }, [reload])
   return <div data-testid="trash-page" className="native-folder">
@@ -52,7 +52,7 @@ export function Trash({ open }: { open: (id: string) => void }) {
       <LoadingContent pending={!cards && !failed} testId="meetings-loading" skeleton={<MeetingListLoading grouped={false} />} className="library-load">{!cards?.length ? <LibraryEmpty testId="trash-none" icon={<Trash2 size={28} aria-hidden="true" />} title={t('The Trash is empty')} description={t('Deleted meetings stay here for a while, so you can bring them back.')} retry={failed ? reload : undefined} /> : <ul aria-label={t('Deleted meetings')}>
         {cards?.map((c) => <li key={c.id} data-row-id={c.id} data-testid="trash-row" className="native-meeting-row trash-row row-swap" tabIndex={0} title={dayLabel(c.startedAt)}>
           <PastCard c={c} onOpen={open} me={me} fixed />
-          <div className="trash-actions row-swap-actions"><button data-testid="trash-restore" title={t('Restore')} className="ghost-btn workspace-icon" onClick={() => void changeMeetingRows('restore', [c.id], () => window.yogurt.meetings.restore(c.id))} aria-label={t('Restore')}>
+          <div className="trash-actions row-swap-actions"><button data-testid="trash-restore" title={t('Restore')} className="ghost-btn workspace-icon" onClick={() => void changeMeetingRows('restore', [c.id], () => window.noetaker.meetings.restore(c.id))} aria-label={t('Restore')}>
             <RotateCcw size={14} aria-hidden="true" />
           </button>
           <button data-testid="trash-delete" className="ghost-btn workspace-icon meeting-delete" onClick={() => setDeleting(c)} aria-label={t('Delete now')} title={t('Delete now')}>
@@ -72,14 +72,14 @@ function EmptyTrash({ ids, onDone }: { ids: string[]; onDone: () => void }) {
   const [failed, setFailed] = useState(false)
   const yes = async () => {
     setBusy(true); setFailed(false)
-    const r = await changeMeetingRows('delete', ids, () => window.yogurt.meetings.emptyTrash(), result => result.deleted ? ids : []).catch(() => ({ deleted: 0, failed: 1 }))
+    const r = await changeMeetingRows('delete', ids, () => window.noetaker.meetings.emptyTrash(), result => result.deleted ? ids : []).catch(() => ({ deleted: 0, failed: 1 }))
     setBusy(false)
     if (r.failed) setFailed(true)
     else onDone()
   }
   return <Modal testId="trash-empty-confirm" role="alertdialog" title={t('Empty the Trash?')}
     description={osWords({ mac: t('{count} meetings, with their notes, transcripts and recordings, are removed from this Mac for good.', { count: ids.length }), other: t('{count} meetings, with their notes, transcripts and recordings, are removed from this computer for good.', { count: ids.length }) })} onCancel={onDone} busy={busy}>
-    {failed && <p className="modal-error" role="alert">{t("Yogurt couldn't delete everything in the Trash.")}</p>}
+    {failed && <p className="modal-error" role="alert">{t("Noe Taker couldn't delete everything in the Trash.")}</p>}
     <div className="modal-actions">
       <button data-testid="trash-empty-yes" onClick={() => void yes()} disabled={busy} className="modal-button danger">{t('Empty Trash')}</button>
       <ModalClose data-testid="trash-empty-cancel" data-dialog-cancel disabled={busy} className="workspace-button">{t('Cancel')}</ModalClose>

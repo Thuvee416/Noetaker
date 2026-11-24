@@ -6,7 +6,7 @@ import { CalendarTooBig } from './get'
 import { icsFeed, type IcsFeed, type RawEvent } from './ics'
 
 /**
- * Calendar links: Windows and Linux have no system calendar Yogurt can read, so the person pastes their calendar's
+ * Calendar links: Windows and Linux have no system calendar Noe Taker can read, so the person pastes their calendar's
  * private iCal address (Google's "Secret address in iCal format", Outlook's published calendar). It is kept only on
  * this computer, sealed with the system keychain where there is one, and read from here every few minutes. The events
  * come out in the Mac helper's shape, so the agenda, call detection and attendees work as on a Mac (calendar.ts).
@@ -67,7 +67,7 @@ export function createCalendarLinks(d: {
       const publicGoogle = url.hostname === 'calendar.google.com' && /\/public\/[^/]*\.ics$/i.test(url.pathname)
       let t: string
       try { t = await d.get(url.toString()) } catch (e) {
-        // reached, but more than Yogurt reads (#146): saying it couldn't be reached sent people checking their connection
+        // reached, but more than Noe Taker reads (#146): saying it couldn't be reached sent people checking their connection
         if (e instanceof CalendarTooBig) return { ok: false, error: 'too-big' }
         return { ok: false, error: publicGoogle ? 'public-address' : 'unreachable' }
       }

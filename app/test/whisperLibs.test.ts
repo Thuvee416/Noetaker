@@ -10,7 +10,7 @@ describe('which files the whisper-server build replaces in resources/bin', () =>
     expect(isWhisperLib('ggml-cuda.dll', true)).toBe(true)
   })
   it('never removes the notes engine allocator shim (#32) or other helpers', () => {
-    expect(isWhisperLib('libyogurt-bigalloc.so', false)).toBe(false)
-    expect(isWhisperLib('yogurt-audio', false)).toBe(false)
+    expect(isWhisperLib('libnoetaker-bigalloc.so', false)).toBe(false)
+    expect(isWhisperLib('noetaker-audio', false)).toBe(false)
   })
 })

@@ -6,7 +6,7 @@ import { join } from 'node:path'
 
 test('shared dialogs use one soft surface, keep focus safe, and dismiss without opening commands', async () => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-modal-motion-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-modal-motion-')),
   } })
   try {
     const page = await app.firstWindow()

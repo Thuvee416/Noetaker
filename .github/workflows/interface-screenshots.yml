@@ -17,9 +17,9 @@ jobs:
     runs-on: macos-26
     timeout-minutes: 65
     env:
-      YOGURT_BACKGROUND: '0'
+      NOETAKER_BACKGROUND: '0'
       TZ: UTC
-      YOGURT_INTERFACE_IMAGES: ${{ github.workspace }}/screenshots
+      NOETAKER_INTERFACE_IMAGES: ${{ github.workspace }}/screenshots
     steps:
       - uses: actions/checkout@v4
         with:
@@ -30,13 +30,13 @@ jobs:
           base=$(git -C current merge-base origin/main HEAD)
           git -C current worktree add --detach "$GITHUB_WORKSPACE/baseline" "$base"
           cp current/app/e2e/interfaceScreenshots.spec.ts baseline/app/e2e/
-          echo "YOGURT_INTERFACE_DAY=$(date -u +%F)" >> "$GITHUB_ENV"
-          mkdir -p "$YOGURT_INTERFACE_IMAGES"
+          echo "NOETAKER_INTERFACE_DAY=$(date -u +%F)" >> "$GITHUB_ENV"
+          mkdir -p "$NOETAKER_INTERFACE_IMAGES"
           {
             echo "Before $base"
             echo "After $(git -C current rev-parse HEAD)"
             echo "Run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-          } > "$YOGURT_INTERFACE_IMAGES/revisions.txt"
+          } > "$NOETAKER_INTERFACE_IMAGES/revisions.txt"
       - run: sudo xcode-select -s /Applications/Xcode_26.4.1.app
       - uses: pnpm/action-setup@v4
         with:
@@ -52,7 +52,7 @@ jobs:
           capture() (
             set -e
             cd "$1"
-            export YOGURT_INTERFACE_STAGE="$2"
+            export NOETAKER_INTERFACE_STAGE="$2"
             pnpm install --frozen-lockfile
             pnpm -C app native
             pnpm -C app exec electron-vite build
@@ -70,7 +70,7 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           import json, os, struct
-          root = Path(os.environ['YOGURT_INTERFACE_IMAGES'])
+          root = Path(os.environ['NOETAKER_INTERFACE_IMAGES'])
           ids = '01 01-general 01-updates 02 02-partial 03 04 04-folder 04-trash 04-retained 04-search 04-setup 04-folders 04-note 04-transcript 04-folder-retained 04-trash-retained 04-note-retained 04-transcript-retained 13-delete note-stop 06 07 07-reach 08 09 10 10-panel 10-history 10-thread 10-answer calendar-event 12 12-ask 13 13-partial 13-absent 15 17 17-valid 18 19 note-save summary regenerate upload-read'.split()
           expected = [f'{i}-{s}-{t}.png' for i in ids for s in ('before', 'after') for t in ('light', 'dark')]
           missing = [name for name in expected if not (root / name).is_file()]

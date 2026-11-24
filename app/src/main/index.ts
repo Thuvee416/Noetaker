@@ -102,9 +102,9 @@ import type { NoteSaveResult, StartResult } from '../shared/types'
 // the transcript's player streams each meeting's audio from here; seeking needs stream support (before ready)
 protocol.registerSchemesAsPrivileged([{ scheme: AUDIO_SCHEME, privileges: { standard: true, secure: true, stream: true } }])
 
-app.setName('Yogurt')
+app.setName('Noe Taker')
 // Windows shows notifications only for an app with this id (the installer's shortcut carries the same one, electron-builder appId)
-if (process.platform === 'win32') app.setAppUserModelId('so.yogurt.app')
+if (process.platform === 'win32') app.setAppUserModelId('app.noetaker')
 app.setPath('userData', userDataDir())
 // before anything goes online: a company's own HTTPS certificate, installed in the system, is trusted too (#115)
 const systemCerts = trustSystemCertificates()
@@ -118,7 +118,7 @@ process.on('uncaughtException', (err) => console.error('uncaught exception', err
 // Linux on Wayland: once more through XWayland, so the widget and the card can float (display.ts)
 const x11 = x11Relaunch(process.platform, process.argv, process.env, process.execPath)
 /**
- * One Yogurt at a time: a second launch hands its arguments to the running one (second-instance) and quits. It does
+ * One Noe Taker at a time: a second launch hands its arguments to the running one (second-instance) and quits. It does
  * nothing else on the way out (#156: an AI app's --hidden start ran the whole start-up, and wrote its own mcp.pipe).
  */
 const primary = !x11 && app.requestSingleInstanceLock()
@@ -132,14 +132,14 @@ let presentMain = (_foreground = false) => {}
 let updateMainMenu = () => {}
 let menuBar: ReturnType<typeof createTray> | undefined
 /** test runs: no window on screen, never takes focus from what the person is doing */
-const BACKGROUND = process.env.YOGURT_BACKGROUND === '1'
-/** how this Yogurt started (#147): an AI app's start waits quietly, with no call watching, until the person opens it */
+const BACKGROUND = process.env.NOETAKER_BACKGROUND === '1'
+/** how this Noe Taker started (#147): an AI app's start waits quietly, with no call watching, until the person opens it */
 let quietStart: ReturnType<typeof createQuietStart> | undefined
-/** work a quiet Yogurt waits for before quitting by itself (set once notes and setup exist) */
+/** work a quiet Noe Taker waits for before quitting by itself (set once notes and setup exist) */
 let busyNow = () => !!activeMeeting()
-/** Linux: the program that started Yogurt (an older yogurt-mcp passed only --hidden); elsewhere it costs a process to ask */
+/** Linux: the program that started Noe Taker (an older noetaker-mcp passed only --hidden); elsewhere it costs a process to ask */
 const parentName = () => { if (process.platform !== 'linux') return undefined; try { return readFileSync(`/proc/${process.ppid}/comm`, 'utf8').trim() } catch { return undefined } }
-// an AI app's yogurt-mcp or the login item starting Yogurt while it was still opening (--hidden) brings no window forward
+// an AI app's noetaker-mcp or the login item starting Noe Taker while it was still opening (--hidden) brings no window forward
 app.on('second-instance', (_e, argv) => {
   if (!app.isReady()) return
   const why: StartReason = startReason({ argv, env: {} })
@@ -150,8 +150,8 @@ app.on('second-instance', (_e, argv) => {
 
 /** Links open in the user's browser, never inside the app window. */
 function openExternally(url: string) {
-  // fake mode opens nothing (tests), unless a person trying it by hand asks for links (YOGURT_FAKE_OPEN_LINKS=1)
-  if ((!isFake() || process.env.YOGURT_FAKE_OPEN_LINKS === '1') && /^https:\/\//.test(url)) void shell.openExternal(url)
+  // fake mode opens nothing (tests), unless a person trying it by hand asks for links (NOETAKER_FAKE_OPEN_LINKS=1)
+  if ((!isFake() || process.env.NOETAKER_FAKE_OPEN_LINKS === '1') && /^https:\/\//.test(url)) void shell.openExternal(url)
 }
 
 let updateWidgetVisibility = () => {}
@@ -165,7 +165,7 @@ function createWindow() {
   const place = placeWindow(remember ? loadWindowState(stateFile) : null, screen.getAllDisplays().map((d) => d.workArea), { width: 1100, height: 760, minWidth: 720, minHeight: 520 })
   win = new BrowserWindow({
     x: place.x, y: place.y, width: place.width, height: place.height, minWidth: 720, minHeight: 520,
-    title: 'Yogurt',
+    title: 'Noe Taker',
     ...windowChrome(process.platform, nativeTheme.shouldUseDarkColors),
     show: false,
     // hidden pages would otherwise pause timers and animations
@@ -229,7 +229,7 @@ function createSetup(): SetupController {
     getHardware: isFake() ? () => fakeHardware(platform) : async () => toHardware(await readSysInfo(userDataDir()), process.platform === 'darwin' ? undefined : await probeGpu()),
     // the one in this build: new models come with app updates
     getCatalog: async () => loadCatalog({ bundled: bundledCatalog, licenses }),
-    download: isFake() ? fakeDownloadDeps({ stepMs: Number(process.env.YOGURT_FAKE_STEP_MS ?? 5), notesMs: Number(process.env.YOGURT_FAKE_NOTES_MODEL_MS ?? 0), notesFailOnce: process.env.YOGURT_FAKE_NOTES_MODEL_FAIL_ONCE === '1' }) : realDeps,
+    download: isFake() ? fakeDownloadDeps({ stepMs: Number(process.env.NOETAKER_FAKE_STEP_MS ?? 5), notesMs: Number(process.env.NOETAKER_FAKE_NOTES_MODEL_MS ?? 0), notesFailOnce: process.env.NOETAKER_FAKE_NOTES_MODEL_FAIL_ONCE === '1' }) : realDeps,
     ...(isFake() ? { sha256Override: 'FAKE' } : {}),
     // Windows and Linux: speech models timed on this computer (asr/speedCheck.ts); a Mac never is
     ...(platform === 'darwin' ? {} : { speed: { ...speedStore(speedFile()), measure: isFake() ? fakeMeasure() : (model: string) => measureSpeed(model, { binary: whisperServerPath(), vadModel: vadModelPath(), clip: speedClipPath() ?? '' }) } }),
@@ -238,13 +238,13 @@ function createSetup(): SetupController {
 /** what the speed check found (Windows and Linux) */
 const speedFile = () => join(userDataDir(), 'speech-speed.json')
 
-/** What this computer can do (fake mode can pretend with YOGURT_FAKE_PLATFORM): Windows and Linux read their calendar from a calendar link */
+/** What this computer can do (fake mode can pretend with NOETAKER_FAKE_PLATFORM): Windows and Linux read their calendar from a calendar link */
 const platform = platformOf(process.platform, process.env)
 const caps = capabilities(platform)
 setCalendarSupported(caps.calendar)
-// the call apps yogurt-system names on this computer (fake mode's helper speaks in a Mac's ids)
+// the call apps noetaker-system names on this computer (fake mode's helper speaks in a Mac's ids)
 useCallApps(isFake() ? 'darwin' : process.platform)
-/** Windows and Linux: the recorder lists the mics itself (yogurt-audio mic-devices) */
+/** Windows and Linux: the recorder lists the mics itself (noetaker-audio mic-devices) */
 const audioHelper = createHelperRunner(audioHelperPath)
 /** Windows: the recorder said the mic is blocked (Privacy & security), until a recording hears it again */
 let micBlocked = false
@@ -290,7 +290,7 @@ function goTo(next: string, resume = false) {
   if (!win) createWindow()
   win?.webContents.send('nav:go', route, resumeRequested)
   presented++
-  // The card and widget never take focus, so their explicit navigation brings Yogurt forward.
+  // The card and widget never take focus, so their explicit navigation brings Noe Taker forward.
   presentMain(true)
 }
 /** how many times the window was asked to come forward (tests run it hidden, so they check this) */
@@ -301,9 +301,9 @@ let refreshCalendarConsumers = () => {}
 /** a call is on (recording or not): the corner never offers Restart then */
 /** fake mode: the System Settings panes the permission steps and Settings would have opened */
 const systemSettings: string[] = []
-/** fake mode: how many times Yogurt would have quit and opened again for a permission */
+/** fake mode: how many times Noe Taker would have quit and opened again for a permission */
 let relaunched = 0
-/** fake mode: how many times Yogurt would have restarted to install a new version */
+/** fake mode: how many times Noe Taker would have restarted to install a new version */
 let updateRestarts = 0
 
 async function readCalendar(...range: Parameters<typeof upcoming>): Promise<CalEvent[]> {
@@ -333,7 +333,7 @@ const fakeCallWatch: Watch = (ids, onLine) => {
   void import('./callNames/fake').then((m) => { if (!stopped) inner = m.fakeWatch()(ids, onLine) })
   return { stop: () => { stopped = true; inner?.stop() } }
 }
-const macName = () => (isFake() ? process.env.YOGURT_FAKE_FULL_NAME ?? 'Sam Rivera' : macFullName())
+const macName = () => (isFake() ? process.env.NOETAKER_FAKE_FULL_NAME ?? 'Sam Rivera' : macFullName())
 
 /** starting and pausing a recording the way home and the widget do, for AI apps (set once detection starts) */
 let recordingControls: { start(o: { eventId?: string; title?: string }): Promise<StartResult>; pause(id: unknown, paused: unknown): boolean } | undefined
@@ -353,7 +353,7 @@ let indexerRef: { schedule(): Promise<unknown> } | undefined
 /** Notice calls, offer to take notes, stop when the call ends (or ask, with that setting off). Starts nothing without a click. */
 function startDetection() {
   if (isFake()) setHelper(fakeHelper)
-  // On a Mac one mic watch runs for Yogurt's whole life: a new helper per reading wore out coreaudiod and powerd (#143)
+  // On a Mac one mic watch runs for Noe Taker's whole life: a new helper per reading wore out coreaudiod and powerd (#143)
   const micWatch = process.platform === 'darwin' && !isFake()
     ? createMicWatch({ start: spawnMicWatch(helperPath), poll: () => runHelper(['mic-apps']), recording: () => !!activeMeeting() })
     : undefined
@@ -361,7 +361,7 @@ function startDetection() {
   const signals = createSignals({ helper: runHelper, micApps: micWatch?.read, events: readCalendar })
   refreshCalendarConsumers = () => signals.invalidateCalendar()
   let lastReading: { micApps: MicApp[]; runningApps?: string[] } | undefined
-  // yogurt-system (Windows, Linux) reads no single process yet; the Mac helper does
+  // noetaker-system (Windows, Linux) reads no single process yet; the Mac helper does
   if (process.platform === 'darwin') micPidsNow = (app) => (lastReading ? micPids(lastReading.micApps, lastReading.runningApps, app) : [])
   const now = isFake() ? fakeNow : Date.now
   let fakeSilence: number | undefined
@@ -375,7 +375,7 @@ function startDetection() {
     // no "Take notes?" while onboarding is still on screen
     ready: () => !onboardingShowing(),
     // fake mode: tests can shorten the grace
-    graceMs: isFake() && process.env.YOGURT_FAKE_CALL_GONE_MS ? Number(process.env.YOGURT_FAKE_CALL_GONE_MS) : CALL_GONE_MS,
+    graceMs: isFake() && process.env.NOETAKER_FAKE_CALL_GONE_MS ? Number(process.env.NOETAKER_FAKE_CALL_GONE_MS) : CALL_GONE_MS,
     callWindow: (id) => callWindowOf(id),
   })
   onMeetingStop(() => { watcher.cleared() })
@@ -487,7 +487,7 @@ function startDetection() {
   })
   recordingControls = { start: startNotes, pause: pauseRecording }
   ipcMain.handle('meetings:retry-stop-save', (_e, id: unknown) => isId(id) && retryStopSave(id))
-  // the menu bar: open, new note or stop, quit; Yogurt stays there with its window closed
+  // the menu bar: open, new note or stop, quit; Noe Taker stays there with its window closed
   const tray = createTray({
     show: !BACKGROUND, visible: visibility.showInMenuBar, showNextMeeting: preferences.showNextMeeting,
     showRecordingPill: () => showRecordingPill,
@@ -519,7 +519,7 @@ function startDetection() {
     widget.visibilityChanged()
     tray.refresh()
   }
-  // cheap, and only while Yogurt runs; more often while recording, so the end of a quiet call is noticed promptly
+  // cheap, and only while Noe Taker runs; more often while recording, so the end of a quiet call is noticed promptly
   let timer: NodeJS.Timeout | undefined
   const watchLoop = () => { timer = setTimeout(() => { void quietStart!.detect(() => watcher.tick()).catch((e) => console.error('detect failed', e)).finally(watchLoop) }, watchEveryMs(!!activeMeeting())) }
   watchLoop()
@@ -564,11 +564,11 @@ function startDetection() {
 app.whenReady().then(() => {
   if (!primary) return
   console.info('APP', `trusting ${systemCerts} certificates from the system on top of the built-in ones`)
-  // #147: which start this was (login, an AI app, an update, the person), so a log says what opened Yogurt
+  // #147: which start this was (login, an AI app, an update, the person), so a log says what opened Noe Taker
   const started = startReason({ argv: process.argv, env: process.env, parent: parentName(), openedAtLogin: openedAtLogin() })
   console.info('APP', `started by=${started} args=${startArgs(process.argv)}`)
-  // #147: the person quit Yogurt, so an AI app (an older yogurt-mcp) doesn't start it until they open it themselves
-  if (startedAfterQuit(userDataDir(), started)) { console.info('APP the person quit Yogurt: not starting for an AI app'); app.quit(); return }
+  // #147: the person quit Noe Taker, so an AI app (an older noetaker-mcp) doesn't start it until they open it themselves
+  if (startedAfterQuit(userDataDir(), started)) { console.info('APP the person quit Noe Taker: not starting for an AI app'); app.quit(); return }
   app.on('will-quit', () => quitting(userDataDir()))
   quietStart = createQuietStart({ reason: started, quit: () => app.quit(), busy: () => busyNow() })
   // Local Electron launches need the same Dock icon as the packaged application.
@@ -587,12 +587,12 @@ app.whenReady().then(() => {
   nativeTheme.themeSource = settings.theme ?? 'system'
   setLanguage(localeOf(settings, systemLocale()))
   updateMainMenu = installAppMenu(() => win, showMain, process.platform)
-  // the interface language's generic titles, so one Yogurt gave in that language is known as generic
+  // the interface language's generic titles, so one Noe Taker gave in that language is known as generic
   const generic = () => setGenericTitles({ meeting: t('Meeting'), appCall: t('{app} call', { app: '\u0000' }) })
   generic()
   onLanguage(generic)
   if (isFake()) setHelper(fakeHelper)
-  // a moved or reinstalled Yogurt loses its login item: put it back if the person wanted it
+  // a moved or reinstalled Noe Taker loses its login item: put it back if the person wanted it
   if (!isFake()) syncLoginItem(settings.openAtLogin)
   // Windows and Linux: the calendar is a pasted private calendar address, kept sealed with the system keychain
   // a Mac: the same links, next to its own calendars (Settings → Calendars → Add a calendar link)
@@ -609,7 +609,7 @@ app.whenReady().then(() => {
     file: join(userDataDir(), 'settings.json'), permissions, kinds: supportedKinds(caps), os: platform,
     ...(calendarLinks && caps.calendarLink ? { calendarLinked: () => calendarLinks.status() === 'granted' } : {}),
     // fake mode asks the first-run questions only when a test sets the permissions
-    ask: !isFake() || !!process.env.YOGURT_FAKE_PERMISSIONS,
+    ask: !isFake() || !!process.env.NOETAKER_FAKE_PERMISSIONS,
     setLogin: (on) => { if (!isFake()) setLoginItem(on) },
     setTrayVisible: (on) => menuBar?.setVisible(on),
     setShowNextMeeting: (on) => menuBar?.setShowNextMeeting(on),
@@ -624,7 +624,7 @@ app.whenReady().then(() => {
       app.relaunch(relaunchOptions(process.platform, app.isPackaged, process.execPath, process.env.APPIMAGE)); app.quit()
       return true
     },
-    slowStartMs: isFake() ? Number(process.env.YOGURT_FAKE_BOOT_MS ?? 0) : 0,
+    slowStartMs: isFake() ? Number(process.env.NOETAKER_FAKE_BOOT_MS ?? 0) : 0,
     onSpoken: () => spokenChanged(),
   })
   // Music and Spotify pause while a meeting records, and play again after
@@ -640,7 +640,7 @@ app.whenReady().then(() => {
   ipcMain.handle('setup:retry', () => setup.retry())
   ipcMain.handle('setup:skip-upgrade', () => setup.skipUpgrade())
   ipcMain.handle('setup:download-upgrade', () => setup.downloadUpgrade())
-  const store = openStore(join(userDataDir(), 'yogurt.db'))
+  const store = openStore(join(userDataDir(), 'noetaker.db'))
   storeRef = store
   store.markInterrupted()
   initMeetings(store)
@@ -680,7 +680,7 @@ app.whenReady().then(() => {
     spoken: () => spokenSetting(loadSettings(settingsFile)),
     // Apple's on-device speech for the live words (macOS 26, Apple Silicon); fake mode has a stand-in when a test asks
     speech: {
-      host: { platform: process.platform, arch: process.arch, osRelease: isFake() ? (process.env.YOGURT_FAKE_SPEECH === '1' ? '25.4.0' : '24.0.0') : os.release() }, binary: audioHelperPath(),
+      host: { platform: process.platform, arch: process.arch, osRelease: isFake() ? (process.env.NOETAKER_FAKE_SPEECH === '1' ? '25.4.0' : '24.0.0') : os.release() }, binary: audioHelperPath(),
       ui: () => localeOf(loadSettings(join(userDataDir(), 'settings.json')), systemLocale()), last: () => store.lastLanguage(),
       ...(isFake() ? { locales: async () => ({ available: true, supported: ['en-US', 'es-ES'], installed: ['en-US'] }), install: async () => true } : {}),
     } })
@@ -730,7 +730,7 @@ app.whenReady().then(() => {
     return g
   }, (e) => { console.warn("couldn't check the graphics", e); return null })
   // fake mode: the fixed Mac (a bigger one) unless a test asks for a 16 GB one
-  const smallMac = isFake() ? process.env.YOGURT_FAKE_SMALL_MAC === '1' : isSmallMac(os.totalmem())
+  const smallMac = isFake() ? process.env.NOETAKER_FAKE_SMALL_MAC === '1' : isSmallMac(os.totalmem())
   const memory = notesMemory(smallMac)
   const model = createNotesModel({ engine, modelPath: () => setup.notesPath(), onLoaded: path => setup.notesModelLoaded(path), contextSize: memory.contextSize, ...(memory.releaseSpeech ? { beforeLoad: releaseIdleSpeech } : {}) })
   // first run: the notes model lands after recording already works; jobs wait in the queue for it
@@ -910,7 +910,7 @@ app.whenReady().then(() => {
   ipcMain.handle('conversations:rename', (_e, id: unknown, title: unknown) => { if (isId(id) && typeof title === 'string') conversations.rename(id, title) })
   ipcMain.handle('conversations:delete', (_e, id: unknown) => { if (isId(id)) conversations.remove(id) })
   // a meeting's two tracks, once recording has finished them (fake mode writes wav stand-ins)
-  const audioKinds: AudioExt[] = isFake() && process.env.YOGURT_FAKE_AUDIO_M4A === '1' ? ['m4a'] : audioExts(process.platform, isFake())
+  const audioKinds: AudioExt[] = isFake() && process.env.NOETAKER_FAKE_AUDIO_M4A === '1' ? ['m4a'] : audioExts(process.platform, isFake())
   const meetingDir = (id: string) => join(userDataDir(), 'meetings', id)
   const finishedMeeting = (id: string) => { const m = store.meeting(id); return !!m && m.state !== 'recording' }
   protocol.handle(AUDIO_SCHEME, createAudioHandler({ dirOf: meetingDir, known: finishedMeeting, ready: async (id) => { await rejoined; await recordingSettled(id); if (isFake()) await waitForFakeAudioMetadata() }, exts: audioKinds }))
@@ -1056,8 +1056,8 @@ app.whenReady().then(() => {
       const flushed = await flushRenderer()
       const saved = notes.retryDrafts()
       if (!flushed || !saved) {
-        const options = { type: 'warning' as const, title: t("Yogurt couldn't finish saving"),
-          message: t("Yogurt couldn't finish saving"), detail: t('Return to your notes to try again. Quitting now may discard your latest changes.'),
+        const options = { type: 'warning' as const, title: t("Noe Taker couldn't finish saving"),
+          message: t("Noe Taker couldn't finish saving"), detail: t('Return to your notes to try again. Quitting now may discard your latest changes.'),
           buttons: [t('Return to notes'), t('Quit without saving')], defaultId: 0, cancelId: 0, noLink: true }
         const answer = win && !win.isDestroyed() ? await dialog.showMessageBox(win, options) : await dialog.showMessageBox(options)
         if (answer.response !== 1) {
@@ -1162,7 +1162,7 @@ app.whenReady().then(() => {
   ipcMain.handle('meetings:restore', (_e, id: unknown) => { restoreMeeting(id) })
   ipcMain.handle('meetings:trashed', () => store.trashed())
   ipcMain.handle('meetings:empty-trash', () => emptyTrash({ store, remove: removeForGood }))
-  // a meeting in the Trash for 30 days goes for good: at launch, and twice a day for a Yogurt that stays open
+  // a meeting in the Trash for 30 days goes for good: at launch, and twice a day for a Noe Taker that stays open
   const purge = () => void purgeTrash({ store, remove: removeForGood })
   purge(); setInterval(purge, 12 * 60 * 60 * 1000).unref()
   const tidyPrepared = () => {
@@ -1176,8 +1176,8 @@ app.whenReady().then(() => {
     } catch (e) { console.warn('tidying prepared notes failed', e) }
   }
   tidyPrepared(); setInterval(tidyPrepared, 60_000).unref()
-  // the iPhone companion: never started until the iPhone app ships (YOGURT_PHONE=1 turns it on); then off until a phone
-  // is paired or Settings starts pairing. Tests also need YOGURT_FAKE_COMPANION=1
+  // the iPhone companion: never started until the iPhone app ships (NOETAKER_PHONE=1 turns it on); then off until a phone
+  // is paired or Settings starts pairing. Tests also need NOETAKER_FAKE_COMPANION=1
   app.on('will-quit', () => { void companion?.stop() })
   const meetingsChanged = () => { win?.webContents.send('meetings:changed'); win?.webContents.send('folders:changed') }
   const companionOn = companionWanted(process.env, isFake())
@@ -1304,7 +1304,7 @@ app.whenReady().then(() => {
     // opened from a folder's page: only its meetings
     const sp = isId(folder) ? folder : undefined
     // fake mode: short questions answer late, so a test can see an older answer never replace a newer one
-    if (isFake() && process.env.YOGURT_FAKE_SEARCH_SLOW === '1' && query.trim().length <= 4) await new Promise((r) => setTimeout(r, 1000))
+    if (isFake() && process.env.NOETAKER_FAKE_SEARCH_SLOW === '1' && query.trim().length <= 4) await new Promise((r) => setTimeout(r, 1000))
     const hits = query.trim() || personSearch
       ? store.search(query, personSearch ? Infinity : 30, sp, { locale: app.getLocale(), language: uiLanguage(), people })
       : undefined
@@ -1329,21 +1329,21 @@ app.whenReady().then(() => {
   ipcMain.handle('nav:current', () => route)
   ipcMain.handle('nav:take-ask', () => { const pending = pendingAsk; pendingAsk = false; return pending })
   // opened at login: just the menu bar, until a call or a click
-  // opened by an AI app's yogurt-mcp: the same, so no window jumps in front of it, and no call watching either (#147)
+  // opened by an AI app's noetaker-mcp: the same, so no window jumps in front of it, and no call watching either (#147)
   if (quietStart!.window()) createWindow()
   startDetection()
   void setup.start()
   // new versions from GitHub Releases, downloaded in the background and installed on quit
-  const updatesAvailable = updatesOn({ packaged: app.isPackaged, fake: isFake(), profile: !!process.env.YOGURT_USER_DATA, platform: process.platform, appImage: !!process.env.APPIMAGE,
+  const updatesAvailable = updatesOn({ packaged: app.isPackaged, fake: isFake(), profile: !!process.env.NOETAKER_USER_DATA, platform: process.platform, appImage: !!process.env.APPIMAGE,
     feed: app.isPackaged && existsSync(join(process.resourcesPath, 'app-update.yml')),
     preview: app.isPackaged && isPreviewBuild((() => { try { return readFileSync(join(app.getAppPath(), 'package.json'), 'utf8') } catch { return '' } })()) })
   hookUpdates({ file: join(userDataDir(), 'settings.json'), available: updatesAvailable, recording: () => !!activeMeeting(), quiet: () => !!quietStart?.quiet(),
     // fake mode: a test pretends a version downloaded
-    fake: isFake() && process.env.YOGURT_FAKE_UPDATE ? { version: process.env.YOGURT_FAKE_UPDATE, restarted: () => { updateRestarts++ } } : undefined })
+    fake: isFake() && process.env.NOETAKER_FAKE_UPDATE ? { version: process.env.NOETAKER_FAKE_UPDATE, restarted: () => { updateRestarts++ } } : undefined })
     .catch((err) => console.warn("couldn't start looking for new versions", err))
   // the Dock icon: the main window, even while the widget is up
   app.on('activate', showMain)
 })
 
-// on a Mac Yogurt lives on in the menu bar, so it still notices calls; Quit is in its menu
+// on a Mac Noe Taker lives on in the menu bar, so it still notices calls; Quit is in its menu
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit() })

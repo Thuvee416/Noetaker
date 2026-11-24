@@ -13,9 +13,9 @@ import { cleanAnswer, streamCleaner } from '../src/engine/control'
 const dirs: string[] = []
 const stores: Store[] = []
 function fresh(): Store {
-  const d = mkdtempSync(join(tmpdir(), 'yogurt-chat-'))
+  const d = mkdtempSync(join(tmpdir(), 'noetaker-chat-'))
   dirs.push(d)
-  const s = openStore(join(d, 'yogurt.db'))
+  const s = openStore(join(d, 'noetaker.db'))
   stores.push(s)
   return s
 }

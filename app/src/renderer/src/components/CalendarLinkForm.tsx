@@ -28,10 +28,10 @@ const steps = (p: Provider): string[] => p === 'google'
 
 const ERRORS = {
   'bad-url': () => t('Enter an https:// or webcal:// calendar address.'),
-  'unreachable': () => t('Yogurt couldn\'t reach that address. Check your connection and the address.'),
+  'unreachable': () => t('Noe Taker couldn\'t reach that address. Check your connection and the address.'),
   'not-calendar': () => t('That address isn\'t a calendar. Copy the iCal address, not the page\'s address.'),
   'public-address': () => t('That\'s the public address, which only works if your calendar is public. Copy "Secret address in iCal format" instead.'),
-  'too-big': () => t('This calendar is too big for Yogurt to read.'),
+  'too-big': () => t('This calendar is too big for Noe Taker to read.'),
 }
 
 /** Shared validation and copy; setup keeps its primary Connect and Not now actions. */
@@ -54,7 +54,7 @@ export function CalendarLinkForm({ onConnected, onCancel, onBusyChange, autoFocu
     if (!valid) { if (url.trim()) setError('bad-url'); return }
     setBusy(true); onBusyChange?.(true); setError(null)
     try {
-      const got = await window.yogurt.calendar.addLink(url)
+      const got = await window.noetaker.calendar.addLink(url)
       if (got.ok) { setUrl(''); onConnected(got.name) } else setError(got.error)
     } catch { setError('unreachable') } finally { setBusy(false); onBusyChange?.(false) }
   }

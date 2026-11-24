@@ -5,13 +5,13 @@ import { join } from 'node:path'
 
 for (const theme of ['light', 'dark'] as const) test(`split metadata popovers stay separate in a short note (${theme})`, async () => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-e2e-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-e2e-')),
   } })
   try {
     const page = await app.firstWindow()
     await expect(page.getByTestId('home')).toBeVisible()
     await app.evaluate(() => (globalThis as unknown as { __fake__: { manyMeetings(o: unknown): void } }).__fake__.manyMeetings({ n: 1, clean: true }))
-    const [meeting] = await page.evaluate(() => window.yogurt.meetings.cards({ limit: 1 }))
+    const [meeting] = await page.evaluate(() => window.noetaker.meetings.cards({ limit: 1 }))
     await page.clock.setFixedTime(meeting.startedAt)
     const events = [{ id: 'linked-event', title: 'Launch planning', start: new Date(meeting.startedAt).toISOString(), end: new Date(meeting.startedAt + 1_800_000).toISOString(),
       attendees: [{ name: 'Jamie Quill', email: 'jamie@example.com' }], url: 'https://meet.google.com/fak-eeve-ntx', calendarId: 'work', calendar: 'Work', calendarColor: '#438879', calendarSource: 'owner@example.com', me: 'owner@example.com' }]
@@ -20,7 +20,7 @@ for (const theme of ['light', 'dark'] as const) test(`split metadata popovers st
     events.push({ ...events[0], id: 'next-day-event', title: nextTitle, calendarId: 'personal', calendar: 'Personal', calendarColor: '', start: next.toISOString(), end: new Date(+next + 1_800_000).toISOString() })
     events.push({ ...events[1], id: 'next-day-focus', title: 'Focus time' })
     await app.evaluate((_e, events) => (globalThis as unknown as { __fake__: { calendarEvents(events: unknown[]): void } }).__fake__.calendarEvents(events), events)
-    await page.evaluate(theme => window.yogurt.settings.setTheme(theme), theme)
+    await page.evaluate(theme => window.noetaker.settings.setTheme(theme), theme)
     await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().find(w => !w.webContents.getURL().includes('#'))!.setContentSize(720, 520))
     await page.reload()
     await page.getByTestId('past-note').click()
@@ -60,8 +60,8 @@ for (const theme of ['light', 'dark'] as const) test(`split metadata popovers st
     // Access lost between listing and selection must be a retryable error.
     await app.evaluate(() => (globalThis as any).__fake__.calendarStatus('denied'))
     await page.getByTestId('note-date-event').filter({ hasText: 'Launch planning' }).press('Enter')
-    await expect(date.getByRole('alert')).toContainText("Yogurt couldn't update the calendar link")
-    expect((await page.evaluate(id => window.yogurt.meetings.get(id), meeting.id))?.eventId).toBeNull()
+    await expect(date.getByRole('alert')).toContainText("Noe Taker couldn't update the calendar link")
+    expect((await page.evaluate(id => window.noetaker.meetings.get(id), meeting.id))?.eventId).toBeNull()
     await app.evaluate(() => (globalThis as any).__fake__.calendarStatus('granted'))
     await page.getByTestId('note-date-event').filter({ hasText: 'Launch planning' }).press('Enter')
     await expect(date).toContainText('Launch planning')
@@ -135,7 +135,7 @@ for (const theme of ['light', 'dark'] as const) test(`split metadata popovers st
     await expect(date.getByTestId('note-date-events-toggle')).toHaveCount(0)
     await expect(date.getByTestId('note-date-event')).toHaveCount(1)
     await expect(page.getByTestId('note-title')).toHaveText(meeting.title)
-    expect((await page.evaluate(id => window.yogurt.meetings.get(id), meeting.id))?.startedAt).toBe(meeting.startedAt)
+    expect((await page.evaluate(id => window.noetaker.meetings.get(id), meeting.id))?.startedAt).toBe(meeting.startedAt)
     await page.getByTestId('note-attendees').click()
     await expect(date).toHaveCount(0)
     const people = page.getByTestId('people-card')

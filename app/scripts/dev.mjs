@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url'
 
 /** the switches Electron starts with: X11 through XWayland on a Wayland desktop, unless a switch was given by hand */
 export function electronArgs(platform, env, args) {
-  if (platform !== 'linux' || env.YOGURT_FAKE === '1') return args
+  if (platform !== 'linux' || env.NOETAKER_FAKE === '1') return args
   if (!env.WAYLAND_DISPLAY || !env.DISPLAY || args.some((a) => a.startsWith('--ozone-platform'))) return args
   return ['--ozone-platform=x11', ...args]
 }

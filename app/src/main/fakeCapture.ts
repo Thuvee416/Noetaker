@@ -51,7 +51,7 @@ export function wavOf(chunks: Float32Array[], rate = RATE): Buffer {
 const level = (xs: Float32Array) => Math.max(0, Math.min(1, (20 * Math.log10(rms(xs) + 1e-9) + 60) / 60))
 
 /**
- * fake Apple speech (YOGURT_FAKE_SPEECH=1), sent the way SpeechTranscriber sends it: a volatile reading as one run that
+ * fake Apple speech (NOETAKER_FAKE_SPEECH=1), sent the way SpeechTranscriber sends it: a volatile reading as one run that
  * starts where the track's last final ended, then the settled phrase from its first word, a run a word.
  */
 const SPEECH: Array<{ track: Track; at: number; finalMs: number; text: string }> = [
@@ -158,7 +158,7 @@ export function fakeCaptureProc(meetingDir: string, startMs = 0, o: { speech?: b
     if (ended) return
     playUntil(elapsedSamples())
     const ms = sent / RATE * 1000
-    muted = cmd.startsWith('mute ') || (muted && process.env.YOGURT_FAKE_MIC_ACK === 'stay-off')
+    muted = cmd.startsWith('mute ') || (muted && process.env.NOETAKER_FAKE_MIC_ACK === 'stay-off')
     micFrom = ms
     settled.me = startMs + ms
     stdout.write(encodeFrame({ t: 'mic-muted', id: Number(cmd.split(' ')[1]), muted, ms: startMs + ms }))
@@ -169,8 +169,8 @@ export function fakeCaptureProc(meetingDir: string, startMs = 0, o: { speech?: b
       if (cmd === 'pause') paused = true
       else if (cmd === 'resume') paused = false
       else if (/^(un)?mute [0-9]+$/.test(cmd)) {
-        if (process.env.YOGURT_FAKE_MIC_ACK === 'missing') continue
-        if (process.env.YOGURT_FAKE_MIC_ACK === 'slow') setTimeout(() => applyMute(cmd), 1800)
+        if (process.env.NOETAKER_FAKE_MIC_ACK === 'missing') continue
+        if (process.env.NOETAKER_FAKE_MIC_ACK === 'slow') setTimeout(() => applyMute(cmd), 1800)
         else applyMute(cmd)
       }
       else if (cmd.startsWith('mic ')) {

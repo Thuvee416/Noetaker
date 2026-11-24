@@ -7,7 +7,7 @@ import { join } from 'node:path'
 
 async function launch() {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_BACKGROUND: '1', YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-note-navigation-')),
+    ...process.env, NOETAKER_BACKGROUND: '1', NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-note-navigation-')),
   } })
   const page = await app.firstWindow()
   await expect(page.getByTestId('home')).toBeVisible()
@@ -59,8 +59,8 @@ test('primary tabs preserve the editor and its latest text through pause, resume
     await notes.click()
     await expect(editor).toHaveText(exact)
     expect(await editor.evaluate((el) => el === (window as unknown as { savedEditor: Element }).savedEditor)).toBe(true)
-    const id = (await page.evaluate(() => window.yogurt.nav.current())).slice('/note/'.length)
-    await expect.poll(async () => (await page.evaluate((id) => window.yogurt.transcript.get(id), id)).length, { timeout: 20_000 }).toBeGreaterThan(0)
+    const id = (await page.evaluate(() => window.noetaker.nav.current())).slice('/note/'.length)
+    await expect.poll(async () => (await page.evaluate((id) => window.noetaker.transcript.get(id), id)).length, { timeout: 20_000 }).toBeGreaterThan(0)
     await page.getByTestId('note-pause').click()
     await expect(page.getByTestId('note-pause')).toHaveAccessibleName('Resume recording')
     await expect(page.getByTestId('note-state')).toHaveAttribute('data-paused', 'true')
@@ -74,8 +74,8 @@ test('primary tabs preserve the editor and its latest text through pause, resume
     await page.getByTestId('note-stop').click()
     await expect(page.getByTestId('note-stop')).toHaveCount(0)
     await expect(page.getByTestId('note-summary-tab')).toHaveAttribute('aria-selected', 'true')
-    await expect.poll(async () => (await page.evaluate((id) => window.yogurt.notes.get(id), id)).status, { timeout: 30_000 }).toBe('done')
-    expect((await page.evaluate((id) => window.yogurt.notes.get(id), id)).mine).toBe(exact)
+    await expect.poll(async () => (await page.evaluate((id) => window.noetaker.notes.get(id), id)).status, { timeout: 30_000 }).toBe('done')
+    expect((await page.evaluate((id) => window.noetaker.notes.get(id), id)).mine).toBe(exact)
     await expect(notes).toHaveAttribute('data-version', 'enhanced')
     await selectNoteVersion(page, 'mine')
     await expect(editor).toHaveText(exact)
@@ -87,14 +87,14 @@ test('Stop opens and streams Summary; reopening keeps the completed summary', as
   const { app, page } = await launch()
   try {
     await page.locator('#workspace-actions').getByRole('button', { name: 'Start recording', exact: true }).click()
-    const id = (await page.evaluate(() => window.yogurt.nav.current())).slice('/note/'.length)
-    await expect.poll(async () => (await page.evaluate((id) => window.yogurt.transcript.get(id), id)).length, { timeout: 20_000 }).toBeGreaterThan(0)
+    const id = (await page.evaluate(() => window.noetaker.nav.current())).slice('/note/'.length)
+    await expect.poll(async () => (await page.evaluate((id) => window.noetaker.transcript.get(id), id)).length, { timeout: 20_000 }).toBeGreaterThan(0)
     await page.getByTestId('note-stop').click()
     await expect(page.getByTestId('note-summary-tab')).toHaveAttribute('aria-selected', 'true')
     await expect(page.getByTestId('note-enhanced')).toHaveAttribute('data-status', 'writing')
     await expect(page.getByTestId('note-enhanced-editor')).toHaveAttribute('aria-readonly', 'true')
     await expect(page.getByTestId('transcript-panel')).toHaveCount(0)
-    await expect.poll(async () => (await page.evaluate((id) => window.yogurt.notes.get(id), id)).status, { timeout: 30_000 }).toBe('done')
+    await expect.poll(async () => (await page.evaluate((id) => window.noetaker.notes.get(id), id)).status, { timeout: 30_000 }).toBe('done')
     await page.reload()
     await expect(page.getByTestId('note-summary-tab')).toHaveAttribute('aria-selected', 'true')
     await expect(page.getByTestId('note-enhanced')).toBeVisible()
@@ -117,7 +117,7 @@ test('the underline slides on pointer tab changes without moving the reading pan
       await page.evaluate(dir => document.documentElement.dir = dir, dir)
       for (const tab of [transcript, notes, page.getByTestId('note-summary-tab')]) {
         await tab.hover()
-        if (process.env.YOGURT_UI_REVIEW !== 'before') {
+        if (process.env.NOETAKER_UI_REVIEW !== 'before') {
           await expect(tab.locator('svg')).toHaveCount(0)
           await expect(tab).toHaveCSS('padding-inline-start', '4px')
           await expect(tab).toHaveCSS('padding-inline-end', '4px')
@@ -161,7 +161,7 @@ for (const reducedMotion of ['reduce', 'no-preference'] as const) for (const fro
     try {
       await page.emulateMedia({ reducedMotion })
       await page.locator('#workspace-actions').getByRole('button', { name: 'Start recording', exact: true }).click()
-      const id = (await page.evaluate(() => window.yogurt.nav.current())).slice('/note/'.length)
+      const id = (await page.evaluate(() => window.noetaker.nav.current())).slice('/note/'.length)
       await page.getByTestId('note-mine').fill('Keep the trial date on Friday.')
       if (from === 'transcript') await page.getByTestId('note-transcript-toggle').click()
       await page.evaluate(from => {
@@ -188,7 +188,7 @@ for (const reducedMotion of ['reduce', 'no-preference'] as const) for (const fro
         expect(samples.at(-1)!.at - samples[0].at).toBeGreaterThanOrEqual(100)
       }
       await expect(page.getByTestId('note-summary-tab')).toBeFocused()
-      expect((await page.evaluate(id => window.yogurt.notes.get(id), id)).mine).toBe('Keep the trial date on Friday.')
+      expect((await page.evaluate(id => window.noetaker.notes.get(id), id)).mine).toBe('Keep the trial date on Friday.')
     } finally { await app.close() }
   })
 }

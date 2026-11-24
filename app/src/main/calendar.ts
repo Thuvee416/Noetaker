@@ -13,10 +13,10 @@ export type CalEvent = { id: string; title: string; start: number; end: number; 
 export type CalendarSource = { id: string; name: string; source: string; color?: string }
 export const eventIds = (event: CalEvent): string[] => [event.id, ...(event.aliases ?? [])]
 export const matchesEvent = (event: CalEvent, id: string | null): boolean => !!id && eventIds(event).includes(id)
-/** error: the Mac helper failed, so Yogurt can't tell (not the same as access turned off). unsupported: no calendar on this computer (Windows, Linux) */
+/** error: the Mac helper failed, so Noe Taker can't tell (not the same as access turned off). unsupported: no calendar on this computer (Windows, Linux) */
 export type CalendarStatus = 'granted' | 'denied' | 'notDetermined' | 'error' | 'unsupported'
 
-/** yogurt-mac: JSON out, or a readable error */
+/** noetaker-mac: JSON out, or a readable error */
 export type Helper = (args: string[]) => Promise<unknown>
 
 export function helperPath(): string {
@@ -29,14 +29,14 @@ export function helperPath(): string {
   return candidates.find((c) => existsSync(c)) ?? candidates.at(-1)!
 }
 
-/** Runs yogurt-mac and keeps track of the ones still going, so quitting can end them (a question nobody answered waits) */
+/** Runs noetaker-mac and keeps track of the ones still going, so quitting can end them (a question nobody answered waits) */
 export function createHelperRunner(path: () => string) {
   const running = new Set<ChildProcess>()
   const run: Helper = (args) => new Promise((resolve, reject) => {
     const child = execFile(path(), args, { timeout: 150_000, maxBuffer: 16 * 1024 * 1024, windowsHide: true }, (err, stdout, stderr) => {
       running.delete(child)
       if (err) return reject(new Error(stderr.trim() || err.message))
-      try { resolve(JSON.parse(stdout)) } catch { reject(new Error('The Mac helper gave an answer Yogurt could not read.')) }
+      try { resolve(JSON.parse(stdout)) } catch { reject(new Error('The Mac helper gave an answer Noe Taker could not read.')) }
     })
     running.add(child)
   })
@@ -48,7 +48,7 @@ export function createHelperRunner(path: () => string) {
 }
 const real = createHelperRunner(helperPath)
 const realHelper: Helper = real.run
-/** quitting: no yogurt-mac outlives Yogurt */
+/** quitting: no noetaker-mac outlives Noe Taker */
 export const killAllHelpers = () => real.killAll()
 
 let helper: Helper = realHelper
@@ -70,7 +70,7 @@ export const setCalendarSupported = (on: boolean) => { supported = on; if (!on) 
 
 /**
  * Windows and Linux: the calendar comes from calendar links (calendarLink/), which answer what the Mac helper answers
- * here (status, calendars, events in its shape), so the rest of Yogurt never knows the difference. null: the helper.
+ * here (status, calendars, events in its shape), so the rest of Noe Taker never knows the difference. null: the helper.
  */
 export type CalendarLinkSource = { status(): 'granted' | 'notDetermined'; calendars(): Promise<CalendarSource[]>; events(fromMs: number, toMs: number, unavailable?: string[], hidden?: string[]): Promise<unknown[]> }
 let links: CalendarLinkSource | null = null

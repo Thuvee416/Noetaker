@@ -3,22 +3,22 @@ import { existsSync, mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-// @everywhere: the setup speed check of Windows and Linux (fake timings, YOGURT_FAKE_RTF). The Mac CI tries them through YOGURT_FAKE_PLATFORM.
+// @everywhere: the setup speed check of Windows and Linux (fake timings, NOETAKER_FAKE_RTF). The Mac CI tries them through NOETAKER_FAKE_PLATFORM.
 const main = join(import.meta.dirname, '../out/main/index.js')
 const launch = (env: Record<string, string>) => {
-  const profile = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
-  return { profile, app: electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: profile, ...env } }) }
+  const profile = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
+  return { profile, app: electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: profile, ...env } }) }
 }
 const stored = (profile: string) => JSON.parse(readFileSync(join(profile, 'speech-speed.json'), 'utf8'))
 
 const words: Record<string, string> = {
-  win32: "Yogurt runs entirely on your computer, and this one can't write down a meeting as fast as people talk. Updating your graphics driver may help. Otherwise it needs a faster processor, or graphics it can use.",
-  linux: "Yogurt runs entirely on your computer, and this one can't write down a meeting as fast as people talk. Installing the driver for your graphics card may help. Otherwise it needs a faster processor, or graphics it can use.",
+  win32: "Noe Taker runs entirely on your computer, and this one can't write down a meeting as fast as people talk. Updating your graphics driver may help. Otherwise it needs a faster processor, or graphics it can use.",
+  linux: "Noe Taker runs entirely on your computer, and this one can't write down a meeting as fast as people talk. Installing the driver for your graphics card may help. Otherwise it needs a faster processor, or graphics it can use.",
 }
 
 for (const platform of ['win32', 'linux']) {
   test(`@everywhere on ${platform}: a computer that can't keep up is told so plainly, and nothing records; Try again times it again`, async () => {
-    const { app: launching, profile } = launch({ YOGURT_FAKE_PLATFORM: platform, YOGURT_FAKE_RTF: '2' })
+    const { app: launching, profile } = launch({ NOETAKER_FAKE_PLATFORM: platform, NOETAKER_FAKE_RTF: '2' })
     const app = await launching
     try {
       const page = await app.firstWindow()
@@ -33,7 +33,7 @@ for (const platform of ['win32', 'linux']) {
   })
 
   test(`@everywhere on ${platform}: the best speech model that keeps up is kept, and recording is ready`, async () => {
-    const { app: launching, profile } = launch({ YOGURT_FAKE_PLATFORM: platform, YOGURT_FAKE_RTF: 'whisper-large-v3-turbo-q5_0=0.9,whisper-small-q5_1=1.4' })
+    const { app: launching, profile } = launch({ NOETAKER_FAKE_PLATFORM: platform, NOETAKER_FAKE_RTF: 'whisper-large-v3-turbo-q5_0=0.9,whisper-small-q5_1=1.4' })
     const app = await launching
     try {
       const page = await app.firstWindow()
@@ -45,7 +45,7 @@ for (const platform of ['win32', 'linux']) {
 }
 
 test('@everywhere a Mac never times its speech model: turbo as always, even when every time would be too slow', async () => {
-  const { app: launching, profile } = launch({ YOGURT_FAKE_PLATFORM: 'darwin', YOGURT_FAKE_RTF: '2' })
+  const { app: launching, profile } = launch({ NOETAKER_FAKE_PLATFORM: 'darwin', NOETAKER_FAKE_RTF: '2' })
   const app = await launching
   try {
     const page = await app.firstWindow()

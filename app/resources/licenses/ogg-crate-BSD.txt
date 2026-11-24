@@ -1,5 +1,5 @@
 ogg crate 0.9.2 (https://github.com/RustAudio/ogg/tree/0.9.2)
-Compiled into the Linux audio recorder (yogurt-audio-linux).
+Compiled into the Linux audio recorder (noetaker-audio-linux).
 
 NOTE:
 The full list of contributors can be obtained by looking

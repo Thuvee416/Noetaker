@@ -3,11 +3,11 @@ import { _electron as electron, expect, test } from '@playwright/test'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-const before = process.env.YOGURT_UI_REVIEW === 'before'
+const before = process.env.NOETAKER_UI_REVIEW === 'before'
 
 test('calendar disclosure summarizes the enabled selection and stays useful when empty or unavailable', async ({}, info) => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-calendar-summary-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-calendar-summary-')),
   } })
   try {
     const page = await app.firstWindow()
@@ -50,7 +50,7 @@ test('calendar disclosure summarizes the enabled selection and stays useful when
       for (const status of ['denied', 'error', 'granted']) {
         await app.evaluate(({ ipcMain }, status) => { ipcMain.removeHandler('calendar:list'); ipcMain.handle('calendar:list', () => ({ status, calendars: [] })) }, status)
         await page.evaluate(() => window.dispatchEvent(new Event('focus')))
-        await expect(summary).toHaveText(status === 'denied' ? 'Allow calendar access to choose your calendars.' : status === 'error' ? "Yogurt couldn't read your calendars." : 'No calendars found on this Mac.')
+        await expect(summary).toHaveText(status === 'denied' ? 'Allow calendar access to choose your calendars.' : status === 'error' ? "Noe Taker couldn't read your calendars." : 'No calendars found on this Mac.')
       }
     }
   } finally { await app.close() }

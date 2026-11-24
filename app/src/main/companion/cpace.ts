@@ -1,5 +1,5 @@
 // CPace on ristretto255 + SHA-512, initiator/responder setting, exactly as draft-irtf-cfrg-cpace-21.
-// The desktop is A (initiator), the phone is B (responder). YogurtKit's Cpace.swift mirrors this file.
+// The desktop is A (initiator), the phone is B (responder). NoetakerKit's Cpace.swift mirrors this file.
 import { hkdfSync } from 'node:crypto'
 import { sodium } from './sodium'
 
@@ -106,5 +106,5 @@ const hkdf = (isk: Uint8Array, label: string) => new Uint8Array(hkdfSync('sha512
 
 /** The keys for the pairing boxes: HKDF-SHA-512, empty salt, 32 bytes each. */
 export function pairKeys(isk: Uint8Array): { toPhone: Uint8Array; toDesktop: Uint8Array; confirm: Uint8Array } {
-  return { toPhone: hkdf(isk, 'yogurt pair to-phone'), toDesktop: hkdf(isk, 'yogurt pair to-desktop'), confirm: hkdf(isk, 'yogurt pair confirm') }
+  return { toPhone: hkdf(isk, 'noetaker pair to-phone'), toDesktop: hkdf(isk, 'noetaker pair to-desktop'), confirm: hkdf(isk, 'noetaker pair confirm') }
 }

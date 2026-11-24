@@ -2,7 +2,7 @@ import { flushOpenNotes, handoffOpenNotes } from './noteAutosave'
 
 /** Window lifetime, not App lifetime: a failed React tree must still answer main's save request. */
 export function installNoteLifecycle() {
-  const off = window.yogurt.notes.onFlushRequest(closing => {
+  const off = window.noetaker.notes.onFlushRequest(closing => {
     document.body.inert = closing
     return closing ? flushOpenNotes() : Promise.resolve(true)
   })

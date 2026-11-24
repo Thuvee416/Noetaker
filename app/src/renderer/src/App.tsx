@@ -26,7 +26,7 @@ export function App() {
   const [setupFailed, setSetupFailed] = useState(false)
   const [setupAttempt, setSetupAttempt] = useState(0)
   const [recordingWait, setRecordingWait] = useState<boolean>()
-  useEffect(() => watchRecordingWait(window.yogurt.conversations, setRecordingWait), [])
+  useEffect(() => watchRecordingWait(window.noetaker.conversations, setRecordingWait), [])
   const [setup, setSetup] = useState<SetupState>()
   // where the app was told to go, e.g. /note/<id>
   const [route, setRouteNow] = useState('')
@@ -47,7 +47,7 @@ export function App() {
     routeRef.current = r
     setRouteNow(r)
   }
-  const rememberRoute = (r: string) => { echoes.current.push(r); window.yogurt.nav.go(r) }
+  const rememberRoute = (r: string) => { echoes.current.push(r); window.noetaker.nav.go(r) }
   const go = (r: string, agendaDate?: number) => { setRoute(r, agendaDate); rememberRoute(r) }
   const back = () => {
     const prev = history.current.pop()
@@ -70,29 +70,29 @@ export function App() {
   useEffect(() => {
     // a go-to that arrives while the first ask is on its way wins over the older answer
     let told = false
-    const off = window.yogurt.nav.onGo((r, resume) => {
+    const off = window.noetaker.nav.onGo((r, resume) => {
       told = true
       // Main echoes our moves for persistence; delayed echoes must not create new history entries.
       if (echoes.current[0] === r) { echoes.current.shift(); return }
       setRoute(r)
       setResumeRequested(!!resume)
     })
-    void window.yogurt.nav.current().then((r) => { if (!told) { routeRef.current = r; setRouteNow(r) } })
+    void window.noetaker.nav.current().then((r) => { if (!told) { routeRef.current = r; setRouteNow(r) } })
     return off
   }, [])
   useEffect(() => {
     let active = true
-    const stop = window.yogurt.setup.onState(s => { setSetupFailed(false); setSetup(s) })
-    void window.yogurt.setup.state().then(s => { if (active) { setSetupFailed(false); setSetup(cur => cur ?? s) } }, () => { if (active) setSetupFailed(true) })
+    const stop = window.noetaker.setup.onState(s => { setSetupFailed(false); setSetup(s) })
+    void window.noetaker.setup.state().then(s => { if (active) { setSetupFailed(false); setSetup(cur => cur ?? s) } }, () => { if (active) setSetupFailed(true) })
     return () => { active = false; stop() }
   }, [setupAttempt])
 
   // first run: the intro and the questions still to ask; nothing on later launches
   const [plan, setPlan] = useState<OnboardingPlan>()
-  useEffect(() => { void window.yogurt.onboarding.plan().then(setPlan, () => setPlan({ intro: false, steps: [] })) }, [])
+  useEffect(() => { void window.noetaker.onboarding.plan().then(setPlan, () => setPlan({ intro: false, steps: [] })) }, [])
   const firstRunDone = !!plan && !plan.intro && plan.steps.length === 0
   const ready = setup?.phase === 'ready' && firstRunDone
-  // the launch screen: up while Yogurt starts, and once it has shown, long enough to be seen
+  // the launch screen: up while Noe Taker starts, and once it has shown, long enough to be seen
   // a later launch also waits for the models on disk to be checked
   const booted = !!setup && !!plan && !(setup.phase === 'checking' && firstRunDone)
   const [holding, setHolding] = useState(true)
@@ -117,10 +117,10 @@ export function App() {
     window.addEventListener('resize', resize)
     return () => window.removeEventListener('resize', resize)
   }, [])
-  useEffect(() => { window.yogurt.sidebar.setOpen(ready && !holding ? !sidebarCollapsed : null) }, [ready, holding, sidebarCollapsed])
+  useEffect(() => { window.noetaker.sidebar.setOpen(ready && !holding ? !sidebarCollapsed : null) }, [ready, holding, sidebarCollapsed])
   useEffect(() => {
     if (!ready || holding) return
-    return window.yogurt.sidebar.onToggle(() => {
+    return window.noetaker.sidebar.onToggle(() => {
       if (!document.querySelector('dialog:modal, [aria-modal="true"]')) toggleSidebar()
     })
   }, [ready, holding])
@@ -203,7 +203,7 @@ export function App() {
     folderSuggestion={suggestedFolder ? { folder: suggestedFolder, dismiss: () => dismissFolderSuggestion(noteId) } : undefined} />
     : chatId !== undefined ? <ChatPage id={chatId} go={go} openSource={openSource} />
     : trash ? <Trash open={open} /> : folderScreen || <Home open={open} openSearch={openSearch} openFolder={(id) => go(`/folder/${id}`)} agendaJump={agendaJump} />
-  const mac = window.yogurt.platform === 'darwin'
+  const mac = window.noetaker.platform === 'darwin'
   const startupError = !setup && setupFailed
   const launching = mac && !startupError && (!booted || holding)
   const boot = mac ? null : <BootScreen />

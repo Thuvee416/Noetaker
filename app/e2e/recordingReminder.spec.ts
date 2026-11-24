@@ -7,7 +7,7 @@ import { join } from 'node:path'
 for (const theme of ['light', 'dark'] as const) test(`standard recording reminder toast in ${theme}, once per recording`, async ({}, info) => {
   test.setTimeout(180_000)
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-reminder-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-reminder-')),
   } })
   try {
     const page = await app.firstWindow()

@@ -5,8 +5,8 @@ import { join } from 'node:path'
 
 test('a failed notes-model download explains waiting notes and answers, and retry leaves recording usable', async () => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-model-recovery-')),
-    YOGURT_FAKE_NOTES_MODEL_FAIL_ONCE: '1', YOGURT_FAKE_NOTES_MODEL_MS: '4000',
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-model-recovery-')),
+    NOETAKER_FAKE_NOTES_MODEL_FAIL_ONCE: '1', NOETAKER_FAKE_NOTES_MODEL_MS: '4000',
   } })
   try {
     const page = await app.firstWindow()
@@ -25,8 +25,8 @@ test('a failed notes-model download explains waiting notes and answers, and retr
     })
     await page.getByTestId('new-note').or(page.getByTestId('past-empty').getByRole('button')).first().click()
     await expect(page.getByTestId('note-state')).toHaveAttribute('data-state', 'recording')
-    const id = (await page.evaluate(() => window.yogurt.nav.current())).slice('/note/'.length)
-    await expect.poll(async () => (await page.evaluate((id) => window.yogurt.transcript.get(id), id)).length, { timeout: 30_000 }).toBeGreaterThanOrEqual(2)
+    const id = (await page.evaluate(() => window.noetaker.nav.current())).slice('/note/'.length)
+    await expect.poll(async () => (await page.evaluate((id) => window.noetaker.transcript.get(id), id)).length, { timeout: 30_000 }).toBeGreaterThanOrEqual(2)
     await page.getByTestId('chat-open').click()
     await page.getByTestId('chat-input').fill('What was decided?')
     await page.getByTestId('chat-input').press('Enter')
@@ -58,20 +58,20 @@ test('a failed notes-model download explains waiting notes and answers, and retr
     await page.getByTestId('note-summary-tab').click()
     await page.getByTestId('chat-close').click()
     await expect(page.getByTestId('chat-panel')).toHaveCount(0)
-    await expect.poll(() => page.evaluate(id => window.yogurt.notes.get(id).then(notes => notes.status), id)).toBe('waiting')
+    await expect.poll(() => page.evaluate(id => window.noetaker.notes.get(id).then(notes => notes.status), id)).toBe('waiting')
     await expect(page.getByTestId('notes-model-error')).toHaveCount(1)
     await expect(page.getByTestId('notes-model-error')).toContainText('needs 4 GB more free space')
     await expect(page.getByTestId('notes-model-retry')).toHaveClass('text-action')
     await expect(page.getByTestId('note-enhanced-waiting')).toHaveCount(0)
     // A rejected Retry request remains visible and retryable instead of escaping the click handler.
     await page.getByTestId('notes-model-retry').click()
-    await expect(page.getByTestId('notes-model-error')).toContainText("Yogurt couldn't restart the download.")
+    await expect(page.getByTestId('notes-model-error')).toContainText("Noe Taker couldn't restart the download.")
     await expect(page.getByTestId('notes-model-retry')).toBeEnabled()
     await page.getByTestId('chat-open').click()
     await expect(chatError).toBeVisible()
     await chatError.getByTestId('notes-model-retry').click()
     await expect(page.getByTestId('notes-model-error')).toHaveCount(0)
-    await expect(page.getByTestId('note-enhanced-model-download').or(page.getByTestId('note-enhanced-waiting'))).toContainText(/waiting for Yogurt's AI to download|Reading the transcript/)
+    await expect(page.getByTestId('note-enhanced-model-download').or(page.getByTestId('note-enhanced-waiting'))).toContainText(/waiting for Noe Taker's AI to download|Reading the transcript/)
     await expect(page.getByTestId('note-enhanced')).toHaveAttribute('data-status', 'done', { timeout: 45_000 })
     await expect(page.getByTestId('chat-turn').last()).toContainText('Tuesday', { timeout: 30_000 })
     await expect(page.getByTestId('chat-turn').first()).toHaveAttribute('data-status', 'stopped')

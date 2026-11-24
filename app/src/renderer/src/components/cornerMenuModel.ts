@@ -1,12 +1,12 @@
-import { projectRepository, projectWebsite } from '../../../shared/project'
+import { projectRepository } from '../../../shared/project'
 import type { UpdateStatus } from '../../../shared/types'
 
 /** Top to bottom. The corner button sits below the last item. */
 export const cornerRows = ['news', 'github', 'discord', 'shortcuts', 'feedback', 'settings', 'trash'] as const
 export const cornerLinks = {
-  news: projectWebsite + '/updates',
+  news: projectRepository + '/releases',
   github: projectRepository,
-  discord: projectWebsite + '/discord',
+  discord: projectRepository + '/discussions',
   feedback: projectRepository + '/issues/new',
 }
 

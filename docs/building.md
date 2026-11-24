@@ -1,4 +1,4 @@
-# Build and run Yogurt locally
+# Build and run Noe Taker locally
 
 ## You need
 
@@ -17,17 +17,17 @@ On Linux, clone into a folder whose path has no spaces: Electron's sandbox can't
 ## Run it
 
 ```sh
-git clone https://github.com/FrigadeHQ/yogurt.git
-cd yogurt
+git clone https://github.com/Thuvee416/Noetaker.git
+cd Noetaker
 pnpm install --frozen-lockfile
 pnpm -C app native   # builds the audio, system and transcription helpers (first time, and after they change)
-pnpm dev             # opens Yogurt from source
+pnpm dev             # opens Noe Taker from source
 ```
 
 The first run downloads the AI models, like the installed app.
 
-- **Separate profile:** `YOGURT_USER_DATA=/tmp/yogurt-dev pnpm dev` keeps your real meetings out of it.
-- **Without models:** `YOGURT_FAKE=1 pnpm dev` swaps in a fake transcriber, notes model and call audio, so the whole app runs in seconds.
+- **Separate profile:** `NOETAKER_USER_DATA=/tmp/noetaker-dev pnpm dev` keeps your real meetings out of it.
+- **Without models:** `NOETAKER_FAKE=1 pnpm dev` swaps in a fake transcriber, notes model and call audio, so the whole app runs in seconds.
 - **Linux sandbox:** on Ubuntu 24.04 and other systems that turn off unprivileged user namespaces, Electron's sandbox helper must be owned by root. `pnpm dev` prints the two `sudo` commands when it isn't, and they're needed again after `node_modules` is reinstalled.
 
 ## Test

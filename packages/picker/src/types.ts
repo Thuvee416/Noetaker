@@ -79,7 +79,7 @@ export interface CatalogFile {
   bytes: number
 }
 
-/** The whisper-server program Yogurt builds itself */
+/** The whisper-server program Noe Taker builds itself */
 export interface CatalogBinary {
   id: string
   tag: string

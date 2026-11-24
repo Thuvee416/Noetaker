@@ -34,13 +34,13 @@ export function Home({ open, openSearch, openFolder, agendaJump }: { open: (id: 
   const [calendarRevision, setCalendarRevision] = useState(0)
   const start = async (eventId: string | null) => {
     toasts.close('home-message')
-    const r = await window.yogurt.meetings.start(eventId).catch(() => ({ error: 'failed' as const }))
+    const r = await window.noetaker.meetings.start(eventId).catch(() => ({ error: 'failed' as const }))
     if (!('error' in r)) return
     if (r.error === 'gone') setCalendarRevision((revision) => revision + 1)
-    toasts.add({ id: 'home-message', data: { testId: 'home-message' }, title: r.error === 'gone' ? t('That meeting is no longer on your calendar.') : t("Yogurt couldn't start the notes. Try again in a moment.") })
+    toasts.add({ id: 'home-message', data: { testId: 'home-message' }, title: r.error === 'gone' ? t('That meeting is no longer on your calendar.') : t("Noe Taker couldn't start the notes. Try again in a moment.") })
   }
   const [emptyActions, setEmptyActions] = useState<HTMLDivElement | null>(null)
-  const calendar = window.yogurt.capabilities.calendar
+  const calendar = window.noetaker.capabilities.calendar
   const [agendaOpen, setAgendaOpen] = useState(readAgendaOpen)
   const [agendaMotion, setAgendaMotion] = useState(false)
   const [toolbar, setToolbar] = useState<HTMLElement | null>(null)
@@ -122,7 +122,7 @@ export function usePastNotes(folder?: string) {
   const reload = useCallback(() => {
     const mine = ++seq.current
     // however far down the person scrolled, in steps (one call to main is capped)
-    void readMeetingRows(() => loadUpTo((o) => window.yogurt.meetings.cards({ ...o, ...(folder ? { folder } : {}) }), shown.current, PAGE)).then(({ cards: list, more }) => {
+    void readMeetingRows(() => loadUpTo((o) => window.noetaker.meetings.cards({ ...o, ...(folder ? { folder } : {}) }), shown.current, PAGE)).then(({ cards: list, more }) => {
       if (mine !== seq.current) return
       setFailed(undefined)
       animateRows(list)
@@ -134,8 +134,8 @@ export function usePastNotes(folder?: string) {
     let timer: ReturnType<typeof setTimeout> | undefined
     // notes being written change meetings often: one reload for a burst
     const later = () => { clearTimeout(timer); timer = setTimeout(reload, 150) }
-    const off = window.yogurt.meetings.onChange(later)
-    const offFolders = window.yogurt.folders.onChange(later)
+    const off = window.noetaker.meetings.onChange(later)
+    const offFolders = window.noetaker.folders.onChange(later)
     return () => { off(); offFolders(); clearTimeout(timer); seq.current++ }
   }, [reload, folder])
 
@@ -144,7 +144,7 @@ export function usePastNotes(folder?: string) {
     loading.current = true
     const last = cards[cards.length - 1]
     const mine = seq.current
-    void window.yogurt.meetings.cards({ limit: PAGE, before: { at: last.startedAt, id: last.id }, ...(folder ? { folder } : {}) }).then((page) => {
+    void window.noetaker.meetings.cards({ limit: PAGE, before: { at: last.startedAt, id: last.id }, ...(folder ? { folder } : {}) }).then((page) => {
       if (mine !== seq.current) return
       setFailed(undefined)
       setCards((cur) => {

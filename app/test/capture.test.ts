@@ -124,7 +124,7 @@ describe('fake capture', () => {
   afterEach(() => { if (dir) rmSync(dir, { recursive: true, force: true }) })
 
   it('pause emits no new PCM; resuming retains the existing meeting timeline', async () => {
-    dir = mkdtempSync(join(tmpdir(), 'yogurt-cap-pause-'))
+    dir = mkdtempSync(join(tmpdir(), 'noetaker-cap-pause-'))
     const c = new Capture(fakeCaptureProc(dir))
     const frames: number[] = []
     c.on('pcm', (_track, ms) => frames.push(ms))
@@ -142,7 +142,7 @@ describe('fake capture', () => {
   })
 
   it('saves silence at the confirmed boundaries, with continuous call PCM and speech through Stop', async () => {
-    dir = mkdtempSync(join(tmpdir(), 'yogurt-cap-muted-'))
+    dir = mkdtempSync(join(tmpdir(), 'noetaker-cap-muted-'))
     const clock = vi.spyOn(Date, 'now').mockReturnValue(0)
     try {
       const c = new Capture(fakeCaptureProc(dir, 0, { speech: true }))
@@ -186,7 +186,7 @@ describe('fake capture', () => {
   })
 
   it('append parts preserve the complete original PCM prefix and carry forward timeline after reopening', async () => {
-    dir = mkdtempSync(join(tmpdir(), 'yogurt-cap-append-'))
+    dir = mkdtempSync(join(tmpdir(), 'noetaker-cap-append-'))
     const first = new Capture(fakeCaptureProc(dir))
     await new Promise((r) => setTimeout(r, 350)); await first.stop()
     const original = readFileSync(join(dir, 'me.wav')), startMs = fakeAudioDuration(dir)
@@ -207,7 +207,7 @@ describe('fake capture', () => {
   })
 
   it('records from the chosen fake mic, switches without stopping, and falls back to Auto when it goes away', async () => {
-    dir = mkdtempSync(join(tmpdir(), 'yogurt-cap-mic-'))
+    dir = mkdtempSync(join(tmpdir(), 'noetaker-cap-mic-'))
     setFakeMics(null)
     const c = new Capture(fakeCaptureProc(dir, 0, { mic: 'fake-yeti' }))
     const mics: unknown[] = [], warns: string[] = [], frames: number[] = []
@@ -235,7 +235,7 @@ describe('fake capture', () => {
   })
 
   it('a remembered fake mic that is not here records with Auto, quietly', async () => {
-    dir = mkdtempSync(join(tmpdir(), 'yogurt-cap-mic-'))
+    dir = mkdtempSync(join(tmpdir(), 'noetaker-cap-mic-'))
     setFakeMics(null)
     const c = new Capture(fakeCaptureProc(dir, 0, { mic: 'unplugged' }))
     const mics: unknown[] = [], warns: string[] = []
@@ -247,7 +247,7 @@ describe('fake capture', () => {
   })
 
   it('plays both fixture tracks at real-time speed, and stops', async () => {
-    dir = mkdtempSync(join(tmpdir(), 'yogurt-cap-'))
+    dir = mkdtempSync(join(tmpdir(), 'noetaker-cap-'))
     const c = new Capture(fakeCaptureProc(dir))
     const got: { track: string; ms: number; n: number }[] = []
     c.on('pcm', (track, ms, samples) => got.push({ track, ms, n: samples.length }))
@@ -265,9 +265,9 @@ describe('fake capture', () => {
 
 describe('after a crash', () => {
   it('the meeting row is stopped on the next start and its segments remain', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'yogurt-db-'))
+    const dir = mkdtempSync(join(tmpdir(), 'noetaker-db-'))
     try {
-      const file = join(dir, 'yogurt.db')
+      const file = join(dir, 'noetaker.db')
       const s1 = openStore(file)
       const m = s1.createMeeting({ title: 'x', startedAt: 1, endedAt: null, eventId: null, app: null, attendees: [], state: 'recording' })
       s1.addSegments([{ meetingId: m.id, track: 'me', startMs: 0, endMs: 900, text: 'hello there', speaker: null }])
@@ -612,7 +612,7 @@ describe('quitting while a recording is being finished', () => {
 })
 
 describe('joining parts left behind by a quit', () => {
-  const root = () => mkdtempSync(join(tmpdir(), 'yogurt-parts-'))
+  const root = () => mkdtempSync(join(tmpdir(), 'noetaker-parts-'))
   it('picks only meeting folders that still have part files', () => {
     const r = root()
     try {
@@ -667,7 +667,7 @@ describe('joining parts left behind by a quit', () => {
 
 describe('waiting for a recording with a cap', () => {
   it('stops waiting after the cap, so what exists can be served', async () => {
-    const r = mkdtempSync(join(tmpdir(), 'yogurt-parts-'))
+    const r = mkdtempSync(join(tmpdir(), 'noetaker-parts-'))
     try {
       mkdirSync(join(r, 'slow')); writeFileSync(join(r, 'slow', 'part.1.json'), '{}')
       void rejoinInterrupted(r, () => new Promise<void>(() => {}))

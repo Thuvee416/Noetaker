@@ -4,7 +4,7 @@ import type { Spoken } from '../../shared/spoken'
 /**
  * Apple's on-device speech (SpeechAnalyzer and SpeechTranscriber, macOS 26 on Apple Silicon) for the live words: it
  * reads on the Neural Engine and gives volatile text as someone talks. Never SFSpeechRecognizer, which can send audio
- * away. Its model is downloaded once through AssetInventory, like Yogurt's own models; no audio leaves the Mac.
+ * away. Its model is downloaded once through AssetInventory, like Noe Taker's own models; no audio leaves the Mac.
  * Whisper stays everywhere else, and for the saved transcript: on real meetings whisper got 19.5% of words wrong, Apple 25.0%.
  */
 export type SpeechHost = { platform: string; arch: string; /** the kernel's version, e.g. 25.4.0 (macOS 26 is Darwin 25) */ osRelease: string }
@@ -70,7 +70,7 @@ export const speechDisagrees = (locale: string, detected: string | null | undefi
 }
 
 export type SpeechLocales = { available: boolean; supported: string[]; installed: string[] }
-/** yogurt-audio speech-locales: what the Mac's speech can do; nothing where it can't (an older macOS, an Intel Mac) */
+/** noetaker-audio speech-locales: what the Mac's speech can do; nothing where it can't (an older macOS, an Intel Mac) */
 export function readSpeechLocales(binary: string): Promise<SpeechLocales> {
   return new Promise((resolve) => {
     execFile(binary, ['speech-locales'], { timeout: 20_000 }, (err, stdout) => {
@@ -83,7 +83,7 @@ export function readSpeechLocales(binary: string): Promise<SpeechLocales> {
     })
   })
 }
-/** yogurt-audio speech-install LOCALE: Apple's model for that locale, downloaded once (true once it is there) */
+/** noetaker-audio speech-install LOCALE: Apple's model for that locale, downloaded once (true once it is there) */
 export function installSpeechLocale(binary: string, locale: string): Promise<boolean> {
   return new Promise((resolve) => {
     execFile(binary, ['speech-install', locale], { timeout: 15 * 60_000 }, (err, stdout) => {

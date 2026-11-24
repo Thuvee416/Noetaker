@@ -8,7 +8,7 @@ import { promisify } from 'node:util'
 // CI only: the repository's no-local-E2E sentinel is enforced by playwright.config.ts.
 // These commands use committed speech fixtures and testInfo.outputPath, never a person's profile or devices.
 const run = promisify(execFile), tracks = ['me', 'them'] as const
-const helper = join(import.meta.dirname, '../resources/bin/yogurt-audio')
+const helper = join(import.meta.dirname, '../resources/bin/noetaker-audio')
 const main = join(import.meta.dirname, '../out/main/index.js')
 type Inspection = { durationMs: number; tracks: Record<string, { formatID: number; sampleRate: number; channels: number; bitsPerSecond: number; durationMs: number }> }
 const inspect = async (dir: string): Promise<Inspection> => JSON.parse((await run(helper, ['inspect', '--dir', dir])).stdout)
@@ -74,7 +74,7 @@ test('HE-AAC 16k preserves both tracks, mixed legacy joins and Chromium playback
   }
 
   const userData = info.outputPath('profile')
-  const app = await electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_FAKE_AUDIO_M4A: '1', YOGURT_USER_DATA: userData } })
+  const app = await electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_FAKE_AUDIO_M4A: '1', NOETAKER_USER_DATA: userData } })
   try {
     const page = await app.firstWindow()
     await expect(page.getByTestId('home')).toBeVisible()
@@ -101,7 +101,7 @@ test('HE-AAC 16k preserves both tracks, mixed legacy joins and Chromium playback
 })
 
 test('a transcript click queued before metadata still plays the healthy track if the other track fails later', async ({}, info) => {
-  const app = await electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_FAKE_AUDIO_METADATA_GATE: '1', YOGURT_USER_DATA: info.outputPath('partial-profile') } })
+  const app = await electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_FAKE_AUDIO_METADATA_GATE: '1', NOETAKER_USER_DATA: info.outputPath('partial-profile') } })
   try {
     const page = await app.firstWindow()
     await expect(page.getByTestId('home')).toBeVisible()
@@ -128,7 +128,7 @@ test('the live HE writer commits five-second fragments that remain readable afte
   mkdirSync(live, { recursive: true }); mkdirSync(mixed, { recursive: true })
   const child = spawn(helper, ['writer-probe', '--dir', live,
     '--me', join(import.meta.dirname, 'fixtures/meeting-me.wav'), '--them', join(import.meta.dirname, 'fixtures/meeting-them.wav')],
-  { env: { ...process.env, YOGURT_AUDIO_TEST: '1' }, stdio: ['pipe', 'pipe', 'pipe'] })
+  { env: { ...process.env, NOETAKER_AUDIO_TEST: '1' }, stdio: ['pipe', 'pipe', 'pipe'] })
   let stdout = '', stderr = '', timer: ReturnType<typeof setTimeout> | undefined
   const closed = new Promise<void>(resolve => child.once('close', () => resolve()))
   const fed = new Promise<{ inputMs: number; fragmentMs: number }>((resolve, reject) => {

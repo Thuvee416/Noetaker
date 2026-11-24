@@ -6,7 +6,7 @@ index fc2ed379662d4d5cc7282a9d01faf3c327caa593..755ff2e216960846739a8bcb1f8f3d3b
              'To resolve this issue, make sure that "node-llama-cpp" is not bundled together with other code and is imported as an external module with its original file structure.');
          return true;
      }
-+    // Yogurt: the engine runs in an Electron utility process, which can't import utilityProcess, and child_process.fork()
++    // Noe Taker: the engine runs in an Electron utility process, which can't import utilityProcess, and child_process.fork()
 +    // needs the runAsNode fuse a shipped app turns off. Load untested: if a graphics driver crashes the engine,
 +    // the app starts it again without the graphics card (src/main/engine.ts).
 +    if (runningInElectron && process.parentPort != null)

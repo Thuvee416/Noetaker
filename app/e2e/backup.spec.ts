@@ -7,8 +7,8 @@ import { join } from 'node:path'
 const main = join(import.meta.dirname, '../out/main/index.js')
 
 async function launch(env: Record<string, string>) {
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
-  const app = await electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData, ...env } })
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
+  const app = await electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData, ...env } })
   const page = await app.firstWindow()
   await expect(page.getByTestId('home')).toBeVisible()
   return { app, page, userData }
@@ -16,9 +16,9 @@ async function launch(env: Record<string, string>) {
 const fake = <T>(app: ElectronApplication, fn: string, arg?: unknown): Promise<T> =>
   app.evaluate((_e, [fn, arg]) => (globalThis as unknown as Record<string, Record<string, (a?: unknown) => unknown>>).__fake__[fn as string](arg), [fn, arg] as const) as Promise<T>
 
-test('every meeting goes to one file and into a fresh Yogurt, with notes, transcript, audio and search; twice adds nothing', async () => {
-  const file = join(mkdtempSync(join(tmpdir(), 'yogurt-backup-')), 'Yogurt backup.zip')
-  const a = await launch({ YOGURT_BACKUP_PATH: file })
+test('every meeting goes to one file and into a fresh Noe Taker, with notes, transcript, audio and search; twice adds nothing', async () => {
+  const file = join(mkdtempSync(join(tmpdir(), 'noetaker-backup-')), 'Noe Taker backup.zip')
+  const a = await launch({ NOETAKER_BACKUP_PATH: file })
   let id: string
   try {
     await fake(a.app, 'manyMeetings', { n: 3, clean: true })
@@ -30,7 +30,7 @@ test('every meeting goes to one file and into a fresh Yogurt, with notes, transc
   } finally { await a.app.close() }
   expect(existsSync(file)).toBe(true)
 
-  const b = await launch({ YOGURT_BACKUP_PATH: file })
+  const b = await launch({ NOETAKER_BACKUP_PATH: file })
   try {
     await expect(b.page.getByTestId('past-note')).toHaveCount(0)
     await openFromCorner(b.page, 'settings-open')
@@ -69,9 +69,9 @@ test('every meeting goes to one file and into a fresh Yogurt, with notes, transc
 })
 
 // the zip itself differs by computer (ditto on a Mac, JavaScript elsewhere): the round trip must hold on each
-test('@everywhere a backup restores into a fresh Yogurt on this computer, recordings too', async () => {
-  const file = join(mkdtempSync(join(tmpdir(), 'yogurt backup ü-')), 'Yogurt backup.zip')
-  const a = await launch({ YOGURT_BACKUP_PATH: file })
+test('@everywhere a backup restores into a fresh Noe Taker on this computer, recordings too', async () => {
+  const file = join(mkdtempSync(join(tmpdir(), 'noetaker backup ü-')), 'Noe Taker backup.zip')
+  const a = await launch({ NOETAKER_BACKUP_PATH: file })
   let id: string
   try {
     id = await fake<string>(a.app, 'bigMeeting', 4)
@@ -79,7 +79,7 @@ test('@everywhere a backup restores into a fresh Yogurt on this computer, record
     await a.page.getByTestId('backup-export').click()
     await expect(a.page.getByTestId('backup-said')).toContainText('Exported 1 meeting')
   } finally { await a.app.close() }
-  const b = await launch({ YOGURT_BACKUP_PATH: file })
+  const b = await launch({ NOETAKER_BACKUP_PATH: file })
   try {
     await openFromCorner(b.page, 'settings-open')
     await b.page.getByTestId('backup-import').click()
@@ -89,8 +89,8 @@ test('@everywhere a backup restores into a fresh Yogurt on this computer, record
 })
 
 test('import waits while a meeting records, and an unreadable file reports a retryable failure', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'yogurt-backup-'))
-  const { app, page } = await launch({ YOGURT_BACKUP_PATH: join(dir, 'missing.zip') })
+  const dir = mkdtempSync(join(tmpdir(), 'noetaker-backup-'))
+  const { app, page } = await launch({ NOETAKER_BACKUP_PATH: join(dir, 'missing.zip') })
   try {
     await openFromCorner(page, 'settings-open')
     await page.getByTestId('backup-import').click()

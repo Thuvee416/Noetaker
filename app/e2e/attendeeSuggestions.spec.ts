@@ -5,17 +5,17 @@ import { join } from 'node:path'
 
 test('attendee suggestions rank invitees, keep distinct email identities, and support keyboard and pointer selection', async () => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'attendee-suggestions-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'attendee-suggestions-')),
   } })
   try {
     const page = await app.firstWindow()
     await expect(page.getByTestId('home')).toBeVisible()
     await app.evaluate(() => (globalThis as any).__fake__.manyMeetings({ n: 3, clean: true }))
-    const [target, recent, older] = await page.evaluate(() => window.yogurt.meetings.cards({ limit: 3 }))
+    const [target, recent, older] = await page.evaluate(() => window.noetaker.meetings.cards({ limit: 3 }))
     await page.evaluate(async ({ recent, older }) => {
-      await window.yogurt.settings.setName('Owner Example')
-      await window.yogurt.meetings.setAttendees(recent, [{ name: 'Guest Recent', email: 'recent@example.test' }, { name: 'Guest Shared', email: null }])
-      await window.yogurt.meetings.setAttendees(older, [{ name: 'Guest Older', email: 'older@example.test' }, { name: 'Guest Shared', email: 'second@example.test' }])
+      await window.noetaker.settings.setName('Owner Example')
+      await window.noetaker.meetings.setAttendees(recent, [{ name: 'Guest Recent', email: 'recent@example.test' }, { name: 'Guest Shared', email: null }])
+      await window.noetaker.meetings.setAttendees(older, [{ name: 'Guest Older', email: 'older@example.test' }, { name: 'Guest Shared', email: 'second@example.test' }])
     }, { recent: recent.id, older: older.id })
     const at = target.startedAt + 86_400_000
     await app.evaluate((_e, at) => (globalThis as any).__fake__.calendarEvents([
@@ -25,9 +25,9 @@ test('attendee suggestions rank invitees, keep distinct email identities, and su
       { id: 'other', title: 'Other event', start: new Date(at + 1_800_000).toISOString(), end: new Date(at + 3_600_000).toISOString(), attendees: [{ name: 'Guest Calendar', email: 'calendar@example.test' }] },
     ]), at)
     await page.evaluate(async ({ id, at }) => {
-      await window.yogurt.meetings.linkEvent(id, 'current', at)
-      await window.yogurt.meetings.setAttendees(id, [])
-      window.yogurt.nav.go(`/note/${id}`)
+      await window.noetaker.meetings.linkEvent(id, 'current', at)
+      await window.noetaker.meetings.setAttendees(id, [])
+      window.noetaker.nav.go(`/note/${id}`)
     }, { id: target.id, at })
     await page.getByTestId('note-attendees').click()
     const input = page.getByTestId('people-add'), options = page.getByRole('option')
@@ -64,27 +64,27 @@ test('attendee suggestions rank invitees, keep distinct email identities, and su
 test('auto titles use current attendees after edits while an edited summary stays intact', async () => {
   test.setTimeout(90_000)
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_FAKE_LLM_MS: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'attendee-titles-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_FAKE_LLM_MS: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'attendee-titles-')),
   } })
   try {
     const page = await app.firstWindow()
     await expect(page.getByTestId('home')).toBeVisible()
-    await page.evaluate(() => window.yogurt.settings.setName('Owner Example'))
+    await page.evaluate(() => window.noetaker.settings.setName('Owner Example'))
     await app.evaluate(() => (globalThis as any).__fake__.calendarEvents([]))
     await page.reload()
     await page.getByTestId('new-note').click()
     await expect(page.getByTestId('note-state')).toHaveAttribute('data-state', 'recording')
-    const id = await page.evaluate(async () => (await window.yogurt.nav.current()).slice('/note/'.length))
-    await expect.poll(() => page.evaluate(id => window.yogurt.transcript.get(id).then(lines => lines.length), id), { timeout: 20_000 }).toBeGreaterThan(0)
+    const id = await page.evaluate(async () => (await window.noetaker.nav.current()).slice('/note/'.length))
+    await expect.poll(() => page.evaluate(id => window.noetaker.transcript.get(id).then(lines => lines.length), id), { timeout: 20_000 }).toBeGreaterThan(0)
     await page.getByTestId('note-stop').click()
-    await expect.poll(() => page.evaluate(id => window.yogurt.meetings.get(id).then(m => m?.titleSource), id), { timeout: 30_000 }).toBe('auto')
+    await expect.poll(() => page.evaluate(id => window.noetaker.meetings.get(id).then(m => m?.titleSource), id), { timeout: 30_000 }).toBe('auto')
     await page.getByTestId('note-summary-tab').click()
     await page.getByRole('textbox', { name: 'Summary', exact: true }).fill('Keep this edited summary.')
-    await expect.poll(() => page.evaluate(id => window.yogurt.notes.get(id).then(n => n.enhanced), id)).toContain('Keep this edited summary.')
+    await expect.poll(() => page.evaluate(id => window.noetaker.notes.get(id).then(n => n.enhanced), id)).toContain('Keep this edited summary.')
     await app.evaluate(() => { (globalThis as any).__fake__.prompts().notes.length = 0 })
     await page.evaluate(async id => {
-      await window.yogurt.meetings.setAttendees(id, [{ name: 'Guest Previous', email: null }])
-      await window.yogurt.meetings.setAttendees(id, [{ name: 'Guest Current', email: 'current@example.test' }])
+      await window.noetaker.meetings.setAttendees(id, [{ name: 'Guest Previous', email: null }])
+      await window.noetaker.meetings.setAttendees(id, [{ name: 'Guest Current', email: 'current@example.test' }])
     }, id)
     const titles = () => app.evaluate(() => ((globalThis as any).__fake__.prompts().notes as string[]).filter(p => p.startsWith('Now give this meeting a title')))
     await expect.poll(async () => (await titles()).length, { timeout: 20_000 }).toBe(1)
@@ -92,7 +92,7 @@ test('auto titles use current attendees after edits while an edited summary stay
     expect(prompt).toContain('Owner Example')
     expect(prompt).toContain('["Guest Current"]')
     expect(prompt).not.toContain('Guest Previous')
-    expect(await page.evaluate(id => window.yogurt.notes.get(id).then(n => n.enhanced), id)).toContain('Keep this edited summary.')
+    expect(await page.evaluate(id => window.noetaker.notes.get(id).then(n => n.enhanced), id)).toContain('Keep this edited summary.')
     await expect(page.getByTestId('note-title')).not.toContainText('Owner')
   } finally { await app.close() }
 })

@@ -11,7 +11,7 @@ import { createTranscriber } from '../src/main/asr/transcribe'
  * slow (answers after 800 ms).
  */
 function fakeBinary(loadMs = 0, modes: string[] = ['ok']) {
-  const dir = mkdtempSync(join(tmpdir(), 'yogurt-ws-'))
+  const dir = mkdtempSync(join(tmpdir(), 'noetaker-ws-'))
   const js = join(dir, 'ws.js')
   writeFileSync(join(dir, 'modes'), modes.join('\n'))
   writeFileSync(js, `
@@ -96,7 +96,7 @@ describe.skipIf(process.platform === 'win32')('whisper server', () => {
   })
 
   it('fails when the program exits before it answers', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'yogurt-ws-'))
+    const dir = mkdtempSync(join(tmpdir(), 'noetaker-ws-'))
     const bin = join(dir, 'whisper-server')
     writeFileSync(bin, '#!/bin/sh\nexit 3\n'); chmodSync(bin, 0o755)
     await expect(make(bin).url()).rejects.toThrow(/exited/)
@@ -117,7 +117,7 @@ describe.skipIf(process.platform === 'win32')('whisper server', () => {
   })
 
   // #127: quitting killed a whisper-server still loading; that kill was taken for a graphics driver crash
-  it('killed by Yogurt while loading (quitting) is not a graphics card failure', async () => {
+  it('killed by Noe Taker while loading (quitting) is not a graphics card failure', async () => {
     const bin = fakeBinary(1500)
     const args = () => JSON.parse(readFileSync(join(bin, '../args'), 'utf8')) as string[]
     const off = vi.fn()
@@ -435,11 +435,11 @@ describe('pid file', () => {
     const killed: number[] = []
     return { killed, deps: { name: (pid: number) => names[pid] ?? null, kill: (pid: number) => { killed.push(pid) } } }
   }
-  const pidFile = () => join(mkdtempSync(join(tmpdir(), 'yogurt-pid-')), 'whisper-server.pid')
+  const pidFile = () => join(mkdtempSync(join(tmpdir(), 'noetaker-pid-')), 'whisper-server.pid')
 
   it('kills a left-over whisper-server and removes the file', () => {
     const f = pidFile(); writeFileSync(f, '4242')
-    const r = rig({ 4242: '/Applications/Yogurt.app/Contents/Resources/bin/whisper-server' })
+    const r = rig({ 4242: '/Applications/Noe Taker.app/Contents/Resources/bin/whisper-server' })
     killStale(f, r.deps)
     expect(r.killed).toEqual([4242])
     expect(existsSync(f)).toBe(false)

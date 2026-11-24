@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { MARK, WORD } from '../src/shared/logo'
+import { MARK } from '../src/shared/logo'
 
 const svg = (name: string) => readFileSync(join(import.meta.dirname, '../build', name), 'utf8')
 const paths = (text: string) => [...text.matchAll(/ d="([^"]+)"/g)].map((m) => m[1])
@@ -16,7 +16,9 @@ describe('logo', () => {
     expect(paths(svg('logo.svg'))).toEqual([MARK])
   })
   it('matches build/wordmark.svg', () => {
-    expect(paths(svg('wordmark.svg'))).toEqual([MARK, WORD])
+    const wordmark = svg('wordmark.svg')
+    expect(paths(wordmark)).toEqual([MARK])
+    expect(wordmark).toContain('>Noe Taker<')
   })
   it('matches the original quotation in build/icon.svg', () => {
     expect(paths(svg('icon.svg')).join('')).toBe(MARK)

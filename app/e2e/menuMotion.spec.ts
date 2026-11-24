@@ -12,7 +12,7 @@ const menus = [
 
 async function launch() {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-menu-motion-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-menu-motion-')),
   } })
   const page = await app.firstWindow()
   await expect(page.getByTestId('home')).toBeVisible()

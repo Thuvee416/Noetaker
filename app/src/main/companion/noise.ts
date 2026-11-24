@@ -1,6 +1,6 @@
 // Noise_KK_25519_ChaChaPoly_BLAKE2b (Noise spec rev 34). Both static keys are known from pairing:
 //   -> s  <- s  ...  -> e, es, ss  <- e, ee, se
-// YogurtKit's Noise.swift mirrors this file.
+// NoetakerKit's Noise.swift mirrors this file.
 import { sodium } from './sodium'
 
 const PROTOCOL = 'Noise_KK_25519_ChaChaPoly_BLAKE2b'

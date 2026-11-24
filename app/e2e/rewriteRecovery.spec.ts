@@ -5,9 +5,9 @@ import { join } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 
 async function launch() {
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-rewrite-')), out = join(userData, 'export.md')
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-rewrite-')), out = join(userData, 'export.md')
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData, YOGURT_EXPORT_PATH: out, YOGURT_FAKE_LLM_MS: '2',
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData, NOETAKER_EXPORT_PATH: out, NOETAKER_FAKE_LLM_MS: '2',
   } })
   const page = await app.firstWindow()
   await expect(page.getByTestId('home')).toBeVisible()
@@ -22,8 +22,8 @@ async function launch() {
   await page.reload()
   await page.getByTestId('past-note').click()
   await expect(page.getByTestId('note-enhanced')).toBeVisible()
-  const id = (await page.evaluate(() => window.yogurt.nav.current())).slice('/note/'.length)
-  const db = new DatabaseSync(join(userData, 'yogurt.db'), { timeout: 5000 })
+  const id = (await page.evaluate(() => window.noetaker.nav.current())).slice('/note/'.length)
+  const db = new DatabaseSync(join(userData, 'noetaker.db'), { timeout: 5000 })
   return { app, page, id, db, out }
 }
 const fail = (db: DatabaseSync) => db.exec("CREATE TRIGGER test_rewrite_failure BEFORE INSERT ON notes BEGIN SELECT RAISE(FAIL, 'rewrite save failed'); END")
@@ -50,14 +50,14 @@ test('a failed rewrite keeps the previous edited Enhanced note visible, copyable
     await page.getByTestId('share-button').click()
     await page.getByTestId('share-copy-summary').click()
     await expect(page.getByTestId('share-said')).toHaveText('Copied')
-    expect(await app.evaluate(() => (globalThis as unknown as { __copied: string }).__copied)).toBe(`${prior}\n\nRecorded with Yogurt · yogurt.so`)
+    expect(await app.evaluate(() => (globalThis as unknown as { __copied: string }).__copied)).toBe(`${prior}\n\nRecorded with Noe Taker · github.com/Thuvee416/Noetaker`)
     await page.getByTestId('share-button').click()
     await page.getByTestId('share-export').click()
     await expect(page.getByTestId('share-said')).toHaveText('Saved')
     expect(readFileSync(out, 'utf8')).toContain(`## ${prior}`)
     expect(db.prepare('SELECT enhanced FROM notes WHERE meeting_id = ?').get(id)).toMatchObject({ enhanced: `## ${prior}` })
     recover(db)
-    const delayed = await page.evaluate((id) => window.yogurt.notes.get(id), id)
+    const delayed = await page.evaluate((id) => window.noetaker.notes.get(id), id)
     await page.getByTestId('note-enhanced-editor').fill('')
     await expect(page.getByTestId('note-enhanced-editor')).toBeVisible()
     await page.getByTestId('share-button').click()
@@ -70,13 +70,13 @@ test('a failed rewrite keeps the previous edited Enhanced note visible, copyable
     }, delayed)
     await expect(page.getByTestId('note-enhanced-editor')).toHaveText(edited)
     await expect(page.getByTestId('note-save-status')).toHaveAttribute('data-state', 'saved')
-    expect((await page.evaluate((id) => window.yogurt.notes.get(id), id))!.enhanced).toContain(edited)
+    expect((await page.evaluate((id) => window.noetaker.notes.get(id), id))!.enhanced).toContain(edited)
     await retry.click()
     await page.getByTestId('note-write-again-confirm').click()
     await expect(page.getByTestId('note-enhanced')).toHaveAttribute('data-status', 'done')
     await expect(page.getByTestId('note-enhanced-editor')).toContainText('Launch plan')
     await expect(page.getByTestId('note-enhanced-rewrite-failed')).toHaveCount(0)
-    expect((await page.evaluate((id) => window.yogurt.notes.get(id), id))!.edited).toBe(false)
+    expect((await page.evaluate((id) => window.noetaker.notes.get(id), id))!.edited).toBe(false)
   } finally { recover(db); db.close(); await app.close() }
 })
 
@@ -86,7 +86,7 @@ test('a first-generation failure retains its actionable retry and My notes copy 
     db.prepare('UPDATE notes SET enhanced = NULL, edited = 0, mine = ? WHERE meeting_id = ?').run('My original notes are still useful.', id)
     await page.reload()
     fail(db)
-    await page.evaluate((id) => window.yogurt.notes.writeAgain(id), id)
+    await page.evaluate((id) => window.noetaker.notes.writeAgain(id), id)
     await expect(page.getByTestId('note-enhanced-failed')).toBeVisible()
     await expect(page.getByTestId('note-enhanced-failed')).toHaveAttribute('role', 'alert')
     await expect(page.getByTestId('note-enhanced-editor')).toHaveCount(0)

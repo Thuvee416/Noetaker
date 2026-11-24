@@ -55,7 +55,7 @@ const realLookup: ProcessLookup = {
 }
 
 /**
- * A whisper-server left over from a Yogurt that was killed would hold memory and a port forever.
+ * A whisper-server left over from a Noe Taker that was killed would hold memory and a port forever.
  * The pid file names it; it is killed only if that pid is still a program called whisper-server (pids get reused).
  */
 export function killStale(pidFile: string, deps: ProcessLookup = realLookup) {
@@ -145,7 +145,7 @@ export function createWhisperServer(o: Opts) {
   let gpuHangs = 0
   /** a hang on the graphics card twice (#76: a GTX 1050 Ti under Vulkan never answered) turns them off for good */
   const GPU_HANGS = 2
-  /** launches Yogurt itself ended (quitting, stopping): dying while loading is then no sign of a graphics driver (#127) */
+  /** launches Noe Taker itself ended (quitting, stopping): dying while loading is then no sign of a graphics driver (#127) */
   const ended = new WeakSet<ChildProcess>()
 
   const launch = async (): Promise<string> => {
@@ -238,7 +238,7 @@ export function createWhisperServer(o: Opts) {
     /** a new meeting: all relaunches again */
     resetBudget() { used = 0 },
     /**
-     * The graphics card gets another chance (#156: once set aside it stayed off until Yogurt restarted, and the saved
+     * The graphics card gets another chance (#156: once set aside it stayed off until Noe Taker restarted, and the saved
      * recording was read on a processor too slow for the model). Asked with no meeting using the server, at the next
      * meeting and before a saved recording; within a meeting, a card that failed twice stays off. true: it will try.
      */

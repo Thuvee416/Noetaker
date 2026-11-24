@@ -47,25 +47,25 @@ jobs:
         run: |
           cd app && pnpm exec electron-vite build
           # Linux: the notes engine's allocator shim (#32), as scripts/native.mjs builds it
-          if [ "$RUNNER_OS" = Linux ]; then mkdir -p resources/bin && gcc -O2 -fPIC -shared -Wall -Wextra -Werror -o resources/bin/libyogurt-bigalloc.so native/bigalloc/bigalloc.c; fi
+          if [ "$RUNNER_OS" = Linux ]; then mkdir -p resources/bin && gcc -O2 -fPIC -shared -Wall -Wextra -Werror -o resources/bin/libnoetaker-bigalloc.so native/bigalloc/bigalloc.c; fi
           echo "ASAR=$GITHUB_WORKSPACE/app" >> "$GITHUB_ENV"
       - name: The preview installer
         if: inputs.run_id != ''
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh run download "${{ inputs.run_id }}" -R "${{ github.repository }}" -n "yogurt-preview-${{ runner.os }}" -D "$RUNNER_TEMP/preview"
+        run: gh run download "${{ inputs.run_id }}" -R "${{ github.repository }}" -n "noetaker-preview-${{ runner.os }}" -D "$RUNNER_TEMP/preview"
       - name: Install it
         if: inputs.run_id != ''
         run: |
           if [ "$RUNNER_OS" = Windows ]; then
-            "$RUNNER_TEMP"/preview/Yogurt-windows-x64.exe //S
-            dir="$LOCALAPPDATA/Programs/Yogurt/resources"
+            "$RUNNER_TEMP"/preview/noetaker-windows-x64.exe //S
+            dir="$LOCALAPPDATA/Programs/Noe Taker/resources"
             for i in $(seq 1 90); do [ -f "$dir/app.asar" ] && [ -d "$dir/app.asar.unpacked/node_modules/@node-llama-cpp" ] && break; sleep 2; done
             sleep 5
           else
             mkdir -p "$RUNNER_TEMP/appimage" && cd "$RUNNER_TEMP/appimage"
-            chmod +x "$RUNNER_TEMP"/preview/Yogurt-linux-x86_64.AppImage
-            "$RUNNER_TEMP"/preview/Yogurt-linux-x86_64.AppImage --appimage-extract >/dev/null
+            chmod +x "$RUNNER_TEMP"/preview/noetaker-linux-x86_64.AppImage
+            "$RUNNER_TEMP"/preview/noetaker-linux-x86_64.AppImage --appimage-extract >/dev/null
             dir="$RUNNER_TEMP/appimage/squashfs-root/resources"
           fi
           ls "$dir/app.asar.unpacked/node_modules/@node-llama-cpp"

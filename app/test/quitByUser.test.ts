@@ -11,14 +11,14 @@ let dir: string
 const marked = () => existsSync(join(dir, QUIT_MARKER))
 beforeEach(() => { dir = mkdtempSync(join(tmpdir(), 'yq-')); quit.mockClear(); resetQuitByUser() })
 
-describe('the person quitting Yogurt keeps AI apps from starting it again (#147)', () => {
+describe('the person quitting Noe Taker keeps AI apps from starting it again (#147)', () => {
   it('is marked when the person chose Quit', () => {
     quitByUser()
     expect(quit).toHaveBeenCalledOnce()
     quitting(dir)
     expect(marked()).toBe(true)
   })
-  it('is not marked for any other quit: an update restart, logout, a quiet Yogurt quitting by itself', () => {
+  it('is not marked for any other quit: an update restart, logout, a quiet Noe Taker quitting by itself', () => {
     quitting(dir)
     expect(marked()).toBe(false)
   })
@@ -42,8 +42,8 @@ describe('the person quitting Yogurt keeps AI apps from starting it again (#147)
     rmSync(join(dir, QUIT_MARKER))
     expect(started(dir, 'ai-app')).toBe(false)
   })
-  it('is what both yogurt-mcp helpers look for, with the same words', () => {
-    for (const f of ['native/yogurt-mcp-relay/src/main.rs', 'native/yogurt-mcp/main.swift']) {
+  it('is what both noetaker-mcp helpers look for, with the same words', () => {
+    for (const f of ['native/noetaker-mcp-relay/src/main.rs', 'native/noetaker-mcp/main.swift']) {
       const src = readFileSync(join(__dirname, '..', f), 'utf8')
       expect(src).toContain(`"${QUIT_MARKER}"`)
       expect(src).toContain(`"${CLOSED}"`)

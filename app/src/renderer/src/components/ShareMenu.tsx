@@ -35,7 +35,7 @@ export function ShareMenu({ id, shown, status, hasEnhanced, beforeUse }: { id: s
     // the notes are still coming in: what is on screen is not whole, so nothing is copied
     if (what === 'notes' && writing) { say(t('Still generating your summary')); return }
     if (what === 'notes' && !await beforeUse()) { say(t("Couldn't save your latest changes. Try again before copying."), 'error'); return }
-    const r = await window.yogurt.share.copy(id, what, side)
+    const r = await window.noetaker.share.copy(id, what, side)
     say(r === 'failed' ? t("Couldn't copy. Try again.") : r === 'nothing' ? t('Nothing to copy yet') : what === 'notes' && fellBack ? t('Copied your notes') : t('Copied'),
       r === 'failed' ? 'error' : r === 'nothing' ? 'notice' : 'copied')
   }, [id, shown, status, hasEnhanced, beforeUse, say])
@@ -51,13 +51,13 @@ export function ShareMenu({ id, shown, status, hasEnhanced, beforeUse }: { id: s
     try {
       if (!await beforeUse() || (retry && !await flushOpenNotes())) { failed(t("Couldn't save your latest changes. Try again before exporting.")); return }
       if (retry && side === 'enhanced') {
-        const current = await window.yogurt.notes.get(id)
+        const current = await window.noetaker.notes.get(id)
         if (shareTarget(side, current.status, current.enhanced != null).writing) {
           failed(t('Still generating your summary'))
           return
         }
       }
-      const r = await window.yogurt.share.save(id, side)
+      const r = await window.noetaker.share.save(id, side)
       if (r === 'saved') say(fellBack ? t('Saved your notes') : t('Saved'), 'saved')
       else if (r === 'failed') failed(t("Couldn't save the file"))
     } catch { failed(t("Couldn't save the file")) }

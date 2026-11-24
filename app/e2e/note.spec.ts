@@ -12,8 +12,8 @@ const zoom = { bundleId: 'us.zoom.xos', name: 'zoom.us' }
 type Snap = { visible: boolean; view: { kind: string; meetingId: string } | null; notice: { title: string; body: string; meetingId: string } | null }
 
 async function launch(env: Record<string, string> = {}) {
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
-  const app = await electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData, ...env } })
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
+  const app = await electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData, ...env } })
   const page = await app.firstWindow()
   await expect(page.getByTestId('home')).toBeVisible()
   return { app, page, userData }
@@ -35,15 +35,15 @@ async function record(app: ElectronApplication, page: Page, primary: 'notes' | '
   await (await windowOf(app, '#prompt')).getByTestId('prompt-take-notes').click()
   await expect(page.getByTestId('note-state')).toHaveAttribute('data-state', 'recording')
   if (primary === 'transcript') await page.getByTestId('note-transcript-toggle').click()
-  return (await page.evaluate(() => window.yogurt.nav.current())).slice('/note/'.length)
+  return (await page.evaluate(() => window.noetaker.nav.current())).slice('/note/'.length)
 }
-const notesOf = (page: Page, id: string) => page.evaluate((id) => window.yogurt.notes.get(id), id) as Promise<NoteView>
+const notesOf = (page: Page, id: string) => page.evaluate((id) => window.noetaker.notes.get(id), id) as Promise<NoteView>
 /** the fake call's lines have been heard (both sides), so there is something to write up */
-const heard = (page: Page, id: string) => expect.poll(async () => (await page.evaluate((id) => window.yogurt.transcript.get(id), id)).length, { timeout: 30_000 }).toBeGreaterThanOrEqual(2)
+const heard = (page: Page, id: string) => expect.poll(async () => (await page.evaluate((id) => window.noetaker.transcript.get(id), id)).length, { timeout: 30_000 }).toBeGreaterThanOrEqual(2)
 
 test('Stop ends recording when its metadata cannot save, and Retry saves without stopping twice', async () => {
   const { app, page, userData } = await launch()
-  const db = new DatabaseSync(join(userData, 'yogurt.db'), { timeout: 5000 })
+  const db = new DatabaseSync(join(userData, 'noetaker.db'), { timeout: 5000 })
   try {
     const id = await record(app, page)
     await page.getByTestId('note-mine').fill('Remember to send the launch plan.')
@@ -54,17 +54,17 @@ test('Stop ends recording when its metadata cannot save, and Retry saves without
     await expect(page.getByTestId('note-stop-unsaved')).toBeVisible()
     await expect(page.getByTestId('note-state')).toHaveAttribute('data-state', 'stopped')
     await expect(page.getByTestId('note-stop')).toHaveCount(0)
-    const pending = await page.evaluate((id) => window.yogurt.meetings.get(id), id)
+    const pending = await page.evaluate((id) => window.noetaker.meetings.get(id), id)
     expect(pending).toMatchObject({ state: 'stopped', stopSavePending: true })
     expect(db.prepare('SELECT state, ended_at FROM meetings WHERE id = ?').get(id)).toMatchObject({ state: 'recording', ended_at: null })
     expect((await notesOf(page, id)).status).toBe('idle')
-    expect(await fake<Snap>(app, 'widget')).toMatchObject({ visible: false, notice: { title: 'Recording stopped. Open Yogurt to finish saving.', meetingId: id } })
+    expect(await fake<Snap>(app, 'widget')).toMatchObject({ visible: false, notice: { title: 'Recording stopped. Open Noe Taker to finish saving.', meetingId: id } })
     await page.getByTestId('note-menu-button').click()
     await expect(page.getByTestId('note-delete')).toBeDisabled()
     await expect(page.getByTestId('note-delete')).toContainText('Finish saving first')
     await page.keyboard.press('Escape')
-    expect(await page.evaluate((id) => window.yogurt.meetings.delete(id), id)).toBe('save-pending')
-    expect(await page.evaluate((id) => window.yogurt.meetings.trash(id), id)).toBe('save-pending')
+    expect(await page.evaluate((id) => window.noetaker.meetings.delete(id), id)).toBe('save-pending')
+    expect(await page.evaluate((id) => window.noetaker.meetings.trash(id), id)).toBe('save-pending')
     await page.getByTestId('nav-home').click()
     await page.getByTestId('past-note').hover()
     await page.getByTestId('past-note-more').click()
@@ -80,25 +80,25 @@ test('Stop ends recording when its metadata cannot save, and Retry saves without
     await page.getByTestId('note-stop-retry').click()
     await expect(page.getByTestId('note-stop-unsaved')).toBeVisible()
     await page.waitForTimeout(4200)
-    expect(await fake<Snap>(app, 'widget')).toMatchObject({ visible: false, notice: { title: 'Recording stopped. Open Yogurt to finish saving.', meetingId: id } })
+    expect(await fake<Snap>(app, 'widget')).toMatchObject({ visible: false, notice: { title: 'Recording stopped. Open Noe Taker to finish saving.', meetingId: id } })
     db.exec('DROP TRIGGER test_stop_write_failure')
     await page.getByTestId('note-stop-retry').click()
     await expect(page.getByTestId('note-stop-unsaved')).toHaveCount(0)
     await expect(page.getByTestId('note-transcript-toggle')).toBeFocused()
     expect(db.prepare('SELECT ended_at FROM meetings WHERE id = ?').get(id)).toMatchObject({ ended_at: pending!.endedAt })
     // Saving the pending timestamp clears its current warning without sending a second completion notice.
-    expect(await fake<Snap>(app, 'widget')).toMatchObject({ visible: false, view: { note: null }, notice: { title: 'Recording stopped. Open Yogurt to finish saving.', meetingId: id } })
+    expect(await fake<Snap>(app, 'widget')).toMatchObject({ visible: false, view: { note: null }, notice: { title: 'Recording stopped. Open Noe Taker to finish saving.', meetingId: id } })
     await expect.poll(async () => (await notesOf(page, id)).status).toBe('done')
   } finally { db.close(); await app.close() }
 })
 const stop = async (page: Page) => { await page.getByTestId('note-stop').click(); await expect(page.getByTestId('note-summary-tab')).toHaveAttribute('aria-selected', 'true') }
 
 test('streaming a summary keeps existing blocks at full opacity as nested lists grow', async () => {
-  const { app, page } = await launch({ YOGURT_FAKE_LLM_MS: '100' })
+  const { app, page } = await launch({ NOETAKER_FAKE_LLM_MS: '100' })
   try {
     const id = await fake<string>(app, 'bigMeeting', 20)
     await fake(app, 'go', `/note/${id}`)
-    await page.evaluate(id => window.yogurt.notes.writeAgain(id), id)
+    await page.evaluate(id => window.noetaker.notes.writeAgain(id), id)
     await page.getByTestId('note-summary-tab').click()
     await expect(page.getByTestId('note-enhanced-editor').locator('h2')).toBeVisible()
     const dimmed = page.getByTestId('note-enhanced-editor').evaluate(editor => new Promise<string[]>((resolve) => {
@@ -206,7 +206,7 @@ test('the notes are written with the names from the call', async () => {
   try {
     const id = await record(app, page)
     // the fixture's second line of the other side, at 13.3 s, is Bo Park's
-    await expect.poll(async () => (await page.evaluate((id) => window.yogurt.transcript.get(id), id)).some((l) => l.text.startsWith('She will send')), { timeout: 40_000 }).toBe(true)
+    await expect.poll(async () => (await page.evaluate((id) => window.noetaker.transcript.get(id), id)).some((l) => l.text.startsWith('She will send')), { timeout: 40_000 }).toBe(true)
     await stop(page)
     const enhanced = page.getByTestId('note-enhanced')
     await expect(enhanced).toHaveAttribute('data-status', 'done', { timeout: 60_000 })
@@ -267,7 +267,7 @@ test('switching to another note within a second of typing saves the text to the 
     const b = await record(app, page)
     await fake(app, 'go', `/note/${a}`)
     await expect(page.getByTestId('note-title')).toBeVisible()
-    await expect.poll(() => page.evaluate(() => window.yogurt.nav.current())).toBe(`/note/${a}`)
+    await expect.poll(() => page.evaluate(() => window.noetaker.nav.current())).toBe(`/note/${a}`)
     await selectNoteVersion(page, 'mine').catch(() => {})
     await page.getByTestId('note-mine').click({ position: { x: 24, y: 12 } })
     await page.keyboard.type('only for the first meeting')
@@ -308,7 +308,7 @@ test('edits to the enhanced notes stay through flipping to My notes and back, an
 for (const small of [false, true]) {
   test(`a second meeting started while the first one's notes are written keeps recording; the first one's notes finish${small ? ' after it (16 GB Mac)' : ''}`, async () => {
     // slow notes, so the second meeting starts while they are being written
-    const { app, page } = await launch({ YOGURT_FAKE_LLM_MS: '250', ...(small ? { YOGURT_FAKE_SMALL_MAC: '1' } : {}) })
+    const { app, page } = await launch({ NOETAKER_FAKE_LLM_MS: '250', ...(small ? { NOETAKER_FAKE_SMALL_MAC: '1' } : {}) })
     try {
       const a = await record(app, page)
       await heard(page, a)
@@ -382,7 +382,7 @@ test('Stop in the note header stops the meeting and hides the widget', async () 
     const id = await record(app, page)
     await page.getByTestId('note-stop').click()
     await expect(page.getByTestId('note-stop')).toHaveCount(0)
-    await expect.poll(async () => (await page.evaluate((id) => window.yogurt.meetings.get(id), id))?.state).not.toBe('recording')
+    await expect.poll(async () => (await page.evaluate((id) => window.noetaker.meetings.get(id), id))?.state).not.toBe('recording')
     expect((await fake<Snap>(app, 'widget')).view).toMatchObject({ kind: 'captured', meetingId: id })
   } finally { await app.close() }
 })
@@ -396,7 +396,7 @@ test('a call with no event gets a title from its notes; one they typed is kept',
     await stop(page)
     await expect(page.getByTestId('note-enhanced')).toHaveAttribute('data-status', 'done', { timeout: 60_000 })
     await expect(page.getByTestId('note-title')).toHaveText('Launch plan and release notes', { timeout: 10_000 })
-    expect((await page.evaluate((id) => window.yogurt.meetings.get(id), id))!.title).toBe('Launch plan and release notes')
+    expect((await page.evaluate((id) => window.noetaker.meetings.get(id), id))!.title).toBe('Launch plan and release notes')
     // the notes never carry the title
     expect((await notesOf(page, id)).enhanced).not.toContain('Launch plan and release notes')
 
@@ -432,7 +432,7 @@ test('clicking the title renames the note; Escape keeps the old one; home and th
     await page.getByTestId('note-title-input').fill('  Budget   plan ')
     await page.getByTestId('note-title-input').blur()
     await expect(page.getByTestId('note-title')).toHaveText('Budget plan')
-    expect((await page.evaluate((id) => window.yogurt.meetings.get(id), id))!.title).toBe('Budget plan')
+    expect((await page.evaluate((id) => window.noetaker.meetings.get(id), id))!.title).toBe('Budget plan')
     await fake(app, 'go', '')
     await expect(page.getByTestId('past-note').first()).toContainText('Budget plan')
   } finally { await app.close() }
@@ -446,8 +446,8 @@ test('delete from the note menu: not while it records; to the Trash with Undo; d
     await page.getByTestId('note-menu-button').click()
     await expect(page.getByTestId('note-delete')).toBeDisabled()
     // main refuses too, whatever a page asks
-    expect(await page.evaluate((id) => window.yogurt.meetings.delete(id), id)).toBe('recording')
-    expect(await page.evaluate((id) => window.yogurt.meetings.trash(id), id)).toBe('recording')
+    expect(await page.evaluate((id) => window.noetaker.meetings.delete(id), id)).toBe('recording')
+    expect(await page.evaluate((id) => window.noetaker.meetings.trash(id), id)).toBe('recording')
     await page.keyboard.press('Escape')
     await stop(page)
     // while its notes are still being written: they stop with it
@@ -465,7 +465,7 @@ test('delete from the note menu: not while it records; to the Trash with Undo; d
     await page.getByTestId('trash-undo').click()
     await expect(page.getByTestId('note')).toBeVisible()
     await expect(page.getByTestId('note-trashed')).toHaveCount(0)
-    expect((await page.evaluate((id) => window.yogurt.meetings.get(id), id))?.trashedAt).toBeUndefined()
+    expect((await page.evaluate((id) => window.noetaker.meetings.get(id), id))?.trashedAt).toBeUndefined()
     await page.getByTestId('note-menu-button').click()
     await page.getByTestId('note-delete').click()
     await expect(page.getByTestId('home')).toBeVisible()
@@ -479,17 +479,17 @@ test('delete from the note menu: not while it records; to the Trash with Undo; d
     await page.keyboard.press('Enter')
     await expect(page.getByTestId('delete-confirm')).toHaveCount(0)
     await expect(page.getByTestId('trash-delete')).toBeFocused()
-    expect(await page.evaluate((id) => window.yogurt.meetings.get(id), id)).toBeDefined()
+    expect(await page.evaluate((id) => window.noetaker.meetings.get(id), id)).toBeDefined()
     await page.getByTestId('trash-delete').click()
     await page.getByTestId('delete-yes').click()
     await expect(page.getByTestId('trash-none')).toBeVisible()
-    expect(await page.evaluate((id) => window.yogurt.meetings.get(id), id)).toBeUndefined()
-    expect(await page.evaluate((id) => window.yogurt.transcript.get(id), id)).toEqual([])
+    expect(await page.evaluate((id) => window.noetaker.meetings.get(id), id)).toBeUndefined()
+    expect(await page.evaluate((id) => window.noetaker.transcript.get(id), id)).toEqual([])
     await expect.poll(() => existsSync(dir)).toBe(false)
     await page.waitForTimeout(1500)
     // nothing came back after: no notes job wrote into it, no folder made again
     expect(existsSync(dir)).toBe(false)
-    expect(await page.evaluate(() => window.yogurt.search.query('Tuesday'))).toEqual([])
+    expect(await page.evaluate(() => window.noetaker.search.query('Tuesday'))).toEqual([])
   } finally { await app.close() }
 })
 
@@ -518,7 +518,7 @@ test('odd messages from a page are ignored: nothing saved for them, and main nev
   const { app, page, userData } = await launch()
   try {
     await page.evaluate(() => {
-      const y = window.yogurt as unknown as Record<string, Record<string, (...a: unknown[]) => unknown>>
+      const y = window.noetaker as unknown as Record<string, Record<string, (...a: unknown[]) => unknown>>
       y.notes.setMine(42, { md: 1 }); y.notes.setMine('no-such-meeting', 'hello'); y.notes.setEnhanced(null, 7)
       y.meetings.stop({}); y.chat.stop(5)
       void y.meetings.rename(1, 2); void y.meetings.delete('../..')

@@ -1,4 +1,4 @@
-# yogurt-system (app/native/yogurt-system): call detection on Windows and Linux.
+# noetaker-system (app/native/noetaker-system): call detection on Windows and Linux.
 # Unit tests for the parsing, then smoke tests on each OS: a fake mic and recorders on Linux, fake privacy
 # entries and a window on Windows. The built helpers are kept as artifacts for packaging.
 name: native-sys
@@ -6,9 +6,9 @@ name: native-sys
 on:
   push:
     branches: [main]
-    paths: ['app/native/yogurt-system/**', '.github/workflows/native-sys.yml']
+    paths: ['app/native/noetaker-system/**', '.github/workflows/native-sys.yml']
   pull_request:
-    paths: ['app/native/yogurt-system/**', '.github/workflows/native-sys.yml']
+    paths: ['app/native/noetaker-system/**', '.github/workflows/native-sys.yml']
   workflow_dispatch:
 
 permissions:
@@ -16,7 +16,7 @@ permissions:
 
 defaults:
   run:
-    working-directory: app/native/yogurt-system
+    working-directory: app/native/noetaker-system
 
 concurrency:
   group: native-sys-${{ github.ref }}
@@ -41,7 +41,7 @@ jobs:
         if: always()
         with:
           name: cargo-lock
-          path: app/native/yogurt-system/Cargo.lock
+          path: app/native/noetaker-system/Cargo.lock
 
   linux:
     needs: lock
@@ -52,20 +52,20 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: cargo-lock
-          path: app/native/yogurt-system
+          path: app/native/noetaker-system
       - name: Install PulseAudio, an X server and a window manager
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libpulse-dev pulseaudio pulseaudio-utils xvfb openbox xterm
       - run: cargo test --locked
       - run: cargo build --release --locked
-      - run: bash smoke/linux.sh target/release/yogurt-system
+      - run: bash smoke/linux.sh target/release/noetaker-system
       - name: Linked libraries (glibc and libpulse only)
-        run: ldd target/release/yogurt-system && objdump -T target/release/yogurt-system | grep -o 'GLIBC_[0-9.]*' | sort -uV | tail -1
+        run: ldd target/release/noetaker-system && objdump -T target/release/noetaker-system | grep -o 'GLIBC_[0-9.]*' | sort -uV | tail -1
       - uses: actions/upload-artifact@v4
         with:
-          name: yogurt-system-linux-x86_64
-          path: app/native/yogurt-system/target/release/yogurt-system
+          name: noetaker-system-linux-x86_64
+          path: app/native/noetaker-system/target/release/noetaker-system
 
   windows:
     needs: lock
@@ -73,17 +73,17 @@ jobs:
     defaults:
       run:
         shell: pwsh
-        working-directory: app/native/yogurt-system
+        working-directory: app/native/noetaker-system
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: cargo-lock
-          path: app/native/yogurt-system
+          path: app/native/noetaker-system
       - run: cargo test --locked
       - run: cargo build --release --locked
-      - run: ./smoke/windows.ps1 target/release/yogurt-system.exe
+      - run: ./smoke/windows.ps1 target/release/noetaker-system.exe
       - uses: actions/upload-artifact@v4
         with:
-          name: yogurt-system-windows-x64
-          path: app/native/yogurt-system/target/release/yogurt-system.exe
+          name: noetaker-system-windows-x64
+          path: app/native/noetaker-system/target/release/noetaker-system.exe

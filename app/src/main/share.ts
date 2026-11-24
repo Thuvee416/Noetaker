@@ -50,7 +50,7 @@ export function hookShare(d: { store: Pick<Store, 'meeting' | 'notes' | 'segment
     const m = typeof id === 'string' ? d.store.meeting(id) : undefined
     if (!m) return 'failed'
     // tests name the file themselves; people get the Mac's save panel
-    let path: string | undefined = isFake() ? process.env.YOGURT_EXPORT_PATH : undefined
+    let path: string | undefined = isFake() ? process.env.NOETAKER_EXPORT_PATH : undefined
     if (!path) {
       const opts = { title: t('Export Markdown'), defaultPath: join(app.getPath('documents'), fileNameFor(m.title, m.startedAt)), filters: [{ name: 'Markdown', extensions: ['md'] }] }
       const win = d.window()
@@ -61,7 +61,7 @@ export function hookShare(d: { store: Pick<Store, 'meeting' | 'notes' | 'segment
     let staging: string | undefined
     try {
       // Stage on the destination's filesystem: a failed write must not truncate an earlier export.
-      staging = await mkdtemp(join(dirname(path), '.yogurt-export-'))
+      staging = await mkdtemp(join(dirname(path), '.noetaker-export-'))
       const file = join(staging, 'notes.md')
       await writeFile(file, toMarkdownFile(m, notesOf(d.store, m.id, side).md, d.store.segments(m.id), d.includeRecordingCredit()), 'utf8')
       await rename(file, path)

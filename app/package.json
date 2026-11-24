@@ -1,5 +1,5 @@
 {
-  "name": "@yogurt/app",
+  "name": "@noetaker/app",
   "version": "0.3.74",
   "private": true,
   "type": "module",
@@ -41,7 +41,7 @@
     "@types/yauzl": "3.4.0",
     "@types/yazl": "3.3.1",
     "@vitejs/plugin-react": "6.1.2",
-    "@yogurt/picker": "workspace:^",
+    "@noetaker/picker": "workspace:^",
     "electron": "44.9.1",
     "electron-builder": "26.17.0",
     "electron-vite": "6.0.0",
@@ -55,9 +55,9 @@
     "yauzl": "3.4.0",
     "yazl": "3.3.1"
   },
-  "productName": "Yogurt",
-  "desktopName": "yogurt.desktop",
+  "productName": "Noe Taker",
+  "desktopName": "noetaker.desktop",
   "description": "Free, private, open-source AI meeting notes for Mac, Windows and Linux.",
-  "author": "Frigade",
+  "author": "Noe Taker",
   "license": "MIT"
 }

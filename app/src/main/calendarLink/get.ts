@@ -1,6 +1,6 @@
 /**
  * The one request a calendar link makes: the person's own calendar address, straight from this computer to their
- * calendar provider (Google, Outlook, …). No Yogurt server sits in between. A work calendar with years of history is
+ * calendar provider (Google, Outlook, …). No Noe Taker server sits in between. A work calendar with years of history is
  * tens of megabytes (#146), so there's room for that, but not for a download that never ends: 64 MB, one minute.
  */
 export const MAX_BYTES = 64 * 2 ** 20

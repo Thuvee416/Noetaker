@@ -2,7 +2,7 @@ import { PERMISSION_KINDS } from '../main/permissions'
 import type { PermissionKind } from './types'
 
 /**
- * What Yogurt can do on each computer, in one place, so main and the windows hide the same things.
+ * What Noe Taker can do on each computer, in one place, so main and the windows hide the same things.
  * A Mac has everything, as it always had. Windows and Linux turn features on here as each one gets its own helper.
  */
 export type Capabilities = {
@@ -18,7 +18,7 @@ export type Capabilities = {
    */
   permissionPrompts: boolean
   /**
-   * Music and Spotify pause while a meeting records (AppleScript through yogurt-mac). Windows and Linux have no
+   * Music and Spotify pause while a meeting records (AppleScript through noetaker-mac). Windows and Linux have no
    * helper for it yet (their media sessions, MPRIS): nothing is paused there
    */
   mediaPause: boolean
@@ -26,7 +26,7 @@ export type Capabilities = {
 
 export function capabilities(platform: string): Capabilities {
   const mac = platform === 'darwin'
-  // Linux reads call names through AT-SPI, Windows through UI Automation (yogurt-system call-watch), the same WatchLine JSON as the Mac
+  // Linux reads call names through AT-SPI, Windows through UI Automation (noetaker-system call-watch), the same WatchLine JSON as the Mac
   return { calendar: true, calendarLink: !mac, callNames: mac || platform === 'linux' || platform === 'win32', permissionPrompts: mac, mediaPause: mac }
 }
 
@@ -38,20 +38,20 @@ export function settingsPage(platform: string, kind: PermissionKind): boolean {
   return platform === 'darwin' || (platform === 'win32' && WINDOWS_PAGES.has(kind))
 }
 
-/** The computer Yogurt runs on. Only fake mode may pretend to be another one (YOGURT_FAKE_PLATFORM), so Mac tests can try the others' screens. */
+/** The computer Noe Taker runs on. Only fake mode may pretend to be another one (NOETAKER_FAKE_PLATFORM), so Mac tests can try the others' screens. */
 export function platformOf(real: string, env: Record<string, string | undefined>): string {
-  const fake = env.YOGURT_FAKE === '1' ? env.YOGURT_FAKE_PLATFORM : undefined
+  const fake = env.NOETAKER_FAKE === '1' ? env.NOETAKER_FAKE_PLATFORM : undefined
   return fake === 'darwin' || fake === 'win32' || fake === 'linux' ? fake : real
 }
 
 export type HelperKind = 'system' | 'audio' | 'mcp' | 'whisper'
-/** The helper programs in resources/bin. The Mac's system helper is yogurt-mac; on Windows and Linux it is yogurt-system. */
+/** The helper programs in resources/bin. The Mac's system helper is noetaker-mac; on Windows and Linux it is noetaker-system. */
 export function helperFile(kind: HelperKind, platform: string): string {
-  const base = { system: platform === 'darwin' ? 'yogurt-mac' : 'yogurt-system', audio: 'yogurt-audio', mcp: 'yogurt-mcp', whisper: 'whisper-server' }[kind]
+  const base = { system: platform === 'darwin' ? 'noetaker-mac' : 'noetaker-system', audio: 'noetaker-audio', mcp: 'noetaker-mcp', whisper: 'whisper-server' }[kind]
   return platform === 'win32' ? `${base}.exe` : base
 }
 
-/** Which helper lists the mics: yogurt-mac on a Mac; on Windows and Linux the recorder itself (yogurt-audio mic-devices, same JSON) */
+/** Which helper lists the mics: noetaker-mac on a Mac; on Windows and Linux the recorder itself (noetaker-audio mic-devices, same JSON) */
 export const micListHelper = (platform: string): HelperKind => (platform === 'darwin' ? 'system' : 'audio')
 
 /** The permissions this computer has: no calendar or names from calls means those are never asked for */

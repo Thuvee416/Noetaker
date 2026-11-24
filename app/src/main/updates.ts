@@ -34,7 +34,7 @@ export function updatesOn(o: { packaged: boolean; fake: boolean; profile: boolea
 
 /** preview.yml marks a build made by hand (not for a release) in the packaged package.json */
 export const isPreviewBuild = (packageJson: string): boolean => {
-  try { return JSON.parse(packageJson).yogurtPreview === true } catch { return false }
+  try { return JSON.parse(packageJson).noetakerPreview === true } catch { return false }
 }
 
 let updater: AppUpdater | undefined
@@ -47,7 +47,7 @@ export function finishQuit(): void {
 }
 
 /**
- * Settings → Updates: the version, what the updater is doing, the on/off switch, and Restart Yogurt once a version is ready.
+ * Settings → Updates: the version, what the updater is doing, the on/off switch, and Restart Noe Taker once a version is ready.
  * available: false in a build that never updates (see updatesOn); Settings then shows only the version.
  * DOES NOT WORK WHILE RECORDING.
  */
@@ -71,7 +71,7 @@ export async function hookUpdates(d: { file: string; available: boolean; recordi
   ipcMain.handle('updates:set', (_e, on: unknown) => {
     if (typeof on !== 'boolean') return status()
     updateSettings(d.file, { autoUpdate: on ? undefined : false })
-    // off means off: a version that already downloaded doesn't install on quit either (Restart Yogurt still can)
+    // off means off: a version that already downloaded doesn't install on quit either (Restart Noe Taker still can)
     if (updater) updater.autoInstallOnAppQuit = on
     if (on) check()
     return status()
@@ -84,7 +84,7 @@ export async function hookUpdates(d: { file: string; available: boolean; recordi
   })
   ipcMain.handle('updates:restart', () => {
     if (state !== 'ready' || d.recording()) return false
-    // fake mode: as if Yogurt came back on the new version
+    // fake mode: as if Noe Taker came back on the new version
     if (d.fake) {
       d.fake.restarted()
       runningVersion = d.fake.version
@@ -118,7 +118,7 @@ export async function hookUpdates(d: { file: string; available: boolean; recordi
   updater.on('update-downloaded', (info) => {
     set('ready', info.version)
     if (!Notification.isSupported() || d.quiet?.()) return
-    new Notification({ title: t('Yogurt {version} is ready', { version: info.version }), body: t('It installs the next time you quit Yogurt.') }).show()
+    new Notification({ title: t('Noe Taker {version} is ready', { version: info.version }), body: t('It installs the next time you quit Noe Taker.') }).show()
   })
   updater.on('error', (err) => {
     console.warn('checking for a new version failed', err.message)

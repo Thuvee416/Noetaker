@@ -12,13 +12,13 @@ export function NotesModelWait({ children, downloading }: { children: ReactNode;
   const [retrying, setRetrying] = useState(false)
   const [retryFailed, setRetryFailed] = useState(false)
   useEffect(() => {
-    const off = window.yogurt.setup.onState((s) => { setSetup(s); if (!s.notesError) setRetryFailed(false) })
-    void window.yogurt.setup.state().then((s) => setSetup((current) => current ?? s))
+    const off = window.noetaker.setup.onState((s) => { setSetup(s); if (!s.notesError) setRetryFailed(false) })
+    void window.noetaker.setup.state().then((s) => setSetup((current) => current ?? s))
     return off
   }, [])
   const retry = async () => {
     setRetrying(true); setRetryFailed(false)
-    try { await window.yogurt.setup.retry() } catch { setRetryFailed(true) }
+    try { await window.noetaker.setup.retry() } catch { setRetryFailed(true) }
     finally { setRetrying(false) }
   }
   if (!setup?.notesError) {
@@ -32,7 +32,7 @@ export function NotesModelWait({ children, downloading }: { children: ReactNode;
       <button data-testid="notes-model-retry" onClick={() => void retry()} disabled={retrying} className="text-action">
         {retrying ? t('Retrying…') : t('Retry download')}
       </button>
-      {retryFailed && <p className="text-danger">{t("Yogurt couldn't restart the download.")}</p>}
+      {retryFailed && <p className="text-danger">{t("Noe Taker couldn't restart the download.")}</p>}
     </div>
   )
 }

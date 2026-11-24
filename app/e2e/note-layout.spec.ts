@@ -9,8 +9,8 @@ const main = join(import.meta.dirname, '../out/main/index.js')
 const zoom = { bundleId: 'us.zoom.xos', name: 'zoom.us' }
 
 async function launch(env: Record<string, string> = {}) {
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
-  const app = await electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData, ...env } })
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
+  const app = await electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData, ...env } })
   const page = await app.firstWindow()
   await expect(page.getByTestId('home')).toBeVisible()
   return { app, page }
@@ -40,7 +40,7 @@ const putClipboardBack = (app: ElectronApplication) => app.evaluate(async ({ cli
   const parts = Object.fromEntries(Object.entries(kept).filter(([, v]) => v)) as Record<string, string>
   if (Object.keys(parts).length) await clipboard.write([new ClipboardItem(parts)]); else clipboard.clear()
 })
-const notesOf = (page: Page, id: string) => page.evaluate((id) => window.yogurt.notes.get(id), id) as Promise<NoteView>
+const notesOf = (page: Page, id: string) => page.evaluate((id) => window.noetaker.notes.get(id), id) as Promise<NoteView>
 
 /** a meeting recorded, heard and written up: the note is open with enhanced notes done; its id */
 async function finished(app: ElectronApplication, page: Page): Promise<string> {
@@ -53,7 +53,7 @@ async function finished(app: ElectronApplication, page: Page): Promise<string> {
   await page.getByTestId('note-stop').click()
   await page.getByTestId('note-summary-tab').click()
   await expect(page.getByTestId('note-enhanced')).toHaveAttribute('data-status', 'done', { timeout: 60_000 })
-  return (await page.evaluate(() => window.yogurt.nav.current())).slice('/note/'.length)
+  return (await page.evaluate(() => window.noetaker.nav.current())).slice('/note/'.length)
 }
 
 test('the workspace keeps Meetings and Back navigation, including a return from Settings', async () => {
@@ -79,7 +79,7 @@ test('the workspace keeps Meetings and Back navigation, including a return from 
     await expect(page.getByTestId('nav-back')).toBeVisible()
     await page.getByTestId('nav-home').click()
     await expect(page.getByTestId('home')).toBeVisible()
-    await expect.poll(() => page.evaluate(() => window.yogurt.nav.current())).toBe('')
+    await expect.poll(() => page.evaluate(() => window.noetaker.nav.current())).toBe('')
   } finally { await app.close() }
 })
 
@@ -124,7 +124,7 @@ test('My notes and Summary tabs switch versions; summary actions regenerate', as
 
 test('people added and removed by hand are saved, and the notes are written again with them', async () => {
   // no names from the fake call, so the meeting starts with nobody but the person
-  const { app, page } = await launch({ YOGURT_FAKE_AX: 'denied' })
+  const { app, page } = await launch({ NOETAKER_FAKE_AX: 'denied' })
   try {
     const id = await finished(app, page)
     const editor = page.getByTestId('note-enhanced-editor')
@@ -154,19 +154,19 @@ test('people added and removed by hand are saved, and the notes are written agai
     await expect(card.getByTestId('people-remove')).toHaveCSS('outline-style', 'none')
     await expect(card.getByTestId('people-remove')).toHaveCSS('opacity', '1')
     await expect(page.getByTestId('note-attendees-summary')).toHaveText('Maya')
-    expect((await page.evaluate((id) => window.yogurt.meetings.get(id), id))?.attendees).toEqual([{ name: 'Maya Chen', email: 'maya@example.com' }])
+    expect((await page.evaluate((id) => window.noetaker.meetings.get(id), id))?.attendees).toEqual([{ name: 'Maya Chen', email: 'maya@example.com' }])
     await expect(editor).toContainText('With Maya Chen.', { timeout: 30_000 })
     const attendee = card.getByTestId('people-row').filter({ has: page.getByTestId('people-name') })
     await attendee.hover()
     await attendee.getByTestId('people-remove').click()
     await expect(card.getByTestId('people-row')).toHaveCount(1)
-    await expect.poll(async () => (await page.evaluate(id => window.yogurt.meetings.get(id), id))?.attendees).toEqual([])
+    await expect.poll(async () => (await page.evaluate(id => window.noetaker.meetings.get(id), id))?.attendees).toEqual([])
     await expect(editor).not.toContainText('With Maya Chen.', { timeout: 30_000 })
     await expect(page.getByTestId('note-people-changed')).toHaveCount(0)
   } finally { await app.close() }
 })
 
-test('people changed on edited notes: they are kept, and Yogurt offers to write them again', async () => {
+test('people changed on edited notes: they are kept, and Noe Taker offers to write them again', async () => {
   const { app, page } = await launch()
   try {
     const id = await finished(app, page)
@@ -195,7 +195,7 @@ test('linking an event updates the date chip, people chip and Summary separately
     await expect(page.getByTestId('note-attendees-summary')).toHaveText('Ann, Bo')
     await page.getByTestId('note-attendees').click()
     await expect(page.getByTestId('people-row')).toHaveCount(3)
-    expect((await page.evaluate((id) => window.yogurt.meetings.get(id), id))?.eventId).toMatch(/^fake-standup:/)
+    expect((await page.evaluate((id) => window.noetaker.meetings.get(id), id))?.eventId).toMatch(/^fake-standup:/)
     await expect(page.getByTestId('note-enhanced-editor')).toContainText('With Ann Lee, Bo Park.', { timeout: 30_000 })
   } finally { await app.close() }
 })

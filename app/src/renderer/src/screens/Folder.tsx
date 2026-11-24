@@ -32,8 +32,8 @@ export function Folder({ folder, open, onUploaded }: { folder: FolderRow; open: 
   const newNote = async () => {
     if (createPending.current) return
     createPending.current = true; setCreating(true)
-    try { open(await window.yogurt.meetings.createFolderNote(folder.id)) }
-    catch { toasts.add({ title: t("Yogurt couldn't start the notes. Try again in a moment.") }) }
+    try { open(await window.noetaker.meetings.createFolderNote(folder.id)) }
+    catch { toasts.add({ title: t("Noe Taker couldn't start the notes. Try again in a moment.") }) }
     finally { createPending.current = false; setCreating(false) }
   }
   const past = usePastNotes(folder.id)
@@ -72,7 +72,7 @@ function FolderTitle({ folder }: { folder: FolderRow }) {
   }
   const done = () => {
     setEditing(false)
-    if (!cancelled.current && draft.trim() && draft.trim() !== folder.name) void window.yogurt.folders.rename(folder.id, draft)
+    if (!cancelled.current && draft.trim() && draft.trim() !== folder.name) void window.noetaker.folders.rename(folder.id, draft)
   }
   return <h1><input data-testid="folder-title-input" aria-label={t('Folder name')} autoFocus value={draft} maxLength={200}
     onFocus={(e) => e.currentTarget.select()} onChange={(e) => setDraft(e.target.value)} onBlur={done}

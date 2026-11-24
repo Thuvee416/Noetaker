@@ -15,19 +15,19 @@ if (!model || !existsSync(model)) throw new Error('Pass a .gguf model path')
 const CONTEXT = 32_768, MIN_CONTEXT = 8192
 const STEP_MS = { probe: 120_000, load: 600_000, chat: 600_000 }
 
-const profile = mkdtempSync(join(tmpdir(), 'yogurt-engine-model-'))
-app.setName('Yogurt Engine Model Smoke')
+const profile = mkdtempSync(join(tmpdir(), 'noetaker-engine-model-'))
+app.setName('Noe Taker Engine Model Smoke')
 app.setPath('userData', profile)
 
 app.whenReady().then(async () => {
   // Linux: the allocator shim (#32), next to an installed app.asar or in this commit's resources/bin, preloaded as the app does
   const shim = process.platform === 'linux'
-    ? [join(dirname(resolve(archive)), 'bin'), join(resolve(archive), 'resources', 'bin')].map((d) => join(d, 'libyogurt-bigalloc.so')).find(existsSync)
+    ? [join(dirname(resolve(archive)), 'bin'), join(resolve(archive), 'resources', 'bin')].map((d) => join(d, 'libnoetaker-bigalloc.so')).find(existsSync)
     : undefined
-  if (process.platform === 'linux' && !shim) throw new Error('libyogurt-bigalloc.so was not found next to the app')
-  const env = { ...(shim ? { LD_PRELOAD: shim } : {}), ...(gpuOff ? { YOGURT_ENGINE_GPU: 'off' } : {}) }
+  if (process.platform === 'linux' && !shim) throw new Error('libnoetaker-bigalloc.so was not found next to the app')
+  const env = { ...(shim ? { LD_PRELOAD: shim } : {}), ...(gpuOff ? { NOETAKER_ENGINE_GPU: 'off' } : {}) }
   const child = utilityProcess.fork(join(resolve(archive), 'out/main/engine.js'), [], {
-    serviceName: 'Yogurt Engine Model Smoke', stdio: 'pipe', ...(Object.keys(env).length ? { env: { ...process.env, ...env } } : {}),
+    serviceName: 'Noe Taker Engine Model Smoke', stdio: 'pipe', ...(Object.keys(env).length ? { env: { ...process.env, ...env } } : {}),
   })
   child.stdout.on('data', (c) => process.stdout.write(`[engine] ${c}`))
   child.stderr.on('data', (c) => process.stderr.write(`[engine] ${c}`))

@@ -20,19 +20,19 @@ export function NotesSetup({ go }: { go: (route: string) => void }) {
       if (!state.notesError && !state.notesUpgradeError) setRetryFailed(false)
       if (!notesDownloadVisible(state)) { setOpen(false); setSkipFailed(false) }
     }
-    const off = window.yogurt.setup.onState(update)
-    void window.yogurt.setup.state().then(state => { if (active && !current) update(state) })
+    const off = window.noetaker.setup.onState(update)
+    void window.noetaker.setup.state().then(state => { if (active && !current) update(state) })
     return () => { active = false; off() }
   }, [])
   const retry = async () => {
     setRetrying(true); setRetryFailed(false)
-    try { await window.yogurt.setup.retry() } catch { setRetryFailed(true) }
+    try { await window.noetaker.setup.retry() } catch { setRetryFailed(true) }
     finally { setRetrying(false) }
   }
   const skip = async () => {
     setSkipFailed(false)
     try {
-      await window.yogurt.setup.skipUpgrade()
+      await window.noetaker.setup.skipUpgrade()
       const id = toasts.add({
         title: t('AI upgrade skipped'), timeout: 8000,
         data: { testId: 'notes-skipped-toast' },
@@ -77,8 +77,8 @@ export function NotesSetup({ go }: { go: (route: string) => void }) {
                 {upgrading && <button data-testid="notes-setup-skip" className="text-action" disabled={setup.notesUpgradeChanging} onClick={() => void skip()}>{t('Skip')}</button>}
               </div>}
             </div>
-            {retryFailed && <p role="alert">{t("Yogurt couldn't restart the download.")}</p>}
-            {skipFailed && <p role="alert">{t("Yogurt couldn't change the notes model.")}</p>}
+            {retryFailed && <p role="alert">{t("Noe Taker couldn't restart the download.")}</p>}
+            {skipFailed && <p role="alert">{t("Noe Taker couldn't change the notes model.")}</p>}
           </Popover.Popup>
         </Popover.Positioner>
       </Popover.Portal>

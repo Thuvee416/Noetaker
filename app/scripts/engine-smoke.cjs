@@ -7,16 +7,16 @@ const { dirname, join, resolve } = require('node:path')
 
 const archive = process.argv[2]
 if (!archive || !existsSync(archive)) throw new Error('Pass the packaged app.asar path')
-const profile = mkdtempSync(join(tmpdir(), 'yogurt-engine-smoke-'))
-app.setName('Yogurt Engine Smoke')
+const profile = mkdtempSync(join(tmpdir(), 'noetaker-engine-smoke-'))
+app.setName('Noe Taker Engine Smoke')
 app.setPath('userData', profile)
 
 app.whenReady().then(() => {
   // Linux: the shipped allocator shim (#32), preloaded the way src/main/engine.ts does it
-  const shim = process.platform === 'linux' ? join(dirname(resolve(archive)), 'bin', 'libyogurt-bigalloc.so') : undefined
+  const shim = process.platform === 'linux' ? join(dirname(resolve(archive)), 'bin', 'libnoetaker-bigalloc.so') : undefined
   if (shim && !existsSync(shim)) throw new Error(`${shim} is not in the package`)
   const env = shim ? { env: { ...process.env, LD_PRELOAD: shim } } : {}
-  const child = utilityProcess.fork(join(resolve(archive), 'out/main/engine.js'), [], { serviceName: 'Yogurt Engine Smoke', stdio: 'pipe', ...env })
+  const child = utilityProcess.fork(join(resolve(archive), 'out/main/engine.js'), [], { serviceName: 'Noe Taker Engine Smoke', stdio: 'pipe', ...env })
   let stderr = '', settled = false
   child.stderr.on('data', (chunk) => { stderr = (stderr + chunk.toString()).slice(-16_384) })
   child.stdout.resume()

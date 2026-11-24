@@ -8,8 +8,8 @@ import { backgroundPixel } from './backgroundPixel'
 const main = join(import.meta.dirname, '../out/main/index.js')
 
 async function launch() {
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-trash-'))
-  const app = await electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData } })
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-trash-'))
+  const app = await electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData } })
   const page = await app.firstWindow()
   await expect(page.getByTestId('home')).toBeVisible()
   return { app, page, userData }
@@ -226,7 +226,7 @@ test('the Trash: deleted meetings wait there, out of Meetings, folders and searc
     await del(page, 'Design crit')
     await expect(page.getByTestId('past-note')).toHaveCount(2)
     await expect(count).toHaveText('0')
-    expect((await page.evaluate(() => window.yogurt.search.query('Weekly'))).map((h) => h.title)).toEqual([])
+    expect((await page.evaluate(() => window.noetaker.search.query('Weekly'))).map((h) => h.title)).toEqual([])
 
     await openFromCorner(page, 'nav-trash')
     await expect(page.getByTestId('workspace-heading')).toHaveText('Trash')
@@ -250,7 +250,7 @@ test('the Trash: deleted meetings wait there, out of Meetings, folders and searc
     await expect(count).toHaveText('1')
     await page.getByTestId('nav-home').click()
     await expect(page.getByTestId('past-note')).toHaveCount(4)
-    expect((await page.evaluate(() => window.yogurt.search.query('Weekly'))).map((h) => h.title)).toEqual(['Weekly sync'])
+    expect((await page.evaluate(() => window.noetaker.search.query('Weekly'))).map((h) => h.title)).toEqual(['Weekly sync'])
   } finally { await app.close() }
 })
 
@@ -258,8 +258,8 @@ test('Empty Trash asks first, then deletes every meeting in it for good, recordi
   const { app, page, userData } = await launch()
   try {
     await withMeetings(app, page)
-    const ids = await page.evaluate(async () => (await window.yogurt.meetings.cards({ limit: 2 })).map((c) => c.id))
-    for (const id of ids) expect(await page.evaluate((id) => window.yogurt.meetings.trash(id), id)).toBe('trashed')
+    const ids = await page.evaluate(async () => (await window.noetaker.meetings.cards({ limit: 2 })).map((c) => c.id))
+    for (const id of ids) expect(await page.evaluate((id) => window.noetaker.meetings.trash(id), id)).toBe('trashed')
     await openFromCorner(page, 'nav-trash')
     await expect(page.getByTestId('trash-row')).toHaveCount(2)
     await page.getByTestId('trash-empty').click()
@@ -274,7 +274,7 @@ test('Empty Trash asks first, then deletes every meeting in it for good, recordi
     await expect(confirm).toHaveCount(0)
     await expect(page.getByTestId('trash-none')).toBeVisible()
     for (const id of ids) {
-      expect(await page.evaluate((id) => window.yogurt.meetings.get(id), id)).toBeUndefined()
+      expect(await page.evaluate((id) => window.noetaker.meetings.get(id), id)).toBeUndefined()
       expect(existsSync(join(userData, 'meetings', id))).toBe(false)
     }
     await page.getByTestId('nav-home').click()

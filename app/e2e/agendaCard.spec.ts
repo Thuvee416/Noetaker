@@ -5,7 +5,7 @@ import { join } from 'node:path'
 
 test('a bottom event opens above its row, tracks scrolling, flips without chatter and dismisses offscreen', async ({}, info) => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-agenda-card-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-agenda-card-')),
   }, ...(process.env.CI ? { recordVideo: { dir: info.outputPath('agenda-motion'), size: { width: 1100, height: 760 } } } : {}) })
   try {
     const page = await app.firstWindow()
@@ -163,7 +163,7 @@ test('a bottom event opens above its row, tracks scrolling, flips without chatte
 
 test('long agenda titles stay on one line and forty attendees expand without moving the card footer', async ({}, info) => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-agenda-density-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-agenda-density-')),
   } })
   try {
     const page = await app.firstWindow()
@@ -181,13 +181,13 @@ test('long agenda titles stay on one line and forty attendees expand without mov
     await page.reload()
     await expect(page.getByTestId('event')).toHaveCount(1)
     const noteId = await page.evaluate(async noon => {
-      const day = await window.yogurt.calendar.day(noon)
-      const result = await window.yogurt.meetings.prepare(day.events[0].id, noon)
+      const day = await window.noetaker.calendar.day(noon)
+      const result = await window.noetaker.meetings.prepare(day.events[0].id, noon)
       if (!('id' in result)) throw new Error(result.error)
       return result.id
     }, noon)
     // Preparing a note opens it. Return to the agenda before checking the linked event.
-    await expect.poll(() => page.evaluate(() => window.yogurt.nav.current())).toBe(`/note/${noteId}`)
+    await expect.poll(() => page.evaluate(() => window.noetaker.nav.current())).toBe(`/note/${noteId}`)
     await expect(page.getByTestId('note-state')).toHaveAttribute('data-state', 'prepared')
     await page.getByTestId('nav-home').click()
     await expect(page.getByTestId('home')).toBeVisible()
@@ -218,7 +218,7 @@ test('long agenda titles stay on one line and forty attendees expand without mov
       expect(await body.evaluate(el => el.scrollHeight > el.clientHeight)).toBe(true)
       await body.evaluate(el => { el.scrollTop = el.scrollHeight })
       expect(await footer.evaluate(el => el.getBoundingClientRect().top)).toBeCloseTo(footerTop, 0)
-      if (process.env.YOGURT_UI_REVIEW !== 'before') {
+      if (process.env.NOETAKER_UI_REVIEW !== 'before') {
         expect(await body.evaluate(el => el.clientHeight)).toBeLessThanOrEqual(240)
         expect(await body.evaluate(el => el.clientHeight)).toBeGreaterThanOrEqual(79)
         expect(await card.getByRole('heading').evaluate(el => el.getBoundingClientRect().top)).toBeCloseTo(headingTop, 0)

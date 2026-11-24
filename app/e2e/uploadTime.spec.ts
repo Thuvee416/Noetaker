@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 test('the native clock accepts only a valid time and keeps an incomplete upload open', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'yogurt-upload-time-'))
+  const dir = mkdtempSync(join(tmpdir(), 'noetaker-upload-time-'))
   const file = join(dir, 'Planning.wav')
   const wav = Buffer.alloc(44 + 32000)
   wav.write('RIFF'); wav.writeUInt32LE(wav.length - 8, 4); wav.write('WAVEfmt ', 8)
@@ -12,7 +12,7 @@ test('the native clock accepts only a valid time and keeps an incomplete upload 
   wav.writeUInt32LE(16000, 24); wav.writeUInt32LE(32000, 28); wav.writeUInt16LE(2, 32)
   wav.writeUInt16LE(16, 34); wav.write('data', 36); wav.writeUInt32LE(32000, 40)
   writeFileSync(file, wav)
-  const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: dir } })
+  const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: dir } })
   try {
     const page = await app.firstWindow()
     await app.evaluate(({ dialog }, path) => { Object.assign(dialog, { showOpenDialog: async () => ({ canceled: false, filePaths: [path] }) }) }, file)

@@ -7,8 +7,8 @@ vi.mock('electron', () => ({ default: { app: { getPath: () => '/nowhere' } } }))
 import { modelsFolder } from '../src/main/paths'
 
 const dirs: string[] = []
-afterEach(() => { dirs.splice(0).forEach((d) => rmSync(d, { recursive: true, force: true })); delete process.env.YOGURT_USER_DATA; delete process.env.YOGURT_MODELS_DIR })
-const profile = () => { const d = mkdtempSync(join(tmpdir(), 'yogurt-models-')); dirs.push(d); process.env.YOGURT_USER_DATA = d; return d }
+afterEach(() => { dirs.splice(0).forEach((d) => rmSync(d, { recursive: true, force: true })); delete process.env.NOETAKER_USER_DATA; delete process.env.NOETAKER_MODELS_DIR })
+const profile = () => { const d = mkdtempSync(join(tmpdir(), 'noetaker-models-')); dirs.push(d); process.env.NOETAKER_USER_DATA = d; return d }
 
 // Windows: the installer asks where the models go and leaves the answer in models-dir.txt (build/installer.nsh)
 describe('where the models are kept', () => {
@@ -18,7 +18,7 @@ describe('where the models are kept', () => {
   })
   it("the folder the installer saved, written by NSIS as UTF-16 with a byte-order mark (any drive, any name)", () => {
     const d = profile()
-    const chosen = join(d, 'Données IA', 'Yogurt models')
+    const chosen = join(d, 'Données IA', 'Noe Taker models')
     writeFileSync(join(d, 'models-dir.txt'), Buffer.concat([Buffer.from([0xff, 0xfe]), Buffer.from(`${chosen}\r\n`, 'utf16le')]))
     expect(modelsFolder()).toBe(chosen)
   })
@@ -29,9 +29,9 @@ describe('where the models are kept', () => {
     writeFileSync(join(d, 'models-dir.txt'), join(d, 'm2'))
     expect(modelsFolder()).toBe(join(d, 'm2'))
   })
-  it('YOGURT_MODELS_DIR wins', () => {
+  it('NOETAKER_MODELS_DIR wins', () => {
     const d = profile()
-    process.env.YOGURT_MODELS_DIR = join(d, 'env')
+    process.env.NOETAKER_MODELS_DIR = join(d, 'env')
     expect(modelsFolder()).toBe(join(d, 'env'))
   })
 })

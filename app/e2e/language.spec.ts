@@ -7,8 +7,8 @@ import { join } from 'node:path'
 const main = join(import.meta.dirname, '../out/main/index.js')
 
 /** system: the Mac's languages, as the Mac lists them */
-async function launch(system: string, userData = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))) {
-  const app = await electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData, YOGURT_SYSTEM_LANGUAGES: system } })
+async function launch(system: string, userData = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))) {
+  const app = await electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData, NOETAKER_SYSTEM_LANGUAGES: system } })
   const page = await app.firstWindow()
   await expect(page.getByTestId('home')).toBeVisible()
   return { app, page, userData }
@@ -38,7 +38,7 @@ test('picking a language in Settings changes everything at once, menus too, and 
   try {
     await openFromCorner(page, 'settings-open')
     await expect(page.getByTestId('settings-heading')).toHaveText('Settings')
-    expect(await tray(app)).toContain('Open Yogurt')
+    expect(await tray(app)).toContain('Open Noe Taker')
     expect(await menuBar(app)).toContain('Edit')
 
     const picker = page.getByTestId('settings-app-language')
@@ -47,7 +47,7 @@ test('picking a language in Settings changes everything at once, menus too, and 
     await expect(page.getByTestId('settings-heading')).toHaveText('Einstellungen')
     await expect(page.locator('html')).toHaveAttribute('lang', 'de')
     await expect(page.getByRole('navigation', { name: 'Arbeitsbereich' })).toBeVisible()
-    await expect.poll(() => tray(app)).toContain('Yogurt öffnen')
+    await expect.poll(() => tray(app)).toContain('Noe Taker öffnen')
     await expect.poll(() => menuBar(app)).toContain('Bearbeiten')
 
     // Arabic reads right to left: the sidebar moves to the right, text starts on the right
@@ -70,7 +70,7 @@ test('picking a language in Settings changes everything at once, menus too, and 
     await page.getByTestId('settings-app-language').selectOption('')
     await expect(page.getByTestId('settings-heading')).toHaveText('Settings')
     await expect(page.locator('html')).toHaveAttribute('dir', 'ltr')
-    await expect.poll(() => tray(app)).toContain('Open Yogurt')
+    await expect.poll(() => tray(app)).toContain('Open Noe Taker')
   } finally { await app.close() }
 })
 
@@ -86,13 +86,13 @@ test('summary language defaults to the meeting and persists independently of app
     await picker.selectOption('fr')
     await expect(page.getByTestId('settings-app-language')).toHaveValue('')
     await expect(page.getByTestId('settings-spoken-en')).toHaveAttribute('aria-checked', 'true')
-    await expect.poll(() => page.evaluate(() => window.yogurt.settings.get().then(s => s.summaryLanguage))).toBe('fr')
+    await expect.poll(() => page.evaluate(() => window.noetaker.settings.get().then(s => s.summaryLanguage))).toBe('fr')
     await app.close()
     ;({ app, page } = await launch('en-US', a.userData))
     await openFromCorner(page, 'settings-open')
     await expect(page.getByTestId('settings-summary-language')).toHaveValue('fr')
     await page.getByTestId('settings-summary-language').selectOption('')
-    await expect.poll(() => page.evaluate(() => window.yogurt.settings.get().then(s => s.summaryLanguage))).toBe('')
+    await expect.poll(() => page.evaluate(() => window.noetaker.settings.get().then(s => s.summaryLanguage))).toBe('')
     await expect(page.getByTestId('settings-heading')).toHaveText('Settings')
   } finally { await app.close() }
 })

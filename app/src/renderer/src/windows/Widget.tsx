@@ -36,7 +36,7 @@ function useDragOrClick(onClick: () => void, hover: ReturnType<typeof useWidgetM
   const s = useRef<WidgetPress | null>(null)
   const cancel = () => {
     if (!s.current) return
-    window.yogurt.widget.endDrag()
+    window.noetaker.widget.endDrag()
     hover.release(s.current.moved)
     s.current = null
   }
@@ -44,7 +44,7 @@ function useDragOrClick(onClick: () => void, hover: ReturnType<typeof useWidgetM
     const release = () => hover.release(false)
     window.addEventListener('pointerup', release)
     window.addEventListener('pointercancel', release)
-    return () => { window.removeEventListener('pointerup', release); window.removeEventListener('pointercancel', release); window.yogurt.widget.endDrag(); window.yogurt.widget.pressed(false) }
+    return () => { window.removeEventListener('pointerup', release); window.removeEventListener('pointercancel', release); window.noetaker.widget.endDrag(); window.noetaker.widget.pressed(false) }
   }, [])
   return {
     onPointerDown: (e: React.PointerEvent) => {
@@ -62,7 +62,7 @@ function useDragOrClick(onClick: () => void, hover: ReturnType<typeof useWidgetM
       hover.pointer(e.clientX, e.clientY)
       if (!d || e.pointerId !== d.pointerId) return
       const delta = widgetDragDelta(d, e.screenX, e.screenY)
-      if (delta) window.yogurt.widget.drag(delta.dx, delta.dy)
+      if (delta) window.noetaker.widget.drag(delta.dx, delta.dy)
     },
     onPointerUp: (e: React.PointerEvent) => {
       const d = s.current
@@ -87,8 +87,8 @@ function useWidgetView() {
   useEffect(() => {
     document.documentElement.classList.add('widget')
     let current = true, updated = false
-    const off = window.yogurt.widget.onState(v => { updated = true; setView(v) })
-    void window.yogurt.widget.state().then(v => { if (current && !updated) setView(v) })
+    const off = window.noetaker.widget.onState(v => { updated = true; setView(v) })
+    void window.noetaker.widget.state().then(v => { if (current && !updated) setView(v) })
     return () => { current = false; off() }
   }, [])
   return view
@@ -106,14 +106,14 @@ function Recording({ view }: { view: WidgetView }) {
   const muted = micIsOff(view.micState)
   const showFeedback = view.micState === 'unconfirmed' || view.micState === 'still-off'
   const hover = useWidgetMorph(card, !!view.note || showFeedback, time, muted)
-  const press = useDragOrClick(() => window.yogurt.widget.open(), hover)
+  const press = useDragOrClick(() => window.noetaker.widget.open(), hover)
   return <RecordingPill ref={card} time={time} data-testid="widget" data-kind="recording" data-open={hover.open} role={hover.open ? 'group' : 'button'} tabIndex={0}
     className="widget-morph" {...press}
     onFocus={e => { if (e.target.matches(':focus-visible')) hover.focus(true) }}
     onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget)) hover.focus(false) }}
     onMouseMove={e => hover.pointer(e.clientX, e.clientY)}
     onMouseLeave={() => hover.pointer(-1, -1)}
-    aria-label={[t('Open {title}', { title: view.title }), muted && t('Mic off in Yogurt')].filter(Boolean).join('. ')} title={view.note?.text ?? t('Recording {title}', { title: view.title })}>
+    aria-label={[t('Open {title}', { title: view.title }), muted && t('Mic off in Noe Taker')].filter(Boolean).join('. ')} title={view.note?.text ?? t('Recording {title}', { title: view.title })}>
     {hover.open ? <MicToggle pill id={view.meetingId} state={view.micState} />
       : muted && <span className="widget-mic-status" aria-hidden="true">
         <span className="widget-mic-off" data-testid="widget-mic-off"><MicOff size={14} /></span>
@@ -139,7 +139,7 @@ function Preview({ view, open }: { view: WidgetView; open: boolean }) {
   useEffect(() => {
     let alive = true
     // A hover shows recent context, read as a tail; the full transcript stays in the meeting.
-    const refresh = () => { void window.yogurt.transcript.get(view.meetingId, { hidden: true, last: RECENT_LINES }).then((recent) => {
+    const refresh = () => { void window.noetaker.transcript.get(view.meetingId, { hidden: true, last: RECENT_LINES }).then((recent) => {
       if (!alive) return
       setLines(current => {
         const merged = new Map(current.map(s => [`${s.track}:${s.startMs}`, s]))
@@ -148,7 +148,7 @@ function Preview({ view, open }: { view: WidgetView; open: boolean }) {
       })
       setLoaded(true); setFailed(false)
     }, () => { if (alive) { setLoaded(true); setFailed(true) } }) }
-    const offSegment = window.yogurt.transcript.onSegment((s) => {
+    const offSegment = window.noetaker.transcript.onSegment((s) => {
       if (s.meetingId !== view.meetingId) return
       setLines(current => recentOnly([...current.filter(l => l.track !== s.track || l.startMs !== s.startMs), s].filter(l => !l.hidden).sort((a, b) => a.startMs - b.startMs)))
       setParts(current => {
@@ -160,11 +160,11 @@ function Preview({ view, open }: { view: WidgetView; open: boolean }) {
         return next
       })
     })
-    const offPartial = window.yogurt.transcript.onPartial(p => {
+    const offPartial = window.noetaker.transcript.onPartial(p => {
       if (p.meetingId !== view.meetingId) return
       setParts(current => { const next = { ...current }; if (p.text) next[p.track] = p; else delete next[p.track]; return next })
     })
-    const offNames = window.yogurt.transcript.onSpeakers(id => { if (id === view.meetingId) refresh() })
+    const offNames = window.noetaker.transcript.onSpeakers(id => { if (id === view.meetingId) refresh() })
     refresh()
     return () => { alive = false; offSegment(); offPartial(); offNames() }
   }, [view.meetingId])
@@ -207,7 +207,7 @@ function Preview({ view, open }: { view: WidgetView; open: boolean }) {
     <MicFeedback state={view.micState} />
     {note && <div className="widget-preview-warning" role="status">
       <p data-testid="widget-note" data-tone={note.tone}><TriangleAlert data-testid="widget-warning" size={14} aria-hidden="true" />{note.text}</p>
-      {permission && <button className="workspace-button widget-settings" onClick={() => { void window.yogurt.permissions.open(permission) }}>{t('Open Settings')}</button>}
+      {permission && <button className="workspace-button widget-settings" onClick={() => { void window.noetaker.permissions.open(permission) }}>{t('Open Settings')}</button>}
     </div>}
     <ScrollFade>
     <div ref={scroll} data-testid="widget-preview-text" className="widget-preview-conversation" role="log" aria-live="off" aria-label={t('Transcript')}
@@ -218,7 +218,7 @@ function Preview({ view, open }: { view: WidgetView; open: boolean }) {
       setBehind(!stick.current)
     }}>
       <div ref={content}>
-      {!loaded ? <Loading layout="transcript" testId="widget-preview-loading" /> : !grouped.length && <p className="widget-preview-empty">{failed ? t("Couldn't load the transcript. Open Yogurt to try again.") : t('Listening for speech…')}</p>}
+      {!loaded ? <Loading layout="transcript" testId="widget-preview-loading" /> : !grouped.length && <p className="widget-preview-empty">{failed ? t("Couldn't load the transcript. Open Noe Taker to try again.") : t('Listening for speech…')}</p>}
       {grouped.map((turn, i) => {
         const first = turn[0], me = first.track === 'me'
         const who = transcriptSpeaker(first)

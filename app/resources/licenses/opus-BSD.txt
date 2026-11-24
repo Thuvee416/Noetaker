@@ -1,5 +1,5 @@
 libopus 1.3.1 (https://github.com/xiph/opus/tree/v1.3.1)
-Built from source by audiopus_sys and statically linked into the Windows and Linux audio recorders (yogurt-audio-win, yogurt-audio-linux).
+Built from source by audiopus_sys and statically linked into the Windows and Linux audio recorders (noetaker-audio-win, noetaker-audio-linux).
 
 Copyright 2001-2011 Xiph.Org, Skype Limited, Octasic,
                     Jean-Marc Valin, Timothy B. Terriberry,

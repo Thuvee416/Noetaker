@@ -6,20 +6,20 @@ import { join } from 'node:path'
 // CI only: this Mac's local E2E guard remains in force.
 test('Ask shares meeting history and drafts, and Command-J starts the right context', async () => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-ask-context-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-ask-context-')),
   } })
   try {
     const page = await app.firstWindow()
     await expect(page.getByTestId('home')).toBeVisible()
     const meeting = await app.evaluate(() => (globalThis as any).__fake__.bigMeeting(5)) as string
-    await page.evaluate(id => window.yogurt.nav.go(`/note/${id}`), meeting)
+    await page.evaluate(id => window.noetaker.nav.go(`/note/${id}`), meeting)
     await expect(page.getByTestId('chat-open')).toBeVisible()
     await page.keyboard.press('Meta+j')
     const input = page.getByTestId('chat-input')
     await expect(input).toBeFocused()
     await expect(page.getByTestId('ask-scope')).toHaveCount(1)
     await expect(page.getByTestId('ask-scope')).toHaveCSS('height', '28px')
-    await page.evaluate(id => window.yogurt.meetings.rename(id, 'Design review'), meeting)
+    await page.evaluate(id => window.noetaker.meetings.rename(id, 'Design review'), meeting)
     await expect(page.getByTestId('ask-scope')).toContainText('Design review')
     await expect(page.getByTestId('ask-composer-context')).toHaveCount(0)
     await input.fill('What was decided?')
@@ -54,7 +54,7 @@ test('Ask shares meeting history and drafts, and Command-J starts the right cont
     await expect(page.getByTestId('chat-page-input')).toHaveValue('Keep this question for later')
     await expect(page.getByTestId('chat-page-turn')).toHaveCount(1)
     await expect(page.getByTestId('ask-scope')).toHaveText('All meetings')
-    const title = await page.evaluate(id => window.yogurt.meetings.get(id).then(v => v!.title), meeting)
+    const title = await page.evaluate(id => window.noetaker.meetings.get(id).then(v => v!.title), meeting)
     await page.getByTestId('chat-page-input').fill(`@${title}`)
     await expect(page.getByRole('option')).toHaveCount(1)
     await page.getByTestId('chat-page-input').press('Enter')
@@ -69,13 +69,13 @@ test('Ask shares meeting history and drafts, and Command-J starts the right cont
 
 test('the note panel and full conversation expose Rename and a single Delete confirmation', async () => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_FAKE_LLM_MS: '10', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-ask-actions-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_FAKE_LLM_MS: '10', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-ask-actions-')),
   } })
   try {
     const page = await app.firstWindow()
     await expect(page.getByTestId('home')).toBeVisible()
     const [meeting] = await app.evaluate(() => (globalThis as any).__fake__.chatMeetings()) as string[]
-    await page.evaluate(id => window.yogurt.nav.go(`/note/${id}`), meeting)
+    await page.evaluate(id => window.noetaker.nav.go(`/note/${id}`), meeting)
     await expect(page.getByTestId('chat-open')).toBeVisible()
     // Exercise menus and confirmation inside the native modal panel, too.
     await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(720, 760))
@@ -162,19 +162,19 @@ test('the note panel and full conversation expose Rename and a single Delete con
     await page.getByTestId('chat-delete').click()
     await page.getByTestId('chat-delete-yes').click()
     await expect(page.getByTestId('chat-empty')).toBeVisible()
-    expect((await page.evaluate(() => window.yogurt.conversations.list())).some(c => c.title === 'Decisions')).toBe(false)
+    expect((await page.evaluate(() => window.noetaker.conversations.list())).some(c => c.title === 'Decisions')).toBe(false)
   } finally { await app.close() }
 })
 
 test('Ask has soft thread edges, compact bubbles, and expands the same reading position', async () => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_FAKE_LLM_MS: '10', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-ask-edges-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_FAKE_LLM_MS: '10', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-ask-edges-')),
   } })
   try {
     const page = await app.firstWindow()
     await expect(page.getByTestId('home')).toBeVisible()
     const meeting = await app.evaluate(() => (globalThis as any).__fake__.bigMeeting(5)) as string
-    await page.evaluate(id => window.yogurt.nav.go(`/note/${id}`), meeting)
+    await page.evaluate(id => window.noetaker.nav.go(`/note/${id}`), meeting)
     await expect(page.getByTestId('chat-open')).toBeVisible()
     await page.keyboard.press('Meta+j')
     const panel = page.getByTestId('chat-panel'), input = page.getByTestId('chat-input')
@@ -194,7 +194,7 @@ test('Ask has soft thread edges, compact bubbles, and expands the same reading p
     await expect(page.getByTestId('chat-question')).toHaveCSS('padding', '8px 12px')
     await expect(panel.getByTestId('ask-scope')).toHaveCount(1)
     await expect(page.getByTestId('chat-suggestion')).toHaveCount(0)
-    const view = await page.evaluate(async id => window.yogurt.conversations.get(await window.yogurt.conversations.current([{ kind: 'meeting', id }])), meeting)
+    const view = await page.evaluate(async id => window.noetaker.conversations.get(await window.noetaker.conversations.current([{ kind: 'meeting', id }])), meeting)
     // Long saved content makes both viewports overflow without a model-dependent answer length.
     await app.evaluate(({ ipcMain }, view) => {
       ipcMain.removeHandler('conversations:get')
@@ -223,7 +223,7 @@ test('Ask has soft thread edges, compact bubbles, and expands the same reading p
     await expect(page.getByTestId('chat-page-input')).toHaveValue('Keep my draft')
     await expect(page.getByTestId('ask-scope')).toContainText(view!.chips[0].title)
     expect(await page.locator('.ask-thread').evaluate(el => el.scrollTop)).toBeCloseTo(200, 0)
-    expect(await page.evaluate(() => window.yogurt.nav.current())).toBe(`/chat/${view!.id}`)
+    expect(await page.evaluate(() => window.noetaker.nav.current())).toBe(`/chat/${view!.id}`)
     await page.getByTestId('chat-latest').click()
     await expect(page.getByTestId('chat-latest')).toHaveCount(0)
   } finally { await app.close() }
@@ -231,16 +231,16 @@ test('Ask has soft thread edges, compact bubbles, and expands the same reading p
 
 test('Ask anchors context growth and retains picker results between searches', async () => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-ask-layout-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-ask-layout-')),
   } })
   try {
     const page = await app.firstWindow()
     await expect(page.getByTestId('home')).toBeVisible()
     for (const title of ['Project review', 'Team planning', 'Launch notes']) {
       const id = await app.evaluate(() => (globalThis as any).__fake__.bigMeeting(2)) as string
-      await page.evaluate(({ id, title }) => window.yogurt.meetings.rename(id, title), { id, title })
+      await page.evaluate(({ id, title }) => window.noetaker.meetings.rename(id, title), { id, title })
     }
-    const targets = await page.evaluate(() => window.yogurt.conversations.targets(''))
+    const targets = await page.evaluate(() => window.noetaker.conversations.targets(''))
     await app.evaluate(({ ipcMain }, targets) => {
       ipcMain.removeHandler('conversations:targets')
       ipcMain.handle('conversations:targets', async (_event, query: string) => {

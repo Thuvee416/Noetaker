@@ -6,8 +6,8 @@ import { join } from 'node:path'
 
 const main = join(import.meta.dirname, '../out/main/index.js')
 
-async function launch(userData = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))) {
-  const app = await electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData } })
+async function launch(userData = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))) {
+  const app = await electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData } })
   const page = await app.firstWindow()
   await expect(page.getByTestId('home')).toBeVisible()
   return { app, page, userData }
@@ -73,7 +73,7 @@ test('personal jargon reaches whisper and the notes', async () => {
     await fake(app, 'trayClick', 'new')
     await expect(page.getByTestId('note-state')).toHaveAttribute('data-state', 'recording')
     await expect.poll(async () => (await fake<Prompts>(app, 'prompts')).whisper.at(-1), { timeout: 30_000 }).toContain('We talk about Kubernetes and PostHog.')
-    await expect.poll(async () => (await page.evaluate((id) => window.yogurt.transcript.get(id), (await page.evaluate(() => window.yogurt.nav.current())).slice('/note/'.length))).length, { timeout: 30_000 }).toBeGreaterThanOrEqual(2)
+    await expect.poll(async () => (await page.evaluate((id) => window.noetaker.transcript.get(id), (await page.evaluate(() => window.noetaker.nav.current())).slice('/note/'.length))).length, { timeout: 30_000 }).toBeGreaterThanOrEqual(2)
     await page.getByTestId('note-stop').click()
     await expect.poll(async () => (await fake<Prompts>(app, 'prompts')).notes.some((p) => p.includes('These are spelled right: Kubernetes, PostHog')), { timeout: 60_000 }).toBe(true)
   } finally { await app.close() }

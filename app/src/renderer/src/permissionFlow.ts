@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Access, PermissionKind } from '../../shared/types'
 import { viaSystemSettings } from '../../shared/onboarding'
 
-/** asking: the Mac's prompt is up; away: System Settings is open and Yogurt waits for it to be turned on; back: turned on there */
+/** asking: the Mac's prompt is up; away: System Settings is open and Noe Taker waits for it to be turned on; back: turned on there */
 export type FlowPhase = 'idle' | 'asking' | 'away' | 'back' | 'failed'
 const POLL_MS = 1500
 const on = (a: Access | undefined) => a === 'granted' || a === 'asked'
@@ -21,7 +21,7 @@ export function usePermissionFlow(kind: PermissionKind, initial: Access | undefi
 
   const recheck = useCallback(async () => {
     try {
-      const st = (await window.yogurt.permissions.status())[kind]
+      const st = (await window.noetaker.permissions.status())[kind]
       setStatus(st)
       if (phaseRef.current === 'away' && on(st)) setPhase('back')
       else if (phaseRef.current === 'failed') setPhase('idle')
@@ -41,7 +41,7 @@ export function usePermissionFlow(kind: PermissionKind, initial: Access | undefi
 
   const openSettings = useCallback(async () => {
     setPhase('away')
-    try { await window.yogurt.permissions.open(kind) } catch { setPhase('failed') }
+    try { await window.noetaker.permissions.open(kind) } catch { setPhase('failed') }
   }, [kind])
 
   const allow = useCallback(async () => {
@@ -50,7 +50,7 @@ export function usePermissionFlow(kind: PermissionKind, initial: Access | undefi
     if (viaSystemSettings(kind, status ?? 'unknown')) return openSettings()
     setPhase('asking')
     try {
-      const st = await window.yogurt.permissions.request(kind)
+      const st = await window.noetaker.permissions.request(kind)
       setStatus(st)
       if (on(st)) { setPhase('idle'); done?.(); return }
       // said no in the Mac's prompt: from now on only System Settings turns it on

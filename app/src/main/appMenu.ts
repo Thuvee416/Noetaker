@@ -3,9 +3,9 @@ import { onLanguage, t } from '../shared/i18n'
 import { quitByUser } from './quitByUser'
 
 /**
- * The Mac's menu bar for Yogurt: Electron's own menu, with every label in the interface language
+ * The Mac's menu bar for Noe Taker: Electron's own menu, with every label in the interface language
  * (Electron's are English only). The roles keep what each item does and its shortcut. Quit is the person's own,
- * so an AI app won't start Yogurt again until they open it (#147).
+ * so an AI app won't start Noe Taker again until they open it (#147).
  */
 export function appMenuTemplate(name = app.name, sidebar?: { open: boolean | null; toggle(): void }, reopen?: () => void, os = 'darwin'): MenuItemConstructorOptions[] {
   if (os !== 'darwin') return pcMenuTemplate(sidebar)
@@ -23,7 +23,7 @@ export function appMenuTemplate(name = app.name, sidebar?: { open: boolean | nul
     ] },
     { label: t('File'), submenu: [
       // With no visible renderer, these app-local shortcuts only bring the retained window back.
-      ...(reopen ? ['N', 'J'].map(key => ({ id: `reopen-${key}`, label: t('Open Yogurt'), accelerator: `Command+${key}`, visible: false, acceleratorWorksWhenHidden: true, click: reopen })) : []),
+      ...(reopen ? ['N', 'J'].map(key => ({ id: `reopen-${key}`, label: t('Open Noe Taker'), accelerator: `Command+${key}`, visible: false, acceleratorWorksWhenHidden: true, click: reopen })) : []),
       { role: 'close', label: t('Close Window') },
     ] },
     { label: t('Edit'), submenu: [
@@ -67,7 +67,7 @@ function pcMenuTemplate(sidebar?: { open: boolean | null; toggle(): void }): Men
   return [
     { label: t('File'), submenu: [
       { role: 'close', label: t('Close Window'), accelerator: 'Ctrl+W' },
-      { id: 'quit', label: t('Quit {app}', { app: 'Yogurt' }), accelerator: 'Ctrl+Q', click: () => quitByUser() },
+      { id: 'quit', label: t('Quit {app}', { app: 'Noe Taker' }), accelerator: 'Ctrl+Q', click: () => quitByUser() },
     ] },
     { label: t('Edit'), submenu: [
       { role: 'undo', label: t('Undo') },

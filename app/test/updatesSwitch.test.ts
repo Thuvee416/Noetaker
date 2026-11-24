@@ -17,7 +17,7 @@ vi.mock('electron-updater', () => ({ default: { autoUpdater: updater } }))
 it('updates are on by default, and turning them off also keeps a downloaded version from installing on quit', async () => {
   vi.useFakeTimers()
   const { hookUpdates } = await import('../src/main/updates')
-  const file = join(mkdtempSync(join(tmpdir(), 'yogurt-updates-')), 'settings.json')
+  const file = join(mkdtempSync(join(tmpdir(), 'noetaker-updates-')), 'settings.json')
   await hookUpdates({ file, available: true, recording: () => false })
   expect((handlers.get('updates:status')!() as { on: boolean }).on).toBe(true)
   expect(updater.autoInstallOnAppQuit).toBe(true)
@@ -33,7 +33,7 @@ it('Later hides only this version for this app session without changing installa
   try {
     updater.removeAllListeners()
     const { hookUpdates } = await import('../src/main/updates')
-    const file = join(mkdtempSync(join(tmpdir(), 'yogurt-updates-')), 'settings.json')
+    const file = join(mkdtempSync(join(tmpdir(), 'noetaker-updates-')), 'settings.json')
     await hookUpdates({ file, available: true, recording: () => false })
     const status = () => handlers.get('updates:status')!() as import('../src/shared/types').UpdateStatus
     handlers.get('updates:later')!()
@@ -64,7 +64,7 @@ it('a running copy fetches the feed once per UTC day; Check for updates still ch
     updater.checkForUpdates.mockClear()
     const { hookUpdates } = await import('../src/main/updates')
     const { loadSettings, saveSettings } = await import('../src/main/settings')
-    const file = join(mkdtempSync(join(tmpdir(), 'yogurt-updates-')), 'settings.json')
+    const file = join(mkdtempSync(join(tmpdir(), 'noetaker-updates-')), 'settings.json')
     let clock = Date.parse('2026-11-23T22:00:00Z')
     const now = () => clock
     // checked earlier today: nothing at start
@@ -93,7 +93,7 @@ it('a feed that fails to arrive is tried again, and turning updates off stops th
     updater.removeAllListeners()
     updater.checkForUpdates.mockClear()
     const { hookUpdates } = await import('../src/main/updates')
-    const file = join(mkdtempSync(join(tmpdir(), 'yogurt-updates-')), 'settings.json')
+    const file = join(mkdtempSync(join(tmpdir(), 'noetaker-updates-')), 'settings.json')
     await hookUpdates({ file, available: true, recording: () => false, now: () => Date.parse('2026-11-23T12:00:00Z'), jitterMs: 0 })
     await vi.advanceTimersByTimeAsync(30_000)
     expect(updater.checkForUpdates).toHaveBeenCalledTimes(1)

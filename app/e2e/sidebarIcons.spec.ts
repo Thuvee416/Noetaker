@@ -4,17 +4,17 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-const capture = !!process.env.YOGURT_UI_REVIEW
+const capture = !!process.env.NOETAKER_UI_REVIEW
 const frames = [0, 60, 120, 200, 280, 400]
 const names = (icon: Locator) => icon.evaluate(el => [el, ...Array.from(el.querySelectorAll('*'))]
   .flatMap(node => getComputedStyle(node).animationName.split(', ')).filter(name => name !== 'none'))
 
 for (const theme of ['light', 'dark'] as const) test(`sidebar icon scope and motion in ${theme}`, async ({}, testInfo) => {
   test.setTimeout(180000)
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-icons-'))
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-icons-'))
   writeFileSync(join(userData, 'settings.json'), JSON.stringify({ theme }))
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_FAKE_UPDATE: '999.0.0', YOGURT_USER_DATA: userData,
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_FAKE_UPDATE: '999.0.0', NOETAKER_USER_DATA: userData,
   } })
   try {
     const page = await app.firstWindow()
@@ -68,7 +68,7 @@ for (const theme of ['light', 'dark'] as const) test(`sidebar icon scope and mot
     await page.keyboard.press('Escape')
     await expect(mark).toHaveCSS('fill', muted)
     await hover('search-open')
-    await page.evaluate(() => window.yogurt.folders.create('Project'))
+    await page.evaluate(() => window.noetaker.folders.create('Project'))
     await hover('sidebar-folder-open')
     await page.mouse.move(600, 80)
     const search = page.getByTestId('search-open').locator('svg')

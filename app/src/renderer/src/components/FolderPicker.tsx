@@ -40,7 +40,7 @@ export function FolderPicker({ meetingId, meetingIds, memberships, suggestedId, 
       setPending(p => ({ ...p, [id]: { ...p[id], saving: false } }))
     } catch {
       setPending(p => { const next = { ...p }; delete next[id]; return next })
-      toasts.add({ title: t("Yogurt couldn't make that change. Try again.") })
+      toasts.add({ title: t("Noe Taker couldn't make that change. Try again.") })
     } finally { saving.current = false }
   }
   const row = 'flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-start text-sm hover:bg-[var(--line)] focus-visible:bg-[var(--line)] focus-visible:outline-none'
@@ -69,10 +69,10 @@ export function FolderChip({ meetingId, onNew, suggestion: manualSuggestion, row
     let seq = 0
     const load = () => {
       const current = ++seq
-      void window.yogurt.folders.suggestion(meetingId).then(folder => { if (current === seq) setAutomatic(folder) }, () => {})
+      void window.noetaker.folders.suggestion(meetingId).then(folder => { if (current === seq) setAutomatic(folder) }, () => {})
     }
     load()
-    const off = window.yogurt.folders.onChange(load), offMeetings = window.yogurt.meetings.onChange(load)
+    const off = window.noetaker.folders.onChange(load), offMeetings = window.noetaker.meetings.onChange(load)
     return () => { seq++; off(); offMeetings() }
   }, [meetingId])
   const suggestion = manualSuggestion ?? (automatic ? { folder: automatic, dismiss: () => setAutomatic(null) } : undefined)
@@ -125,8 +125,8 @@ export function FolderChip({ meetingId, onNew, suggestion: manualSuggestion, row
     if (!proposed || adding || held) return
     const focus = focusAfterSuggestion()
     setAdding(true); setTransition({ folder: proposed, phase: 'saving' })
-    try { await window.yogurt.folders.dismissSuggestion(meetingId); setTransition({ folder: proposed, phase: 'dismissed' }); clearSuggestion(focus) }
-    catch { setTransition(null); toasts.add({ title: t("Yogurt couldn't make that change. Try again.") }) }
+    try { await window.noetaker.folders.dismissSuggestion(meetingId); setTransition({ folder: proposed, phase: 'dismissed' }); clearSuggestion(focus) }
+    catch { setTransition(null); toasts.add({ title: t("Noe Taker couldn't make that change. Try again.") }) }
     finally { setAdding(false) }
   }
   const confirmSuggestion = async () => {
@@ -136,13 +136,13 @@ export function FolderChip({ meetingId, onNew, suggestion: manualSuggestion, row
     setTransition({ folder: proposed, phase: 'saving' })
     setAdding(true); toasts.close(`folder-suggestion-${meetingId}`)
     try {
-      await window.yogurt.folders.add(folderId, meetingId)
+      await window.noetaker.folders.add(folderId, meetingId)
       // The folder may have disappeared since the proposal; never show a silent no-op as accepted.
-      if (!(await window.yogurt.folders.of(meetingId)).some((folder) => folder.id === folderId)) throw new Error('Folder not added')
+      if (!(await window.noetaker.folders.of(meetingId)).some((folder) => folder.id === folderId)) throw new Error('Folder not added')
       setTransition({ folder: proposed, phase: 'accepted' }); clearSuggestion(focus)
     } catch {
       setTransition(null)
-      toasts.add({ id: `folder-suggestion-${meetingId}`, data: { testId: 'folder-suggestion-error' }, title: t("Yogurt couldn't add this note to the folder. Try again.") })
+      toasts.add({ id: `folder-suggestion-${meetingId}`, data: { testId: 'folder-suggestion-error' }, title: t("Noe Taker couldn't add this note to the folder. Try again.") })
     } finally { setAdding(false) }
   }
   useEffect(() => {

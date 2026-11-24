@@ -5,10 +5,10 @@ import { join } from 'node:path'
 
 for (const locale of ['en', 'ar'] as const) for (const theme of ['light', 'dark'] as const) {
   test(`Ask naming and navigation in ${locale}, ${theme}`, async ({}, info) => {
-    const userData = mkdtempSync(join(tmpdir(), 'yogurt-ask-naming-'))
+    const userData = mkdtempSync(join(tmpdir(), 'noetaker-ask-naming-'))
     writeFileSync(join(userData, 'settings.json'), JSON.stringify({ theme }))
     const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-      ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData, YOGURT_SYSTEM_LANGUAGES: locale,
+      ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData, NOETAKER_SYSTEM_LANGUAGES: locale,
     } })
     const ask = locale === 'ar' ? 'اسأل' : 'Ask'
     const conversations = locale === 'ar' ? 'المحادثات' : 'Conversations'
@@ -27,7 +27,7 @@ for (const locale of ['en', 'ar'] as const) for (const theme of ['light', 'dark'
       await page.getByTestId('chat-recent').click()
       await expect(page.getByTestId('chat-recent-list')).toHaveAccessibleName(conversations)
       await page.keyboard.press('Escape')
-      expect(await page.evaluate(() => window.yogurt.nav.current())).toBe('/chat')
+      expect(await page.evaluate(() => window.noetaker.nav.current())).toBe('/chat')
       await page.screenshot({ path: info.outputPath(`ask-${locale}-${theme}-page.png`) })
       await page.keyboard.press('Meta+k')
       await page.getByTestId('search-input').fill(ask)

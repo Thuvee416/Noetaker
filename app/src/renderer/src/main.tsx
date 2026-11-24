@@ -17,12 +17,12 @@ import { applyLanguage, useLanguage } from './i18n'
 const Which = location.hash === '#prompt' ? Prompt : location.hash === '#widget' ? Widget : App
 document.documentElement.classList.toggle('main-window', Which === App)
 // Windows and Linux: the system's window buttons over the top right, no traffic lights (workspace.css)
-if (window.yogurt.platform !== 'darwin') document.documentElement.dataset.chrome = 'overlay'
+if (window.noetaker.platform !== 'darwin') document.documentElement.dataset.chrome = 'overlay'
 installRendererErrors()
 if (Which === App) { installFocusNavigation(document); installScrollActivity(document); installNoteLifecycle() }
 // everything re-renders in a newly picked language, in every window at once
 function Page() { useLanguage(); return <Which /> }
 const render = () => createRoot(document.getElementById('root')!).render(<StrictMode><RendererGuard><RendererFailureTest><Page /></RendererFailureTest></RendererGuard></StrictMode>)
-window.yogurt.settings.onLanguage(applyLanguage)
+window.noetaker.settings.onLanguage(applyLanguage)
 // the interface language first, so no window flashes English (or the wrong direction)
-window.yogurt.settings.get().then((s) => applyLanguage(s.locale), () => {}).finally(render)
+window.noetaker.settings.get().then((s) => applyLanguage(s.locale), () => {}).finally(render)

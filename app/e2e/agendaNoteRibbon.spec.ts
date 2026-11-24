@@ -5,7 +5,7 @@ import { join } from 'node:path'
 
 test('an event with notes gets a muted notes icon and only a live event gets a purple line', async () => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-agenda-ribbon-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-agenda-ribbon-')),
   } })
   try {
     const page = await app.firstWindow()
@@ -30,7 +30,7 @@ test('an event with notes gets a muted notes icon and only a live event gets a p
     await expect.poll(() => line('Current review')).toBe(accent)
 
     // notes made for the event (Prepare note in its card)
-    expect(await page.evaluate(day => window.yogurt.meetings.prepare('event-0', day), +now)).toHaveProperty('id')
+    expect(await page.evaluate(day => window.noetaker.meetings.prepare('event-0', day), +now)).toHaveProperty('id')
     await expect(page.getByTestId('note-title')).toHaveText('Planning')
     await page.getByTestId('nav-home').click()
     await expect(row('Planning')).toHaveAttribute('data-has-note', 'true')

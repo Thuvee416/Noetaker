@@ -41,15 +41,15 @@ export function ChatPage({ id, go, openSource }: { id: string | null; go: (route
   useEffect(() => {
     let active = true
     setListFailed(false)
-    const off = window.yogurt.conversations.onList(list => { setList(list); setListFailed(false) })
-    void window.yogurt.conversations.list().then(l => { if (active) setList(cur => cur ?? l) }).catch(() => { if (active) setListFailed(true) })
+    const off = window.noetaker.conversations.onList(list => { setList(list); setListFailed(false) })
+    void window.noetaker.conversations.list().then(l => { if (active) setList(cur => cur ?? l) }).catch(() => { if (active) setListFailed(true) })
     return () => { active = false; off() }
   }, [listAttempt])
   useEffect(() => {
     if (id) return
     let active = true
     setHomeFailed(false)
-    void askHomeConversation(window.yogurt.conversations).then(cid => { if (active) setCurrent(cid) }).catch(() => { if (active) setHomeFailed(true) })
+    void askHomeConversation(window.noetaker.conversations).then(cid => { if (active) setCurrent(cid) }).catch(() => { if (active) setHomeFailed(true) })
     return () => { active = false }
   }, [id, revision])
   const selected = id ?? current
@@ -59,8 +59,8 @@ export function ChatPage({ id, go, openSource }: { id: string | null; go: (route
     const request = ++navigation.current
     setRecent(false)
     // Capture the destination with its content, rather than fading into a loading skeleton.
-    const target = cid ?? await askHomeConversation(window.yogurt.conversations)
-    const view = await window.yogurt.conversations.get(target)
+    const target = cid ?? await askHomeConversation(window.noetaker.conversations)
+    const view = await window.noetaker.conversations.get(target)
     if (request !== navigation.current) return
     if (!view) throw new Error('Conversation not found')
     change(() => { setPrepared(view); setCurrent(target); go(cid ? `/chat/${cid}` : '/chat') })

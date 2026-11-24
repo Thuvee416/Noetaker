@@ -14,7 +14,7 @@ export function RecordingHint({ hint }: { hint: NonNullable<WidgetView['note']> 
   const kinds = hint.missingAudio ?? (hint.code ? [KIND[hint.code]] : [])
   const [permissions, setPermissions] = useState<PermissionStatus>()
   const [fixed, setFixed] = useState(false)
-  const reload = () => { void window.yogurt.permissions.status().then(setPermissions, () => {}) }
+  const reload = () => { void window.noetaker.permissions.status().then(setPermissions, () => {}) }
   useEffect(() => {
     setFixed(false); setPermissions(undefined)
     if (!kinds.length) return
@@ -31,10 +31,10 @@ export function RecordingHint({ hint }: { hint: NonNullable<WidgetView['note']> 
       <Icon size={14} className={`shrink-0 ${on ? 'text-accent' : 'text-danger'}`} aria-hidden="true" />
       <span>{on ? (kinds.length > 1 ? t('Your next recording will use both the microphone and call audio.') : kind === 'mic' ? t('Microphone is on. Your next recording uses it.') : t('Call audio is on. Your next recording uses it.')) : hint.text}</span>
       {/* Windows: no prompt to ask with, so its own microphone page (Linux never reads as off) */}
-      {!window.yogurt.capabilities.permissionPrompts && kind && access === 'denied' && (
-        <button data-testid="rec-hint-fix" data-kind={kind} onClick={() => void window.yogurt.permissions.open(kind)} className="workspace-button primary shrink-0 no-drag">{t('Open Settings')}</button>
+      {!window.noetaker.capabilities.permissionPrompts && kind && access === 'denied' && (
+        <button data-testid="rec-hint-fix" data-kind={kind} onClick={() => void window.noetaker.permissions.open(kind)} className="workspace-button primary shrink-0 no-drag">{t('Open Settings')}</button>
       )}
-      {window.yogurt.capabilities.permissionPrompts && kind && !on && access && access !== 'restricted' && access !== 'granted' && (
+      {window.noetaker.capabilities.permissionPrompts && kind && !on && access && access !== 'restricted' && access !== 'granted' && (
         <TurnOn key={kind} kind={kind} status={access} recording onOn={() => { setFixed(true); reload() }} label={kinds.length > 1 ? kind === 'mic' ? t('Turn on microphone') : t('Turn on call audio') : undefined} testId="rec-hint-fix" className="workspace-button primary shrink-0" />
       )}
     </div>

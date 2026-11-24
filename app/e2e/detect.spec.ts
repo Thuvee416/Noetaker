@@ -8,9 +8,9 @@ const zoom = { bundleId: 'us.zoom.xos', name: 'zoom.us' }
 
 /** askFirst: "Stop recording when the call ends" off, so the end of a call asks (autoStop.spec.ts has it on) */
 async function launch(o: { askFirst?: boolean; background?: boolean } = {}) {
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
   if (o.askFirst) writeFileSync(join(userData, 'settings.json'), JSON.stringify({ stopWhenCallEnds: false }))
-  const app = await electron.launch({ args: [main], env: { ...process.env, ...(o.background ? { YOGURT_BACKGROUND: '1' } : {}), YOGURT_FAKE: '1', YOGURT_USER_DATA: userData } })
+  const app = await electron.launch({ args: [main], env: { ...process.env, ...(o.background ? { NOETAKER_BACKGROUND: '1' } : {}), NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData } })
   const page = await app.firstWindow()
   await expect(page.getByTestId('home')).toBeVisible()
   return { app, page }
@@ -65,7 +65,7 @@ test('a call with no event is named after the app', async () => {
 test('the compact start offer follows appearance and dismisses only after twelve idle seconds', async () => {
   const { app, page } = await launch()
   try {
-    await page.evaluate(() => window.yogurt.settings.setTheme('light'))
+    await page.evaluate(() => window.noetaker.settings.setTheme('light'))
     await signals(app, { micApps: [zoom], events: [event()] })
     const p = await card(app)
     await p.emulateMedia({ colorScheme: null })
@@ -74,7 +74,7 @@ test('the compact start offer follows appearance and dismisses only after twelve
     await expect(p.getByTestId('prompt')).toHaveCSS('background-color', 'rgb(255, 255, 255)')
     const heading = await p.getByTestId('prompt-heading').boundingBox(), action = await p.getByTestId('prompt-take-notes').boundingBox()
     expect(action!.x).toBeGreaterThan(heading!.x + heading!.width)
-    await page.evaluate(() => window.yogurt.settings.setTheme('dark'))
+    await page.evaluate(() => window.noetaker.settings.setTheme('dark'))
     await expect(p.getByTestId('prompt')).toHaveCSS('background-color', 'rgb(41, 41, 43)')
     await p.clock.install(); await p.reload()
     await expect(p.getByTestId('prompt')).toBeVisible()
@@ -160,7 +160,7 @@ test('the window is away: clicking the "Take notes?" notification starts the not
   const notice = () => app.evaluate(() => (globalThis as unknown as { __fake__: { notice(): unknown } }).__fake__.notice()) as Promise<{ title: string; body: string } | null>
   const clickNotice = () => app.evaluate(() => (globalThis as unknown as { __fake__: { noticeClick(): void } }).__fake__.noticeClick())
   try {
-    // test runs keep the window hidden: away, as far as Yogurt can tell
+    // test runs keep the window hidden: away, as far as Noe Taker can tell
     await signals(app, { micApps: [zoom], events: [event()] })
     await card(app)
     await expect.poll(notice).toEqual({ title: 'Take notes?', body: 'Design review' })

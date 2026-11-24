@@ -35,7 +35,7 @@ async function keepsFocus(page: Page, prefix: string) {
 // pieces slow enough that a slow machine still sees an answer while it is being written
 async function launch(name: string) {
   const app = await electron.launch({ args: [main], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_FAKE_LLM_MS: '300', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), `yogurt-${name}-`)),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_FAKE_LLM_MS: '300', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), `noetaker-${name}-`)),
   } })
   const page = await app.firstWindow()
   await expect(page.getByTestId('home')).toBeVisible()
@@ -46,7 +46,7 @@ test('the note panel keeps focus in the box through a whole answer', async () =>
   const { app, page } = await launch('ask-focus-panel')
   try {
     const meeting = await app.evaluate(() => (globalThis as any).__fake__.bigMeeting(5)) as string
-    await page.evaluate(id => window.yogurt.nav.go(`/note/${id}`), meeting)
+    await page.evaluate(id => window.noetaker.nav.go(`/note/${id}`), meeting)
     await expect(page.getByTestId('chat-open')).toBeVisible()
     await page.keyboard.press('Meta+j')
     await keepsFocus(page, 'chat')
@@ -66,13 +66,13 @@ test('Back to latest floats 8px above the box in the panel and on the page', asy
   const { app, page } = await launch('ask-latest-gap')
   try {
     const meeting = await app.evaluate(() => (globalThis as any).__fake__.bigMeeting(5)) as string
-    await page.evaluate(id => window.yogurt.nav.go(`/note/${id}`), meeting)
+    await page.evaluate(id => window.noetaker.nav.go(`/note/${id}`), meeting)
     await expect(page.getByTestId('chat-open')).toBeVisible()
     await page.keyboard.press('Meta+j')
     const input = page.getByTestId('chat-input')
     await input.fill('Hello'); await input.press('Enter')
     await expect(page.getByTestId('chat-turn')).toHaveAttribute('data-status', 'done', { timeout: 15_000 })
-    const view = await page.evaluate(async id => window.yogurt.conversations.get(await window.yogurt.conversations.current([{ kind: 'meeting', id }])), meeting)
+    const view = await page.evaluate(async id => window.noetaker.conversations.get(await window.noetaker.conversations.current([{ kind: 'meeting', id }])), meeting)
     await app.evaluate(({ ipcMain }, view) => {
       ipcMain.removeHandler('conversations:get')
       ipcMain.handle('conversations:get', () => ({ ...view, turns: Array.from({ length: 30 }, (_, i) => ({

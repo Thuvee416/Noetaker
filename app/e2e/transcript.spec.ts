@@ -7,8 +7,8 @@ const main = join(import.meta.dirname, '../out/main/index.js')
 const zoom = { bundleId: 'us.zoom.xos', name: 'zoom.us' }
 
 async function launch(env: Record<string, string> = {}) {
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
-  const app = await electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData, ...env } })
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
+  const app = await electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData, ...env } })
   const page = await app.firstWindow()
   await expect(page.getByTestId('home')).toBeVisible()
   return { app, page }
@@ -52,9 +52,9 @@ test('live, each turn says who: You on the mic, and the name the call app shows 
     await expect(whoOf(page, 'Can we go over the launch plan')).toHaveText('You', { timeout: 15_000 })
     await expect(whoOf(page, 'The site goes live on Tuesday')).toHaveText('Ann Lee')
     await expect(whoOf(page, 'She will send a draft')).toHaveText('Bo Park')
-    // everyone seen in the call is at the meeting now, the person using Yogurt left out
-    const id = (await page.evaluate(() => window.yogurt.nav.current())).slice('/note/'.length)
-    await expect.poll(async () => (await page.evaluate((i) => window.yogurt.meetings.get(i), id))?.attendees.map((a) => a.name)).toEqual(['Ann Lee', 'Bo Park', 'Cy Dao'])
+    // everyone seen in the call is at the meeting now, the person using Noe Taker left out
+    const id = (await page.evaluate(() => window.noetaker.nav.current())).slice('/note/'.length)
+    await expect.poll(async () => (await page.evaluate((i) => window.noetaker.meetings.get(i), id))?.attendees.map((a) => a.name)).toEqual(['Ann Lee', 'Bo Park', 'Cy Dao'])
   } finally { await app.close() }
 })
 
@@ -79,8 +79,8 @@ test('while someone talks, a quick lighter reading shows first; the final line r
 })
 
 test("with Apple's on-device speech (macOS 26), its words show as they are said and the final line replaces them", async () => {
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
-  const app = await electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_FAKE_SPEECH: '1', YOGURT_USER_DATA: userData } })
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
+  const app = await electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_FAKE_SPEECH: '1', NOETAKER_USER_DATA: userData } })
   try {
     const page = await app.firstWindow()
     await expect(page.getByTestId('home')).toBeVisible()
@@ -151,7 +151,7 @@ test('Transcript is a primary page: Escape keeps it open and Notes switches away
 })
 
 test('transcription trouble shows in the widget in plain words', async () => {
-  const { app, page } = await launch({ YOGURT_BACKGROUND: '1' })
+  const { app, page } = await launch({ NOETAKER_BACKGROUND: '1' })
   try {
     await fake(app, 'signals', { micApps: [zoom], events: [] })
     await (await windowOf(app, '#prompt')).getByTestId('prompt-take-notes').click()
@@ -160,14 +160,14 @@ test('transcription trouble shows in the widget in plain words', async () => {
     await fake(app, 'warn', 'falling-behind')
     // the recorder shows a warning sign; the words are inside the expanded recorder
     const w = await windowOf(app, '#widget')
-    await expect(w.getByTestId('widget-note')).toHaveText('Yogurt is falling behind. Some lines may be missing.')
+    await expect(w.getByTestId('widget-note')).toHaveText('Noe Taker is falling behind. Some lines may be missing.')
     await fake(app, 'warn', 'transcribe-failed')
-    await expect(w.getByTestId('widget-note')).toHaveText('Some lines are missing for now. Yogurt will fill them in from the recording after the meeting.')
+    await expect(w.getByTestId('widget-note')).toHaveText('Some lines are missing for now. Noe Taker will fill them in from the recording after the meeting.')
   } finally { await app.close() }
 })
 
 test('without Accessibility the other side is Them, live and after; nothing is guessed', async () => {
-  const { app, page } = await launch({ YOGURT_FAKE_AX: 'denied' })
+  const { app, page } = await launch({ NOETAKER_FAKE_AX: 'denied' })
   try {
     await fake(app, 'signals', { micApps: [zoom], events: [] })
     await (await windowOf(app, '#prompt')).getByTestId('prompt-take-notes').click()
@@ -290,7 +290,7 @@ async function stopped(app: ElectronApplication, page: Page) {
     await expect(page.getByTestId('note-summary-tab')).toHaveAttribute('aria-selected', 'true')
     await page.getByTestId('note-transcript-toggle').click()
   await expect(page.getByTestId('player')).toBeVisible({ timeout: 15_000 })
-  return (await page.evaluate(() => window.yogurt.nav.current())).slice('/note/'.length)
+  return (await page.evaluate(() => window.noetaker.nav.current())).slice('/note/'.length)
 }
 
 test('the transcript scrolls behind its pill and the final line can clear the controls', async () => {
@@ -321,7 +321,7 @@ test('the transcript scrolls behind its pill and the final line can clear the co
 const setTrack = (app: ElectronApplication, id: string, track: string, what: number | 'garbage' | 'gone') =>
   app.evaluate((_e, [id, track, what]) => {
     const fs = process.getBuiltinModule('node:fs') as typeof import('node:fs'), path = process.getBuiltinModule('node:path') as typeof import('node:path')
-    const file = path.join(process.env.YOGURT_USER_DATA!, 'meetings', id, `${track}.wav`)
+    const file = path.join(process.env.NOETAKER_USER_DATA!, 'meetings', id, `${track}.wav`)
     if (what === 'gone') { fs.rmSync(file); return }
     if (what === 'garbage') { fs.writeFileSync(file, Buffer.alloc(4000, 7)); return }
     const n = (what as number) * 16000, b = Buffer.alloc(44 + n * 2)

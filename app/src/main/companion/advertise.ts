@@ -1,4 +1,4 @@
-// Bonjour for the companion: the phone finds this computer as _yogurt._tcp on the local network.
+// Bonjour for the companion: the phone finds this computer as _noetaker._tcp on the local network.
 import { Bonjour, type Service } from 'bonjour-service'
 
 export type Advert = { name: string; port: number; txt: Record<string, string> }
@@ -27,7 +27,7 @@ export function bonjourAdvertiser(log: (...parts: unknown[]) => void): Advertise
       stop()
       try {
         bonjour ??= new Bonjour(undefined, (err: Error) => { log('COMPANION', 'mdns error', err?.name); adv.onFailure?.() })
-        service = bonjour.publish({ name: a.name, type: 'yogurt', protocol: 'tcp', port: a.port, txt: a.txt })
+        service = bonjour.publish({ name: a.name, type: 'noetaker', protocol: 'tcp', port: a.port, txt: a.txt })
         service.on('error', (err: Error) => { log('COMPANION', 'advert error', err?.name); adv.onFailure?.() })
         current = key
         log('COMPANION', 'advertising', `pairing=${a.txt.pairing}`)

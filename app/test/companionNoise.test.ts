@@ -9,7 +9,7 @@ const lowOrder: string[] = JSON.parse(readFileSync(join(__dirname, '../../ios/Fi
 const hex = (s: string) => Uint8Array.from(Buffer.from(s, 'hex'))
 const toHex = (b: Uint8Array) => Buffer.from(b).toString('hex')
 const utf8 = (s: string) => new TextEncoder().encode(s)
-const prologue = utf8('yogurt-v1')
+const prologue = utf8('noetaker-v1')
 
 beforeAll(() => ready())
 
@@ -92,7 +92,7 @@ describe('Noise_KK_25519_ChaChaPoly_BLAKE2b', () => {
   it('a different prologue fails the handshake', () => {
     const a = generateKeyPair(), b = generateKeyPair()
     const i = new NoiseKK({ initiator: true, s: a, rs: b.publicKey, prologue })
-    const r = new NoiseKK({ initiator: false, s: b, rs: a.publicKey, prologue: utf8('yogurt-v2') })
+    const r = new NoiseKK({ initiator: false, s: b, rs: a.publicKey, prologue: utf8('noetaker-v2') })
     expect(() => r.readMessage(i.writeMessage(new Uint8Array(0)))).toThrow()
   })
 

@@ -39,12 +39,12 @@ function useLines(id: string,replacing:boolean) {
     let active=true,revision=0
     setDraft([])
     if(!replacing)return
-    const load=()=>{const request=++revision;void window.yogurt.transcript.draft(id).then(lines=>{
+    const load=()=>{const request=++revision;void window.noetaker.transcript.draft(id).then(lines=>{
       if(!active||request!==revision)return
       for(const line of lines)live.current.add(key(line))
       setDraft(lines)
     }).catch(console.error)}
-    const off=window.yogurt.transcript.onDraft(changed=>{if(changed===id)load()})
+    const off=window.noetaker.transcript.onDraft(changed=>{if(changed===id)load()})
     load();return()=>{active=false;off()}
   },[id,replacing])
   const [lines, setLines] = useState<Line[]>([])
@@ -61,11 +61,11 @@ function useLines(id: string,replacing:boolean) {
       if (arriving) for (const l of fresh) live.current.add(key(l))
       return fresh.length ? [...cur, ...fresh].sort((a, b) => a.startMs - b.startMs) : cur
     })
-    const off = window.yogurt.transcript.onSegment((l) => add([l], true))
+    const off = window.noetaker.transcript.onSegment((l) => add([l], true))
     const load = (replace = false) => {
       const request = ++epoch
       retry.current = () => load(replace)
-      void window.yogurt.transcript.get(id, { hidden: true }).then(saved => {
+      void window.noetaker.transcript.get(id, { hidden: true }).then(saved => {
         if (!active || request !== epoch) return
         setFailed(false); setLoaded(true)
         if (replace) setLines(saved)
@@ -77,8 +77,8 @@ function useLines(id: string,replacing:boolean) {
       }, () => { if (active && request === epoch) setFailed(true) })
     }
     load()
-    const offSpeakers = window.yogurt.transcript.onSpeakers(m => { if (m === id) load() })
-    const offReplaced = window.yogurt.transcript.onReplaced?.(changed => {
+    const offSpeakers = window.noetaker.transcript.onSpeakers(m => { if (m === id) load() })
+    const offReplaced = window.noetaker.transcript.onReplaced?.(changed => {
       if (changed !== id) return
       if (draftRef.current.length) setLines(draftRef.current)
       load(true)
@@ -104,13 +104,13 @@ function useLive(id: string, recording: boolean) {
   useEffect(() => {
     setParts({}); seen.current = { me: -Infinity, them: -Infinity }
     if (!recording) return
-    const offPartial = window.yogurt.transcript.onPartial((p) => {
+    const offPartial = window.noetaker.transcript.onPartial((p) => {
       if (p.meetingId !== id) return
       const words = p.words ?? []
       if (words.length) seen.current[p.track] = Math.max(seen.current[p.track], words.at(-1)!.endMs)
       setParts((cur) => ({ ...cur, [p.track]: { track: p.track, startMs: words[0]?.startMs ?? p.startMs, endMs: words.at(-1)?.endMs ?? p.startMs, text: p.text, words } }))
     })
-    const offSegment = window.yogurt.transcript.onSegment((l) => {
+    const offSegment = window.noetaker.transcript.onSegment((l) => {
       if (l.meetingId !== id) return
       setParts((cur) => {
         const had = cur[l.track]
@@ -159,7 +159,7 @@ type RowProps = {
 const Row = memo(function Row({ line: l, focused, name, playing, playable, focusable, arrived, onPlay, onFocusLine }: RowProps) {
   // memo skips it otherwise when the language changes
   useLanguage()
-  if (window.yogurt.fake) (window as unknown as { __rowRenders?: number }).__rowRenders = ((window as unknown as { __rowRenders?: number }).__rowRenders ?? 0) + 1
+  if (window.noetaker.fake) (window as unknown as { __rowRenders?: number }).__rowRenders = ((window as unknown as { __rowRenders?: number }).__rowRenders ?? 0) + 1
   const k = key(l), time = clock(l.startMs)
   return (
     <span data-key={k} data-testid="transcript-line" data-track={l.track} data-start={l.startMs} data-playing={playing || undefined}
@@ -204,15 +204,15 @@ export function Transcript({ id, notice, processing=false, replacing=false, reco
     if (recording || processing) return
     let on = true
     let deleted = false
-    const off = window.yogurt.audio.onDeleted(changed => {
+    const off = window.noetaker.audio.onDeleted(changed => {
       if (changed !== id) return
       if (document.activeElement?.closest('[data-testid="player"], [data-testid="recording-delete-confirm"]')) {
         list.current?.setAttribute('tabindex', '-1'); list.current?.focus({ preventScroll: true })
       }
       deleted = true; setTracks([]); setAudioOn(false); onTime(null)
     })
-    const load=()=>void window.yogurt.audio.tracks(id).then(t=>{if(on&&!deleted)setTracks(t)}).catch(console.error)
-    load();const offMeeting=window.yogurt.meetings.onChange(load)
+    const load=()=>void window.noetaker.audio.tracks(id).then(t=>{if(on&&!deleted)setTracks(t)}).catch(console.error)
+    load();const offMeeting=window.noetaker.meetings.onChange(load)
     return () => { on = false; off(); offMeeting() }
   }, [id, recording, processing])
   const player = useRef<PlayerHandle>(null)
@@ -267,7 +267,7 @@ export function Transcript({ id, notice, processing=false, replacing=false, reco
   const onScroll = () => {
     const el = list.current
     if (!el) return
-    // not Yogurt's own glide, so theirs (the scroll bar dragged, a trackpad's glide): playing keeps its hands off while it lasts
+    // not Noe Taker's own glide, so theirs (the scroll bar dragged, a trackpad's glide): playing keeps its hands off while it lasts
     if (ours.current === null) { handsOn.current = performance.now(); theyScrolled() }
     stick.current = el.scrollHeight - el.scrollTop - el.clientHeight < STICK_PX
     setBehind(!stick.current)
@@ -284,7 +284,7 @@ export function Transcript({ id, notice, processing=false, replacing=false, reco
   const following = useRef(true)
   /** where the line being played went while they looked elsewhere, for Back to playing */
   const [away, setAway] = useState<'up' | 'down' | null>(null)
-  /** stops Yogurt's own glide while it moves; its scroll events are not taken for theirs */
+  /** stops Noe Taker's own glide while it moves; its scroll events are not taken for theirs */
   const ours = useRef<ReturnType<typeof followGlide> | null>(null)
   /** when they last turned the wheel, pressed a key or touched the list: a glide started then would swallow their scroll */
   const handsOn = useRef(0)
@@ -304,7 +304,7 @@ export function Transcript({ id, notice, processing=false, replacing=false, reco
     const to = followTarget(r, view, always)
     if (to === null || !ours.current && Math.abs(to - el.scrollTop) < 2) return
     if (!ours.current) {
-      // The final scroll event arrives after done. A fresh seek in that frame still belongs to Yogurt.
+      // The final scroll event arrives after done. A fresh seek in that frame still belongs to Noe Taker.
       const motion = followGlide(el, () => requestAnimationFrame(() => {
         if (ours.current === motion && !motion.active) ours.current = null
       }))
@@ -331,7 +331,7 @@ export function Transcript({ id, notice, processing=false, replacing=false, reco
     following.current = inView(r, view)
     setAway(following.current ? null : r.top < view.scrollTop ? 'up' : 'down')
   }
-  // a wheel, a key, a touch or a press (the scroll bar too): a glide of Yogurt's still moving is stopped, so it can't carry them back
+  // a wheel, a key, a touch or a press (the scroll bar too): a glide of Noe Taker's still moving is stopped, so it can't carry them back
   const theirs = () => {
     replacementFollow.current=false
     handsOn.current = performance.now()

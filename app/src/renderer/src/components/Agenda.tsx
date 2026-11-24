@@ -56,7 +56,7 @@ export function Agenda({ revision, recording, onStart, onOpen, jumpTo }: Actions
     let read = pending.current.get(selected)
     if (!read) {
       const startedIn = generation.current
-      read = window.yogurt.calendar.day(selected)
+      read = window.noetaker.calendar.day(selected)
         .then((day): Day => ({ at: selected, ...day }))
         .catch((): Day => ({ at: selected, status: 'error', events: [] }))
         .then((day) => {
@@ -79,19 +79,19 @@ export function Agenda({ revision, recording, onStart, onOpen, jumpTo }: Actions
   useEffect(() => {
     // Calendar selection can change while Home is unmounted; invalidate its session cache too.
     if (!watchingCalendars) {
-      window.yogurt.calendar.onChange(() => { lastDay = undefined })
+      window.noetaker.calendar.onChange(() => { lastDay = undefined })
       watchingCalendars = true
     }
     // Keep a same-day refresh in place; never present an old day's actionable events under a new date.
     void load()
     const timer = setInterval(() => void load(), 60_000)
     const focus = () => void load()
-    const off = window.yogurt.meetings.onChange(() => void load())
-    const offCalendars = window.yogurt.calendar.onChange(() => { generation.current++; days.current.clear(); pending.current.clear(); setLoaded(undefined); void load() })
+    const off = window.noetaker.meetings.onChange(() => void load())
+    const offCalendars = window.noetaker.calendar.onChange(() => { generation.current++; days.current.clear(); pending.current.clear(); setLoaded(undefined); void load() })
     window.addEventListener('focus', focus)
     return () => { seq.current++; off(); offCalendars(); clearInterval(timer); window.removeEventListener('focus', focus) }
   }, [load, today, revision])
-  const connect = () => void window.yogurt.calendar.connect().then(load, () => setLoaded({ at: selected, status: 'error', events: [] }))
+  const connect = () => void window.noetaker.calendar.connect().then(load, () => setLoaded({ at: selected, status: 'error', events: [] }))
   const chosen = new Date(selected)
   const relativeDay = daysAgo(selected)
   const calendar = loaded?.at === selected ? loaded : days.current.get(selected)
@@ -149,7 +149,7 @@ export function Agenda({ revision, recording, onStart, onOpen, jumpTo }: Actions
     {calendar && (calendar.status !== 'granted' && calendar.status !== 'error' ? <section className="agenda-status" data-testid="calendar-off">
         <CalendarDays size={22} aria-hidden="true" />
         <h3>{calendar.status === 'denied' ? t('Calendar access is off') : t('See your meetings here')}</h3>
-        <p>{window.yogurt.capabilities.calendarLink ? t('Connect a calendar to see your meetings.') : t('Connect the calendars on this Mac to see your upcoming meetings.')}</p>
+        <p>{window.noetaker.capabilities.calendarLink ? t('Connect a calendar to see your meetings.') : t('Connect the calendars on this Mac to see your upcoming meetings.')}</p>
         <button className="workspace-button" onClick={connect}>{calendar.status === 'denied' ? t('Open System Settings') : t('Connect calendar')}</button>
       </section>
       : <>
@@ -218,7 +218,7 @@ function EventDetails({ motionProps, event, recording, onOpen, onStart, now, onC
       if (action === 'start') await onStart(event.id)
       else if (action === 'open' && noteId) onOpen(noteId)
       else if (action === 'prepare') {
-        const result = await window.yogurt.meetings.prepare(event.id, event.start)
+        const result = await window.noetaker.meetings.prepare(event.id, event.start)
         if ('error' in result) throw new Error(result.error)
         onOpen(result.id)
       }
@@ -263,7 +263,7 @@ function EventDetails({ motionProps, event, recording, onOpen, onStart, now, onC
     {url && <a className="workspace-button" title={t('Join meeting')} href={url} target="_blank" rel="noreferrer"><span>{t('Join meeting')}</span><ExternalLink size={12} aria-hidden="true" /></a>}
     </div>}
     </div>}
-    {failed && <p role="alert" className="text-danger">{t("Yogurt couldn't start the notes. Try again in a moment.")}</p>}
+    {failed && <p role="alert" className="text-danger">{t("Noe Taker couldn't start the notes. Try again in a moment.")}</p>}
     </div>
   </dialog>
 }

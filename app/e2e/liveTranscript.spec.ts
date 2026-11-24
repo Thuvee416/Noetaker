@@ -8,8 +8,8 @@ const main = join(import.meta.dirname, '../out/main/index.js')
 const zoom = { bundleId: 'us.zoom.xos', name: 'zoom.us' }
 
 async function launch(env: Record<string, string> = {}) {
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
-  const app = await electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData, ...env } })
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
+  const app = await electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData, ...env } })
   const page = await app.firstWindow()
   await expect(page.getByTestId('home')).toBeVisible()
   return { app, page }
@@ -67,7 +67,7 @@ async function checkSteady(page: Page) {
 
 for (const speech of [false, true]) {
   test(`muting keeps the ${speech ? 'Apple' : 'Whisper'} mic line in its original bubble until the final arrives`, async ({}, testInfo) => {
-    const { app, page } = await launch(speech ? { YOGURT_FAKE_SPEECH: '1' } : {})
+    const { app, page } = await launch(speech ? { NOETAKER_FAKE_SPEECH: '1' } : {})
     try {
       await record(page)
       await start(app, page)
@@ -93,7 +93,7 @@ for (const speech of [false, true]) {
   })
 
   test(`live words ${speech ? "from Apple's speech" : 'from whisper'} never show twice and never vanish once shown`, async () => {
-    const { app, page } = await launch(speech ? { YOGURT_FAKE_SPEECH: '1' } : {})
+    const { app, page } = await launch(speech ? { NOETAKER_FAKE_SPEECH: '1' } : {})
     try {
       await record(page)
       await start(app, page)
@@ -106,7 +106,7 @@ for (const speech of [false, true]) {
 }
 
 test('the live transcript reads like a conversation: your bubbles at the end, theirs at the start, words not final yet lighter with dots', async () => {
-  const { app, page } = await launch({ YOGURT_FAKE_SPEECH: '1' })
+  const { app, page } = await launch({ NOETAKER_FAKE_SPEECH: '1' })
   try {
     await start(app, page)
     const list = page.getByTestId('transcript')
@@ -138,7 +138,7 @@ test('the live transcript reads like a conversation: your bubbles at the end, th
 })
 
 test('with reduced motion, live words fade briefly and the dots hold still', async () => {
-  const { app, page } = await launch({ YOGURT_FAKE_SPEECH: '1' })
+  const { app, page } = await launch({ NOETAKER_FAKE_SPEECH: '1' })
   try {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await start(app, page)
@@ -149,7 +149,7 @@ test('with reduced motion, live words fade briefly and the dots hold still', asy
 })
 
 test('unfinished words survive tab changes, page navigation and renderer reload without repeating saved lines', async () => {
-  const { app, page } = await launch({ YOGURT_FAKE_SPEECH: '1' })
+  const { app, page } = await launch({ NOETAKER_FAKE_SPEECH: '1' })
   try {
     await start(app, page)
     const live = page.getByTestId('transcript-partial').first()

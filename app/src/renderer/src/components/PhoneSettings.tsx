@@ -20,7 +20,7 @@ function lastSeen(at: number, now: number) {
 
 /** Settings → Phone, only while the iPhone companion is turned on (hidden until the iPhone app ships) */
 export function PhoneSettings() {
-  return globalThis.window?.yogurt?.phone ? createElement(PhoneSection) : null
+  return globalThis.window?.noetaker?.phone ? createElement(PhoneSection) : null
 }
 
 /** pair the iPhone app with a code, see the paired phone, unpair it */
@@ -33,8 +33,8 @@ function PhoneSection() {
   useEffect(() => {
     // a push that lands before the first answer is newer than it
     let live = true, pushed = false
-    void window.yogurt.companion.status().then((s) => { if (live && !pushed) setStatus(s) }, () => { if (live && !pushed) setStatus(null) })
-    const off = window.yogurt.companion.onStatus((s) => { pushed = true; setStatus(s) })
+    void window.noetaker.companion.status().then((s) => { if (live && !pushed) setStatus(s) }, () => { if (live && !pushed) setStatus(null) })
+    const off = window.noetaker.companion.onStatus((s) => { pushed = true; setStatus(s) })
     return () => { live = false; off() }
   }, [])
   // the countdown moves every second, "last seen" by the minute
@@ -54,22 +54,22 @@ function PhoneSection() {
   }
   const start = () => act(async () => {
     setFailed(false); setConfirming(false)
-    const r = await window.yogurt.companion.startPairing().catch(() => ({ ok: false, status: null }))
+    const r = await window.noetaker.companion.startPairing().catch(() => ({ ok: false, status: null }))
     if (!r.ok) setFailed(true)
     return r.status
   })
-  const cancel = () => act(() => window.yogurt.companion.cancelPairing())
-  const unpair = () => act(async () => { setConfirming(false); return window.yogurt.companion.unpair() })
+  const cancel = () => act(() => window.noetaker.companion.cancelPairing())
+  const unpair = () => act(async () => { setConfirming(false); return window.noetaker.companion.unpair() })
 
   const pairing = status?.pairing
   const paired = status?.paired
   // the phone can't find this computer: say what to allow, in this computer's words
   const network = status?.error !== 'network' ? null
-    : <p role="alert" data-testid="phone-network" className="settings-description text-danger">{globalThis.window?.yogurt?.platform === 'darwin'
-      ? t("Your iPhone can't see this computer. Allow Local Network for Yogurt in System Settings → Privacy & Security.")
-      : t("Your iPhone can't see this computer. Allow Yogurt through your firewall on private networks.")}</p>
-  const notice = status?.error === 'keychain' ? t("Yogurt couldn't reach this computer's secure storage, so it can't pair right now.")
-    : failed || status?.error === 'listen' ? t("Yogurt couldn't start pairing. Try again.")
+    : <p role="alert" data-testid="phone-network" className="settings-description text-danger">{globalThis.window?.noetaker?.platform === 'darwin'
+      ? t("Your iPhone can't see this computer. Allow Local Network for Noe Taker in System Settings → Privacy & Security.")
+      : t("Your iPhone can't see this computer. Allow Noe Taker through your firewall on private networks.")}</p>
+  const notice = status?.error === 'keychain' ? t("Noe Taker couldn't reach this computer's secure storage, so it can't pair right now.")
+    : failed || status?.error === 'listen' ? t("Noe Taker couldn't start pairing. Try again.")
     : status?.pairingClosed === 'tooMany' ? t('Too many wrong codes. Start pairing again.')
     : status?.pairingClosed === 'expired' ? t('The code ran out. Start pairing again.')
     : ''
@@ -80,7 +80,7 @@ function PhoneSection() {
     <div className="settings-group">
       {pairing ? <div data-testid="phone-pairing" className="settings-row">
         <div className="settings-row-copy">
-          <p className="settings-label">{t('Open Yogurt on your iPhone and type this code')}</p>
+          <p className="settings-label">{t('Open Noe Taker on your iPhone and type this code')}</p>
           <p data-testid="phone-code" dir="ltr" aria-label={pairing.code.split('').join(' ')} className="my-2 flex gap-3 font-mono text-[28px] leading-[36px] font-semibold tracking-[0.12em] tabular-nums">
             <span>{pairing.code.slice(0, 3)}</span><span>{pairing.code.slice(3)}</span>
           </p>
@@ -99,7 +99,7 @@ function PhoneSection() {
               {status.connected && <span data-testid="phone-live-dot" aria-hidden="true" className="phone-live-dot inline-block size-2 shrink-0 rounded-full" style={{ backgroundColor: 'var(--status-live)' }} />}
               {status.connected ? t('Connected') : paired.lastSeen == null ? t('Not connected yet') : lastSeen(paired.lastSeen, now)}
             </p>}
-          {status.error === 'listen' && <p role="alert" data-testid="phone-notice" className="settings-description text-danger">{t("Your iPhone can't reach this computer right now. Try restarting Yogurt.")}</p>}
+          {status.error === 'listen' && <p role="alert" data-testid="phone-notice" className="settings-description text-danger">{t("Your iPhone can't reach this computer right now. Try restarting Noe Taker.")}</p>}
           {network}
         </div>
         {confirming ? <div className="flex shrink-0 gap-2">
@@ -111,7 +111,7 @@ function PhoneSection() {
       : <div data-testid="phone-unpaired" className="settings-row">
         <Smartphone size={16} aria-hidden="true" className="shrink-0 text-muted" />
         <div className="settings-row-copy">
-          <p className="settings-label">{t('Yogurt on your iPhone')}</p>
+          <p className="settings-label">{t('Noe Taker on your iPhone')}</p>
           <p className="settings-description">{t('Read your notes and record meetings on your iPhone. They come back here to be transcribed.')}</p>
           {notice && <p role="alert" data-testid="phone-notice" className="settings-description text-danger">{notice}</p>}
         </div>

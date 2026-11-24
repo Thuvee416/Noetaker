@@ -16,7 +16,7 @@ const draft = { myNotes: 'ask about the budget', summary: '## Budget\n- Made-up 
 const tinyWav = (name = 'up.wav') => { const f = join(root, name); const s = new Float32Array(1600).map((_, i) => Math.sin(i / 8) * 0.2); const b = wavBytes(s); b.writeUInt32LE(36 + s.length * 2, 4); b.writeUInt32LE(s.length * 2, 40); writeFileSync(f, b); return f }
 const deps = () => ({ store, meetingDir: (id: string) => join(root, 'meetings', id), start, changed })
 
-beforeEach(() => { store = openStore(':memory:'); root = mkdtempSync(join(tmpdir(), 'yogurt-phone-')); vi.resetAllMocks() })
+beforeEach(() => { store = openStore(':memory:'); root = mkdtempSync(join(tmpdir(), 'noetaker-phone-')); vi.resetAllMocks() })
 afterEach(() => store.close())
 
 it('a phone WAV becomes them.wav, keeps the phone transcript and draft notes, and is transcribed again over them', async () => {

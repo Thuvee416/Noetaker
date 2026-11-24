@@ -38,13 +38,13 @@ const Asr = z.object({
   gpuOnly: z.boolean().optional(), lastResort: z.boolean().optional(),
 })
 
-/** the model that turns text into vectors for meaning search across meetings (EmbeddingGemma); dims: the length Yogurt keeps */
+/** the model that turns text into vectors for meaning search across meetings (EmbeddingGemma); dims: the length Noe Taker keeps */
 const Embedding = z.object({
   id: Id, name: z.string().min(1), license: z.string().min(1),
   url: z.string().url(), sha256: Sha, bytes: z.number().int().positive(), dims: z.number().int().positive(),
 })
 
-// a program Yogurt downloads has url, sha256 and bytes; one that is pending or bundled in the app has none
+// a program Noe Taker downloads has url, sha256 and bytes; one that is pending or bundled in the app has none
 const Binary = z.object({
   id: Id, tag: z.string().min(1),
   url: z.string().url().optional(), sha256: Sha.optional(), bytes: z.number().int().positive().optional(),

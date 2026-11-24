@@ -1,6 +1,6 @@
 /**
  * What a call app's window says about who is in the call and who is talking, read from its accessibility tree
- * (yogurt-mac call-watch copies it out on a Mac, yogurt-system on Linux; this reads either). Every rule fails towards
+ * (noetaker-mac call-watch copies it out on a Mac, noetaker-system on Linux; this reads either). Every rule fails towards
  * reading nothing, so a changed app means Them, never a wrong name. The signals each app gives, and how sure we are of
  * them, are in the comments.
  */
@@ -14,7 +14,7 @@ export type CallReading = { speaking: string[]; participants: string[]; me: stri
 
 // A role has two names: macOS Accessibility says AXTabGroup, AXStaticText, AXRow, AXOutline; AT-SPI (Linux) says
 // page tab, label/static/text, table row/list item, tree table/table/list. The rules below know both. Windows's helper
-// gives UI Automation's control types the AT-SPI names (yogurt-system parse.rs uia_role), so it reads as Linux does.
+// gives UI Automation's control types the AT-SPI names (noetaker-system parse.rs uia_role), so it reads as Linux does.
 const TAB_GROUP = new Set(['AXTabGroup', 'page tab'])
 const STATIC_TEXT = new Set(['AXStaticText', 'static', 'label', 'text', 'paragraph', 'heading', 'caption'])
 const ROW = new Set(['AXRow', 'table row', 'list item', 'row'])
@@ -130,7 +130,7 @@ function readZoom(windows: AxWindow[]): CallReading {
           for (const key of TALKING) if (v.startsWith(key)) { const name = cleanZoom(v.slice(key.length).replace(/^\s*[:：]\s*/, '')); if (name) speaking.push(name) }
         }
       }
-      // a row of the participants list: its first text is the name, "(me)" on the person using Yogurt
+      // a row of the participants list: its first text is the name, "(me)" on the person using Noe Taker
       if (ROW.has(n.r) && up.some((a) => OUTLINE.has(a.r) && LISTS.has(low(a.d ?? a.t ?? '')))) {
         let text: string | undefined
         walk(n, (x) => { if (!text && STATIC_TEXT.has(x.r)) text = x.v ?? x.t })

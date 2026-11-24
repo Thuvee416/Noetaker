@@ -21,7 +21,7 @@ async function seedAgendaAtNoon(app: ElectronApplication, page: Page) {
 
 test('agenda keeps cached days immediate, deduplicates pending reads and shows two quiet skeletons only for uncached days', async () => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-agenda-loading-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-agenda-loading-')),
   } })
   try {
     const page = await app.firstWindow()
@@ -72,7 +72,7 @@ test('agenda keeps cached days immediate, deduplicates pending reads and shows t
 
 test('a granted response started before access was revoked cannot refill the calendar cache', async () => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-agenda-revoked-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-agenda-revoked-')),
   } })
   try {
     const page = await app.firstWindow()
@@ -106,7 +106,7 @@ test('a granted response started before access was revoked cannot refill the cal
 
 test('agenda uses each date once while preserving Today and Tomorrow labels', async () => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-agenda-date-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-agenda-date-')),
   } })
   try {
     const page = await app.firstWindow()
@@ -128,7 +128,7 @@ test('agenda uses each date once while preserving Today and Tomorrow labels', as
 
 test('the compact calendar keeps its original type and geometry with distinct selected and current dates in both themes', async () => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-agenda-states-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-agenda-states-')),
   } })
   try {
     const page = await app.firstWindow()
@@ -198,7 +198,7 @@ test('the compact calendar keeps its original type and geometry with distinct se
 })
 
 test('a narrow agenda can scroll the header and the last event into view', async () => {
-  const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-agenda-width-')) } })
+  const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-agenda-width-')) } })
   try {
     const page = await app.firstWindow()
     await seedAgendaAtNoon(app, page)

@@ -41,8 +41,8 @@ const webexCurrentWindows = (): WatchLine['windows'] => [{ title: 'Webex meeting
 const webexLine = (t: number): WatchLine => ({ t, app: 'Cisco-Systems.Spark', windows: webexWindows() })
 
 function setup(o: { app?: string | null; attendees?: Meeting['attendees']; micPids?: Record<string, number[]>; myNames?: string[] } = {}) {
-  const root = mkdtempSync(join(tmpdir(), 'yogurt-callnames-')); dirs.push(root)
-  const store = openStore(join(root, 'yogurt.db')); stores.push(store)
+  const root = mkdtempSync(join(tmpdir(), 'noetaker-callnames-')); dirs.push(root)
+  const store = openStore(join(root, 'noetaker.db')); stores.push(store)
   const m = store.createMeeting({ title: 'Sync', startedAt: 1_000_000, endedAt: null, eventId: null, app: o.app === undefined ? 'Zoom' : o.app, attendees: o.attendees ?? [], state: 'recording' })
   let clock = 1_000_000
   const watched: string[][] = [], watchedPids: Array<number[] | undefined> = []
@@ -194,8 +194,8 @@ describe('hookCallNames', () => {
   })
 
   it('says what it read in main.log (info, which the log file keeps; console.log never reaches it)', () => {
-    const root = mkdtempSync(join(tmpdir(), 'yogurt-callnames-')); dirs.push(root)
-    const store = openStore(join(root, 'yogurt.db')); stores.push(store)
+    const root = mkdtempSync(join(tmpdir(), 'noetaker-callnames-')); dirs.push(root)
+    const store = openStore(join(root, 'noetaker.db')); stores.push(store)
     const m = store.createMeeting({ title: 'Sync', startedAt: 1_000_000, endedAt: null, eventId: null, app: 'FaceTime', attendees: [], state: 'recording' })
     const info = vi.spyOn(console, 'info').mockImplementation(() => {})
     const starts: Array<(m: Meeting) => void> = []
@@ -461,7 +461,7 @@ describe('auto end by the call window on Windows (#83)', () => {
   it("ends a call on Windows too once its window is gone: the Windows reader says when the window is only minimised or on another desktop", () => {
     const main = readFileSync(join(__dirname, '../src/main/index.ts'), 'utf8')
     expect(main).toMatch(/process\.platform === 'darwin' \|\| process\.platform === 'win32'\) callWindowOf = /)
-    const rust = readFileSync(join(__dirname, '../native/yogurt-system/src/wincalls.rs'), 'utf8')
+    const rust = readFileSync(join(__dirname, '../native/noetaker-system/src/wincalls.rs'), 'utf8')
     expect(rust).toContain('Look::Hidden => return json!({ "t": t, "error": "no-call-window", "hidden": true })')
   })
 })

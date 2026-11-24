@@ -24,10 +24,10 @@ export function useWidgetMorph(card: React.RefObject<HTMLDivElement | null>, war
   }
   useEffect(() => {
     let alive = true
-    const off = window.yogurt.widget.onLayout(setLayout)
-    void window.yogurt.widget.layout().then(v => { if (alive) setLayout(v) })
-    const offPointer = window.yogurt.widget.onPointer(p => { pointer.current = p; wake.current() })
-    const offReset = window.yogurt.widget.onReset(() => {
+    const off = window.noetaker.widget.onLayout(setLayout)
+    void window.noetaker.widget.layout().then(v => { if (alive) setLayout(v) })
+    const offPointer = window.noetaker.widget.onPointer(p => { pointer.current = p; wake.current() })
+    const offReset = window.noetaker.widget.onReset(() => {
       keyboardFocus.current = false
       intent.open = false; intent.over = false; intent.pressed = false; intent.due = null
       resumeAt.current = null; setOpen(false); morph.current(true); wake.current()
@@ -81,7 +81,7 @@ export function useWidgetMorph(card: React.RefObject<HTMLDivElement | null>, war
     const timer = card.current?.querySelector<HTMLElement>('[data-testid="widget-time"]')
     if (!timer) return
     collapsedWidth.current = 83 + timer.getBoundingClientRect().width + (muted ? 12 + 1 + 12 + 24 : 0)
-    if (!intent.pressed) window.yogurt.widget.size(collapsedWidth.current, 42)
+    if (!intent.pressed) window.noetaker.widget.size(collapsedWidth.current, 42)
   }, [time, open, layout?.pill.width, muted])
   useEffect(() => {
     let frame = 0, lastPoint = { x: -1, y: -1 }, lastSurface = ''
@@ -99,8 +99,8 @@ export function useWidgetMorph(card: React.RefObject<HTMLDivElement | null>, war
         else if (!intent.pressed && resumeAt.current !== null && now >= resumeAt.current) { resumeAt.current = null; morph.current() }
         const key = JSON.stringify(surface)
         if (key !== lastSurface) {
-          lastSurface = key; window.yogurt.widget.surface(surface)
-          if (!intent.open && !intent.pressed && surface.height === 42 && collapsedWidth.current) window.yogurt.widget.size(collapsedWidth.current, 42)
+          lastSurface = key; window.noetaker.widget.surface(surface)
+          if (!intent.open && !intent.pressed && surface.height === 42 && collapsedWidth.current) window.noetaker.widget.size(collapsedWidth.current, 42)
         }
       }
       // Keep running only while a hover deadline is pending or the shape is moving.
@@ -122,16 +122,16 @@ export function useWidgetMorph(card: React.RefObject<HTMLDivElement | null>, war
       const el = card.current
       if (!el || el.style.visibility !== 'visible') return
       const r = el.getBoundingClientRect()
-      window.yogurt.widget.surface({ x: r.x, y: r.y, width: r.width, height: r.height, radius: parseFloat(getComputedStyle(el).borderRadius) })
+      window.noetaker.widget.surface({ x: r.x, y: r.y, width: r.width, height: r.height, radius: parseFloat(getComputedStyle(el).borderRadius) })
     },
-    press: () => { freeze(); intent.press(); resumeAt.current = null; window.yogurt.widget.pressed(true); wake.current() },
+    press: () => { freeze(); intent.press(); resumeAt.current = null; window.noetaker.widget.pressed(true); wake.current() },
     release: (dragged: boolean) => {
       if (!intent.pressed) return
       intent.release(performance.now(), dragged)
       resumeAt.current = performance.now() + (dragged ? 650 : 0)
       wake.current()
-      window.yogurt.widget.pressed(false)
-      if (collapsedWidth.current) window.yogurt.widget.size(collapsedWidth.current, 42)
+      window.noetaker.widget.pressed(false)
+      if (collapsedWidth.current) window.noetaker.widget.size(collapsedWidth.current, 42)
     },
   }
 }

@@ -1,6 +1,6 @@
 import type { MicDevice, MicsView } from '../shared/types'
 
-/** yogurt-mac mic-devices says {"devices":[{"uid","name","default"}]}: every microphone, and the one the Mac uses now */
+/** noetaker-mac mic-devices says {"devices":[{"uid","name","default"}]}: every microphone, and the one the Mac uses now */
 export function parseMicDevices(raw: unknown): MicDevice[] {
   const list = raw && typeof raw === 'object' ? (raw as { devices?: unknown }).devices : null
   if (!Array.isArray(list)) return []

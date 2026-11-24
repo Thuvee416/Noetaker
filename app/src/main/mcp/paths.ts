@@ -3,18 +3,18 @@ import { dirname, join, posix } from 'node:path'
 
 /** Windows: the pipe's name is in this file in the profile folder, where the helper reads it */
 export const PIPE_FILE = 'mcp.pipe'
-/** Windows and Linux: the program the helper starts when Yogurt is closed */
+/** Windows and Linux: the program the helper starts when Noe Taker is closed */
 export const LAUNCH_FILE = 'mcp-launch'
-/** what the helper passes when it starts Yogurt, so no window pops up in front of the AI app */
+/** what the helper passes when it starts Noe Taker, so no window pops up in front of the AI app */
 export const HIDDEN_ARG = '--hidden'
 
 /**
- * Where AI apps reach Yogurt. Mac and Linux: a Unix socket in the profile folder, only for this person.
+ * Where AI apps reach Noe Taker. Mac and Linux: a Unix socket in the profile folder, only for this person.
  * Windows: a named pipe. Its name is new each launch (id) and only written to the profile folder, so another
- * person on the same PC can't find it or take the name before Yogurt does.
+ * person on the same PC can't find it or take the name before Noe Taker does.
  */
 export function mcpAddress(platform: string, profile: string, id: string): string {
-  return platform === 'win32' ? `\\\\.\\pipe\\yogurt-mcp-${id}` : posix.join(profile, 'mcp.sock')
+  return platform === 'win32' ? `\\\\.\\pipe\\noetaker-mcp-${id}` : posix.join(profile, 'mcp.sock')
 }
 
 /** small files the helper reads, written whole so it never reads half of one */
@@ -24,7 +24,7 @@ export function writeWhole(path: string, text: string) {
 }
 
 /**
- * Windows: tells the helper the pipe's name. Only the Yogurt that holds the single-instance lock writes it: a second
+ * Windows: tells the helper the pipe's name. Only the Noe Taker that holds the single-instance lock writes it: a second
  * launch hands off to that one and quits, and its own pipe, gone a moment later, must never replace the running one's
  * (#156: an AI app's --hidden start left the helper pointed at a pipe that no longer existed). true: written.
  */
@@ -35,8 +35,8 @@ export function publishPipe(platform: string, profile: string, address: string, 
 }
 
 /**
- * What the helper starts when Yogurt is closed. Windows: the installed Yogurt.exe. Linux: the AppImage, wherever
- * it was started from this time. A Mac opens Yogurt by its bundle id, and a dev or test run would start a bare Electron.
+ * What the helper starts when Noe Taker is closed. Windows: the installed noetaker.exe. Linux: the AppImage, wherever
+ * it was started from this time. A Mac opens Noe Taker by its bundle id, and a dev or test run would start a bare Electron.
  */
 export function launchCommand(platform: string, packaged: boolean, execPath: string, env: Record<string, string | undefined>): string | undefined {
   if (!packaged) return undefined
@@ -50,7 +50,7 @@ export const startedHidden = (_platform: string, argv: string[]): boolean => arg
 
 /** Linux: the AppImage is mounted somewhere new each launch, so AI apps are given a copy in the profile folder */
 export function helperCopyPath(platform: string, profile: string): string | undefined {
-  return platform === 'linux' ? posix.join(profile, 'bin', 'yogurt-mcp') : undefined
+  return platform === 'linux' ? posix.join(profile, 'bin', 'noetaker-mcp') : undefined
 }
 
 /**

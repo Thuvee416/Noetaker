@@ -20,7 +20,7 @@ export function SpokenMenu() {
 
   useEffect(() => {
     // Settings can change it too: read again when the window comes back
-    const load = () => void window.yogurt.settings.get().then((p) => setSpoken(p.spoken)).catch(() => {})
+    const load = () => void window.noetaker.settings.get().then((p) => setSpoken(p.spoken)).catch(() => {})
     load()
     window.addEventListener('focus', load)
     return () => window.removeEventListener('focus', load)
@@ -41,7 +41,7 @@ export function SpokenMenu() {
   const choose = (v: Spoken) => {
     setOpen(false); button.current?.focus()
     setSpoken(v)
-    void window.yogurt.settings.setSpoken(v).catch(() => {})
+    void window.noetaker.settings.setSpoken(v).catch(() => {})
   }
   const onKey = (e: KeyboardEvent) => {
     const list = Array.from(root.current?.querySelectorAll<HTMLButtonElement>('[role="menuitemradio"]') ?? [])
@@ -57,7 +57,7 @@ export function SpokenMenu() {
   if (!spoken) return null
   const row = 'flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-start text-sm hover:bg-[var(--line)] focus-visible:bg-[var(--line)] focus-visible:outline-none'
   const tick = (on: boolean) => <Check size={15} aria-hidden="true" className={`ms-auto shrink-0 ${on ? '' : 'invisible'}`} />
-  const about = t('Yogurt listens for the language being spoken. Pick it for meetings that are not in English.')
+  const about = t('Noe Taker listens for the language being spoken. Pick it for meetings that are not in English.')
   return (
     <div ref={root} className="relative flex min-w-0 items-center">
       <button ref={button} data-testid="spoken-chip" aria-haspopup="menu" aria-expanded={!!open} title={t('Spoken language')}

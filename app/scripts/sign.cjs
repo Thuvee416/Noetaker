@@ -3,10 +3,10 @@
 const { basename, join } = require('node:path')
 
 const HELPERS = {
-  'yogurt-audio': 'entitlements.audio.plist',
-  'yogurt-mac': 'entitlements.mac-helper.plist',
+  'noetaker-audio': 'entitlements.audio.plist',
+  'noetaker-mac': 'entitlements.mac-helper.plist',
   'whisper-server': 'entitlements.none.plist',
-  'yogurt-mcp': 'entitlements.none.plist',
+  'noetaker-mcp': 'entitlements.none.plist',
 }
 
 /** The entitlements file for a helper; null for everything else (Electron's own files) */
@@ -39,7 +39,7 @@ async function sign(opts) {
     ...opts,
     optionsForFile: (file) => {
       const base = { ...(forFile ? forFile(file) : {}),
-        ...(process.env.YOGURT_SIGN_ID === 'Yogurt Local' && process.env.YOGURT_NOTARIZE === '0' ? { timestamp: 'none' } : {}),
+        ...(process.env.NOETAKER_SIGN_ID === 'Noe Taker Local' && process.env.NOETAKER_NOTARIZE === '0' ? { timestamp: 'none' } : {}),
       }
       const own = helperEntitlements(file, buildDir)
       return own ? { ...base, entitlements: own } : base

@@ -33,9 +33,9 @@ jobs:
       - run: pnpm -C baseline/app exec playwright install ffmpeg
       - name: Capture baseline on CI only
         env:
-          YOGURT_BACKGROUND: '0'
-          YOGURT_SCRUB_REVIEW: before
-          YOGURT_UI_REVIEW: before
+          NOETAKER_BACKGROUND: '0'
+          NOETAKER_SCRUB_REVIEW: before
+          NOETAKER_UI_REVIEW: before
         run: pnpm -C baseline/app exec playwright test scrubMotion.spec.ts firstRunPolish.spec.ts --workers=1
       - uses: actions/upload-artifact@v4
         if: always()
