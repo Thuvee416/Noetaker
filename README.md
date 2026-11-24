@@ -216,7 +216,7 @@ Meeting data stays local; Noe Taker goes online for model downloads and update c
 ## Support
 
 - [Help](docs/README.md)
-- [Discord](https://github.com/Thuvee416/Noetaker/discussions)
+- [Discussions](https://github.com/Thuvee416/Noetaker/discussions)
 - [Report a bug](https://github.com/Thuvee416/Noetaker/issues)
 
 ## Development

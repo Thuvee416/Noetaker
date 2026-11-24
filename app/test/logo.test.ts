@@ -7,10 +7,10 @@ import { MARK } from '../src/shared/logo'
 const svg = (name: string) => readFileSync(join(import.meta.dirname, '../build', name), 'utf8')
 const paths = (text: string) => [...text.matchAll(/ d="([^"]+)"/g)].map((m) => m[1])
 
-// The app draws the logo from shared/logo.ts; the icons are rendered from build/*.svg. They must stay one drawing.
+// The interface draws the silhouette from shared/logo.ts. The dock icon shades the same ribbon.
 describe('logo', () => {
-  it('retains the approved organic quotation contours exactly', () => {
-    expect(createHash('sha256').update(MARK).digest('hex')).toBe('0fc9bdced4f92d52e61dd66ef66c45034ef3d8d88292a419d8551b5d674cd028')
+  it('keeps the isometric ribbon silhouette', () => {
+    expect(createHash('sha256').update(MARK).digest('hex')).toBe('c7a9a7faab5d15ae25fb2dfdc5e61bc4b9c6315d9943dd24d96cfee1a6ce1c62')
   })
   it('matches build/logo.svg', () => {
     expect(paths(svg('logo.svg'))).toEqual([MARK])
@@ -18,18 +18,11 @@ describe('logo', () => {
   it('matches build/wordmark.svg', () => {
     const wordmark = svg('wordmark.svg')
     expect(paths(wordmark)).toEqual([MARK])
-    expect(wordmark).toContain('>Noe Taker<')
+    expect(wordmark).toContain('>NOE TAKER<')
   })
-  it('matches the original quotation in build/icon.svg', () => {
-    expect(paths(svg('icon.svg')).join('')).toBe(MARK)
-  })
-  it('fills 58% of the Mac tile and centres the original 100-unit mark canvas', () => {
+  it('paints the ribbon on a black icon tile', () => {
     const icon = svg('icon.svg')
-    const mark = icon.match(/<path[^>]*transform="translate\(([^ ]+) ([^)]+)\) scale\(([^)]+)\)"/)!
-    expect(mark).not.toBeNull()
-    const [, x, y, scale] = mark.map(Number)
-    expect(90.17375 * scale / 236).toBeCloseTo(.58, 6)
-    expect(x + 50 * scale).toBeCloseTo(128, 6)
-    expect(y + 50 * scale).toBeCloseTo(128, 6)
+    expect(icon).toContain('fill="#000000"')
+    expect(icon).toContain('fill="#F6F3EC"')
   })
 })

@@ -37,7 +37,7 @@ test('The corner button opens the approved menu by keyboard and offers a ready u
       await button.focus()
       await page.keyboard.press(key)
       await expect(menu.getByRole('menuitem')).toHaveText([
-        /What's new/, 'Star us on GitHub', 'Join Discord', /Keyboard shortcuts/,
+        /What's new/, 'Star us on GitHub', 'Discussions', /Keyboard shortcuts/,
         'Send feedback', /Settings/, /Trash/, 'Restart to update · 9.9.9',
       ])
       await expect(badge).toBeVisible()

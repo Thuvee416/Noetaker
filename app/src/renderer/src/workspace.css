@@ -669,7 +669,7 @@
 .corner-brand { display:block;translate:0 .5px; }
 .corner-mark { display:inline-block;flex:none;width:15px;height:15px;background:currentColor;color:var(--muted); }
 .corner-mark.github { mask:url('./assets/github-black.svg') center / contain no-repeat; }
-.corner-mark.discord { mask:url('./assets/discord.svg') center / contain no-repeat; }
+.corner-mark.discussions { mask:url('./assets/discussions.svg') center / contain no-repeat; }
 .corner-badge,.corner-row-dot { display:block;flex:none;width:7px;height:7px;border-radius:50%;background:var(--accent); }
 .corner-badge { position:absolute;inset-block-start:2px;inset-inline-end:1px;box-shadow:0 0 0 2px var(--bg); }
 .corner-position { z-index:80; }

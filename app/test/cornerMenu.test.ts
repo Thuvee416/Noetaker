@@ -45,9 +45,9 @@ afterEach(() => vi.unstubAllGlobals())
 
 it('uses the approved seven rows and appends the downloaded version nearest the corner button', () => {
   mount(); notify(ready); render()
-  expect(cornerRows).toEqual(['news','github','discord','shortcuts','feedback','settings','trash'])
+  expect(cornerRows).toEqual(['news','github','discussions','shortcuts','feedback','settings','trash'])
   const items = nodes(tree).filter(n => n.type === Menu.Item || n.type === Menu.LinkItem)
-  expect(items.slice(0,-1).map(n => n.props.label)).toEqual(["What's new",'Star us on GitHub','Join Discord','Keyboard shortcuts','Send feedback','Settings','Trash'])
+  expect(items.slice(0,-1).map(n => n.props.label)).toEqual(["What's new",'Star us on GitHub','Discussions','Keyboard shortcuts','Send feedback','Settings','Trash'])
   expect(items.at(-1)?.props['data-testid']).toBe('update-restart')
   expect(JSON.stringify(tree)).toContain('Restart to update · 0.3.10')
   const links = items.filter(n => n.type === Menu.LinkItem)

@@ -55,7 +55,11 @@ sh app/scripts/release-mac.sh
 D=app/dist
 # only a notarized Developer ID build goes in a release
 xcrun stapler validate "$D/noetaker-mac-arm64.dmg"
-codesign -dv "$D/mac-arm64/Noe Taker.app" 2>&1 | grep -q 'TeamIdentifier=2JNSQVN3N8' || { echo "the app isn't signed with the Developer ID" >&2; exit 1; }
+if [ -n "${NOETAKER_TEAM_ID:-}" ]; then
+  codesign -dv "$D/mac-arm64/Noe Taker.app" 2>&1 | grep -q "TeamIdentifier=$NOETAKER_TEAM_ID" || { echo "the app isn't signed with team $NOETAKER_TEAM_ID" >&2; exit 1; }
+else
+  codesign -dv "$D/mac-arm64/Noe Taker.app" 2>&1 | grep -q 'Authority=Developer ID Application' || { echo "the app isn't signed with a Developer ID Application certificate" >&2; exit 1; }
+fi
 trap - EXIT
 git commit -qm "Noe Taker $VERSION" app/package.json
 git push -q origin main

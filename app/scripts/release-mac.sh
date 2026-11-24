@@ -1,13 +1,17 @@
 #!/bin/sh
 # Signed (+ notarized) Mac installer to share: app/dist/noetaker-mac-arm64.dmg
 # Needs the Developer ID certificate in the keychain and, to notarize, a notarytool profile:
-#   xcrun notarytool store-credentials noetaker-notary --apple-id <Apple ID> --team-id 2JNSQVN3N8
+#   xcrun notarytool store-credentials noetaker-notary --apple-id <Apple ID> --team-id <team id>
 # NOETAKER_NOTARIZE=0 signs and checks without sending anything to Apple (a build to try on this Mac).
 # NOETAKER_FUSES=0 leaves Electron's fuses as they come (the inspector on), for the local debugging only: never share it.
 # Builds into dist/ only: with another output folder electron-builder packs the whole project.
 # To build while a copy from dist/ is running, run this in a separate checkout (git worktree).
 set -e
-ID="${NOETAKER_SIGN_ID:-Christian Mathiesen (2JNSQVN3N8)}"
+ID="${NOETAKER_SIGN_ID:-}"
+if [ -z "$ID" ]; then
+  echo 'Set NOETAKER_SIGN_ID to the Developer ID Application certificate name.' >&2
+  exit 1
+fi
 LOCAL=0
 if [ "$ID" = 'Noe Taker Local' ]; then
   [ "${NOETAKER_NOTARIZE:-1}" = 0 ] || { echo 'Noe Taker Local requires NOETAKER_NOTARIZE=0' >&2; exit 1; }
@@ -56,7 +60,11 @@ verify_identity() {
     echo "$dr" | grep -q 'designated =>' || { echo "$1 has no designated requirement" >&2; exit 1; }
     echo "$dr" | grep -q 'cdhash' && { echo "$1 has an unstable ad-hoc requirement" >&2; exit 1; }
   else
-    codesign -dv "$1" 2>&1 | grep -q 'TeamIdentifier=2JNSQVN3N8' || { echo "$1 isn't signed with the Developer ID" >&2; exit 1; }
+    if [ -n "${NOETAKER_TEAM_ID:-}" ]; then
+      codesign -dv "$1" 2>&1 | grep -q "TeamIdentifier=$NOETAKER_TEAM_ID" || { echo "$1 isn't signed with team $NOETAKER_TEAM_ID" >&2; exit 1; }
+    else
+      codesign -dv "$1" 2>&1 | grep -q 'Authority=Developer ID Application' || { echo "$1 isn't signed with a Developer ID Application certificate" >&2; exit 1; }
+    fi
   fi
   return 0
 }

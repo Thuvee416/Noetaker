@@ -1,6 +1,6 @@
 appId: app.noetaker
 productName: Noe Taker
-copyright: Copyright © 2026 Frigade
+copyright: Copyright © 2026 Noe Taker
 # GitHub Releases: every v* tag builds Mac, Windows and Linux (.github/workflows/release.yml).
 # Fixed file names, so releases/latest/download/noetaker-mac-arm64.dmg (and the Windows and Linux ones) point at the newest.
 # Installed copies update from the same release (latest-mac.yml, latest.yml, latest-linux.yml; src/main/updates.ts).
@@ -115,7 +115,7 @@ win:
   target:
     - target: nsis
       arch: [x64]
-  icon: build/icon.png
+  icon: build/icon.ico
 nsis:
   # an installer with pages (not one click): where Noe Taker goes, then where its AI models go (build/installer.nsh), for a
   # small C: drive. Still per user, no admin prompt; updates install silently as before. The include also carries on

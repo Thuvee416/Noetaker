@@ -13,9 +13,9 @@ export function Logo({ size = 28, className = 'text-accent' }: { size?: number; 
 /** The mark with the name next to it, as on the website. Sized by its height. */
 export function Wordmark({ height = 32 }: { height?: number }) {
   return (
-    <svg data-testid="wordmark" role="img" aria-label="Noe Taker" height={height} width={(height * 340) / 80} viewBox="0 0 340 80" className="shrink-0">
-      <path fill="var(--accent)" transform="translate(0 5) scale(.65)" d={MARK} />
-      <text x="78" y="54" fill="currentColor" fontFamily="ui-sans-serif, system-ui, sans-serif" fontSize="34" fontWeight="650">Noe Taker</text>
+    <svg data-testid="wordmark" role="img" aria-label="Noe Taker" height={height} width={(height * 300) / 80} viewBox="0 0 300 80" className="shrink-0">
+      <path fill="var(--accent)" transform="translate(0 4) scale(.72)" d={MARK} />
+      <text x="86" y="50" fill="currentColor" fontFamily="ui-sans-serif, system-ui, sans-serif" fontSize="18" fontWeight="600" letterSpacing="3.4">NOE TAKER</text>
     </svg>
   )
 }
