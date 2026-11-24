@@ -17,7 +17,7 @@ const { UtilityEngine, backendOrder } = await import('../src/main/engine')
 
 const card = { gpuType: 'vulkan', vramTotalGB: 12.9, unifiedGB: 0, gpuNames: ['NVIDIA GeForce RTX 3080 Ti'] }
 const none = { gpuType: false, vramTotalGB: 0, unifiedGB: 0, gpuNames: [] }
-const backend = (p: Proc) => p.env?.YOGURT_ENGINE_GPU
+const backend = (p: Proc) => p.env?.NOETAKER_ENGINE_GPU
 /** lets the engine move on to the next process, then returns it */
 const next = async (n: number) => { await vi.waitFor(() => expect(procs.length).toBe(n)); await vi.waitFor(() => expect(procs[n - 1].sent.length).toBeGreaterThan(0)); return procs[n - 1] }
 

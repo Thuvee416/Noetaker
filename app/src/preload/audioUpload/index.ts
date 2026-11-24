@@ -1,12 +1,12 @@
 import { ipcRenderer } from 'electron'
-import type { YogurtApi } from '../../shared/types'
+import type { NoetakerApi } from '../../shared/types'
 import type { AudioUploadStatus } from '../../shared/audioUpload'
 import { inspectAudioUpload } from './inspect'
 import { decodeAudioUpload } from './decode'
 import { AudioFileError } from './read'
 const inspections=new Map<string,{abort:AbortController;promise:Promise<number>}>()
 const decoding=new Map<string,AbortController>()
-export const audioUpload:YogurtApi['audioUpload']={
+export const audioUpload:NoetakerApi['audioUpload']={
   pick:()=>ipcRenderer.invoke('audio-upload:pick'),
   inspect(token){
     let task=inspections.get(token)

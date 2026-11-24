@@ -40,10 +40,10 @@ export function FoldersNav({ folders, route, go }: { folders?: Folder[]; route: 
     if (next.every((id, i) => id === folders?.[i]?.id)) { setOrder(undefined); return }
     setOrder(next); setBusy(true)
     try {
-      if (!await window.yogurt.folders.reorder(next)) throw new Error('Folder list changed')
+      if (!await window.noetaker.folders.reorder(next)) throw new Error('Folder list changed')
     } catch {
       setOrder(undefined)
-      toasts.add({ title: t("Yogurt couldn't make that change. Try again.") })
+      toasts.add({ title: t("Noe Taker couldn't make that change. Try again.") })
     } finally { setBusy(false) }
   }
   const move = (id: string, step: number) => {
@@ -159,7 +159,7 @@ function FolderItem({ folder, current, go, onRename, onDelete, onAppearance, con
         const ids = draggedMeetings(e.dataTransfer.getData(MEETING_DRAG))
         if (ids.length) {
           e.preventDefault()
-          void addMeetingsToFolder(folder.id, ids).catch(() => toasts.add({ title: t("Yogurt couldn't add this note to the folder. Try again.") }))
+          void addMeetingsToFolder(folder.id, ids).catch(() => toasts.add({ title: t("Noe Taker couldn't add this note to the folder. Try again.") }))
         }
       }}>
       <FolderGlyph appearance={folder} />

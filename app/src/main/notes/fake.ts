@@ -3,7 +3,7 @@ import { fakePrompts } from '../fake'
 
 /**
  * Fake mode: no model. The notes for the e2e meeting (meeting-me.wav / meeting-them.wav), streamed a few words at a
- * time, and one answer to any question about a meeting. The first line the person typed comes back marked as theirs. YOGURT_FAKE_LLM_MS sets the pause between pieces.
+ * time, and one answer to any question about a meeting. The first line the person typed comes back marked as theirs. NOETAKER_FAKE_LLM_MS sets the pause between pieces.
  */
 export class FakeEngine implements Engine {
   async load() { return { contextSize: 32_768 } }
@@ -62,7 +62,7 @@ export class FakeEngine implements Engine {
     return this.stream(md, onToken, signal)
   }
   private async stream(md: string, onToken: (text: string) => void, signal?: AbortSignal): Promise<string> {
-    const pause = Number(process.env.YOGURT_FAKE_LLM_MS ?? 60)
+    const pause = Number(process.env.NOETAKER_FAKE_LLM_MS ?? 60)
     let out = ''
     for (const piece of md.match(/\S+\s*/g) ?? []) {
       // like the real engine: a stopped answer ends where it is and comes back as it is, no error

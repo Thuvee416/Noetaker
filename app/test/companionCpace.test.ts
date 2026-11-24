@@ -37,7 +37,7 @@ describe('CPace ristretto255 / SHA-512', () => {
   }
 
   it('random runs agree, and a wrong code gives a different key', () => {
-    const ci = utf8('yogurt-pair-v1'), sid = random(16)
+    const ci = utf8('noetaker-pair-v1'), sid = random(16)
     const a = cpaceStart('123456', ci, sid)
     const b = cpaceRespond('123456', ci, sid, a.ya)
     const isk = cpaceFinish(a.secret, b.yb)
@@ -51,8 +51,8 @@ describe('CPace ristretto255 / SHA-512', () => {
 
   it('a different channel id or session id gives a different key', () => {
     const sid = random(16)
-    const a = cpaceStart('123456', utf8('yogurt-pair-v1A'), sid)
-    const b = cpaceRespond('123456', utf8('yogurt-pair-v1B'), sid, a.ya)
+    const a = cpaceStart('123456', utf8('noetaker-pair-v1A'), sid)
+    const b = cpaceRespond('123456', utf8('noetaker-pair-v1B'), sid, a.ya)
     expect(toHex(cpaceFinish(a.secret, b.yb))).not.toBe(toHex(b.isk))
     const c = cpaceStart('123456', utf8('ci'), sid)
     const d = cpaceRespond('123456', utf8('ci'), random(16), c.ya)
@@ -101,7 +101,7 @@ describe('pairing keys and boxes', () => {
   it('matches HKDF-SHA-512 with an empty salt (what the phone computes)', async () => {
     const { hkdfSync } = await import('node:crypto')
     const isk = random(64)
-    expect(toHex(pairKeys(isk).toDesktop)).toBe(Buffer.from(hkdfSync('sha512', isk, new Uint8Array(0), 'yogurt pair to-desktop', 32)).toString('hex'))
+    expect(toHex(pairKeys(isk).toDesktop)).toBe(Buffer.from(hkdfSync('sha512', isk, new Uint8Array(0), 'noetaker pair to-desktop', 32)).toString('hex'))
   })
 
   it('seals and opens; a changed byte, key or associated data fails', () => {

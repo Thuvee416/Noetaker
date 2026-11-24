@@ -5,19 +5,19 @@ import { join } from 'node:path'
 
 for (const theme of ['light', 'dark'] as const) test(`folder labels leave the meeting identity alone and yield in a narrow window (${theme})`, async () => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-e2e-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-e2e-')),
   } })
   try {
     const page = await app.firstWindow()
     await expect(page.getByTestId('home')).toBeVisible()
     await app.evaluate(() => (globalThis as unknown as { __fake__: { manyMeetings(o: unknown): void } }).__fake__.manyMeetings({ n: 1, clean: true }))
     await page.evaluate(async theme => {
-      await window.yogurt.settings.setTheme(theme)
-      const [meeting] = await window.yogurt.meetings.cards({ limit: 1 })
+      await window.noetaker.settings.setTheme(theme)
+      const [meeting] = await window.noetaker.meetings.cards({ limit: 1 })
       for (const [name, color] of [['Customers', 'violet'], ['Fundraise', 'amber']] as const) {
-        const folder = await window.yogurt.folders.create(name, { icon: 'star', color })
+        const folder = await window.noetaker.folders.create(name, { icon: 'star', color })
         if (!folder) throw new Error('Could not create fixture folder')
-        await window.yogurt.folders.add(folder.id, meeting.id)
+        await window.noetaker.folders.add(folder.id, meeting.id)
       }
     }, theme)
     await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().find(w => !w.webContents.getURL().includes('#'))!.setContentSize(1280, 800))

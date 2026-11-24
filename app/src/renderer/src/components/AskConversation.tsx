@@ -55,7 +55,7 @@ export function AskConversation({ id, pendingDraftKey, initial, loadError = fals
   const [targetResults, setTargetResults] = useState<{ query: string; items: ContextTarget[] }>()
   // The bare list, kept so the picker opens already filled instead of flashing Loading.
   const bare = useRef<ContextTarget[]>(undefined)
-  const prefetch = () => { if (!bare.current) void window.yogurt.conversations.targets('').then(items => { bare.current = items }).catch(() => {}) }
+  const prefetch = () => { if (!bare.current) void window.noetaker.conversations.targets('').then(items => { bare.current = items }).catch(() => {}) }
   const [expanded, setExpanded] = useState(false)
   const [scopeExpanded, setScopeExpanded] = useState(false)
   const chips = chat ? attachContext(chat.chips, chat.draftChips) : []
@@ -104,15 +104,15 @@ export function AskConversation({ id, pendingDraftKey, initial, loadError = fals
       edited.current = true
       drafts.set(id, pending)
       drafts.delete(pendingDraftKey!)
-      void window.yogurt.conversations.draft(id, pending).then(() => {
+      void window.noetaker.conversations.draft(id, pending).then(() => {
         if (drafts.get(id) === pending) drafts.delete(id)
       }).catch(() => { if (active) setError(true) })
     }
-    const off = window.yogurt.conversations.onChange(v => { if (v.id === id) { revision++; setReadFailed(false); setChat(v) } })
+    const off = window.noetaker.conversations.onChange(v => { if (v.id === id) { revision++; setReadFailed(false); setChat(v) } })
     const load = (first = false) => {
       setReadFailed(false)
       const request = ++revision
-      void window.yogurt.conversations.get(id).then(v => {
+      void window.noetaker.conversations.get(id).then(v => {
         if (!active) return
         if (!v) throw new Error('Conversation not found')
         if (request !== revision) return
@@ -127,8 +127,8 @@ export function AskConversation({ id, pendingDraftKey, initial, loadError = fals
         }
       })
     }
-    const offMeetings = window.yogurt.meetings.onChange(() => load())
-    const offFolders = window.yogurt.folders.onChange(() => load())
+    const offMeetings = window.noetaker.meetings.onChange(() => load())
+    const offFolders = window.noetaker.folders.onChange(() => load())
     retryRead.current = () => load(true)
     load(true)
     return () => { active = false; off(); offMeetings(); offFolders() }
@@ -137,7 +137,7 @@ export function AskConversation({ id, pendingDraftKey, initial, loadError = fals
     let active = true
     if (query === undefined) { setTargetResults(undefined); setSelected(0); setExpanded(false); return }
     // Keep the last completed search visible until the replacement is ready.
-    void window.yogurt.conversations.targets(query).then(items => {
+    void window.noetaker.conversations.targets(query).then(items => {
       if (!active) return
       if (!query) bare.current = items
       setTargetResults({ query, items }); setSelected(0); setExpanded(false)
@@ -146,7 +146,7 @@ export function AskConversation({ id, pendingDraftKey, initial, loadError = fals
   }, [query, !!selector, chat?.chips, chat?.draftChips])
   // about exactly one meeting: main reads it in now, so the first question only reads itself
   const single = chips.length === 1 && chips[0].kind === 'meeting' ? chips[0].id : undefined
-  const warm = () => { if (single && !recordingWait) window.yogurt.conversations.warm(id) }
+  const warm = () => { if (single && !recordingWait) window.noetaker.conversations.warm(id) }
   useEffect(warm, [id, single, recordingWait])
   useEffect(() => { document.getElementById(`${prefix}-context-${selected}`)?.scrollIntoView({ block: 'nearest' }) }, [selected, targets])
   useLayoutEffect(() => {
@@ -181,7 +181,7 @@ export function AskConversation({ id, pendingDraftKey, initial, loadError = fals
     setText(value)
     if (id || pendingDraftKey) drafts.set(id || pendingDraftKey!, value)
     if (!id) return
-    void window.yogurt.conversations.draft(id, value).then(() => { if (drafts.get(id) === value) drafts.delete(id) }).catch(() => setError(true))
+    void window.noetaker.conversations.draft(id, value).then(() => { if (drafts.get(id) === value) drafts.delete(id) }).catch(() => setError(true))
   }
   const detectMention = (value: string, caret: number) => {
     if (recordingWait) return
@@ -195,7 +195,7 @@ export function AskConversation({ id, pendingDraftKey, initial, loadError = fals
   }, [recordingWait])
   const context = async (chips: ContextTarget[]) => {
     setChanging(true); setError(false)
-    try { await window.yogurt.conversations.context(id, chips) }
+    try { await window.noetaker.conversations.context(id, chips) }
     catch { setError(true); throw new Error('Context was not saved') }
     finally { setChanging(false) }
   }
@@ -211,7 +211,7 @@ export function AskConversation({ id, pendingDraftKey, initial, loadError = fals
   const remove = async (targets: ContextTarget[]) => {
     if (busy) return
     setChanging(true); setError(false)
-    try { for (const chip of targets) await window.yogurt.conversations.removeContext(id, chip) }
+    try { for (const chip of targets) await window.noetaker.conversations.removeContext(id, chip) }
     catch { setError(true) }
     finally { setChanging(false) }
   }
@@ -224,7 +224,7 @@ export function AskConversation({ id, pendingDraftKey, initial, loadError = fals
   // Sending from the box (Enter, the send button or a starter) keeps the person in it; the button turns into Stop and starters go. A disabled field would drop focus, so it is read-only while saving.
   const keepTyping = () => { const from = document.activeElement; if (from === document.body || from?.closest('.ask-box, .ask-starters')) input.current?.focus({ preventScroll: true }) }
   const submit = (q: string) => {
-    void window.yogurt.conversations.ask(id, q).then(made => {
+    void window.noetaker.conversations.ask(id, q).then(made => {
       if (!made) throw new Error('Question was not saved')
       if (typeof made !== 'string') return
       setText(''); drafts.delete(id)
@@ -268,7 +268,7 @@ export function AskConversation({ id, pendingDraftKey, initial, loadError = fals
   }
   const fresh = () => {
     if (!chat || changing) return
-    void window.yogurt.conversations.current(attachContext(chat.chips, chat.draftChips), true).then(onSelect).catch(() => setError(true))
+    void window.noetaker.conversations.current(attachContext(chat.chips, chat.draftChips), true).then(onSelect).catch(() => setError(true))
   }
   const startersHidden = !panel && (!!text || !!selector)
   const suggestions = unsent && (landing || panel) && (!panel || !text) && <div data-testid={panel ? 'chat-suggestions' : 'chat-starters'} aria-hidden={startersHidden || undefined} data-instant={!!selector || undefined} inert={startersHidden} className={`ask-starters${panel ? '' : ' ask-home-starters'}`}>
@@ -369,7 +369,7 @@ export function AskConversation({ id, pendingDraftKey, initial, loadError = fals
               </Popover.Positioner>
             </Popover.Portal>
           </Popover.Root>
-          {answering ? <button type="button" data-testid={`${prefix}-stop`} className="ask-toolbar-button ask-stop" aria-label={chat?.waitsForModel ? t('Cancel question') : t('Stop')} title={chat?.waitsForModel ? t('Cancel question') : t('Stop')} onClick={() => { keepTyping(); window.yogurt.conversations.stop(id) }}><Square size={10} fill="currentColor" /></button>
+          {answering ? <button type="button" data-testid={`${prefix}-stop`} className="ask-toolbar-button ask-stop" aria-label={chat?.waitsForModel ? t('Cancel question') : t('Stop')} title={chat?.waitsForModel ? t('Cancel question') : t('Stop')} onClick={() => { keepTyping(); window.noetaker.conversations.stop(id) }}><Square size={10} fill="currentColor" /></button>
             : <button type="submit" data-testid={`${prefix}-send`} className="ask-toolbar-button ask-send" disabled={busy || !text.trim()} aria-label={t('Ask')}><span className="orb-material" aria-hidden="true" /><ArrowUp size={16} /></button>}
         </div>
         </div>
@@ -388,14 +388,14 @@ function Turn({ turn, chat, panel, showCopy, onSource, onRetry, retryDisabled }:
   return <div data-testid={`${prefix}-turn`} data-status={turn.status} data-show-copy={showCopy || undefined} className="ask-turn">
     <p className="ask-question" data-testid={`${prefix}-question`}>{turn.question}</p>
     {(turn.status === 'waiting' || live && !answer) && (chat.waitsForModel && turn.status === 'waiting'
-      ? <NotesModelWait downloading={percent => <p role="status" className="text-sm text-muted">{t("Your question is waiting for Yogurt's AI to download.")} <span className="whitespace-nowrap">{percent}</span></p>}><p role="status" className="text-sm text-muted">{t('Getting ready to answer. Yogurt is still setting up.')}</p></NotesModelWait>
-      : <p className="chat-progress" role="status">{chat.waitsForMeeting && turn.status === 'waiting' ? t('Yogurt will answer once the meeting ends.') : <><ThinkingDots /><StepText step={turn.status === 'waiting' ? undefined : turn.step} /></>}</p>)}
+      ? <NotesModelWait downloading={percent => <p role="status" className="text-sm text-muted">{t("Your question is waiting for Noe Taker's AI to download.")} <span className="whitespace-nowrap">{percent}</span></p>}><p role="status" className="text-sm text-muted">{t('Getting ready to answer. Noe Taker is still setting up.')}</p></NotesModelWait>
+      : <p className="chat-progress" role="status">{chat.waitsForMeeting && turn.status === 'waiting' ? t('Noe Taker will answer once the meeting ends.') : <><ThinkingDots /><StepText step={turn.status === 'waiting' ? undefined : turn.step} /></>}</p>)}
     {answer && <div data-testid={`${prefix}-answer`} dir="auto" data-streaming={live || undefined} className={`note-prose chat-answer${live ? ' stream-caret' : ''}`}><AnswerText md={answer} live={live} sources={turn.sources} onSource={onSource} /></div>}
     {answer && !live && <div className="chat-answer-actions"><button className="text-action chat-copy-action" data-testid="chat-copy-answer" aria-label={copied ? t('Copied') : t('Copy answer')} onClick={() => {
       void navigator.clipboard.writeText(turn.answer).then(() => { setCopied(true); setFailed(false) }).catch(() => setFailed(true))
-    }}><Swap show={copied ? 'done' : 'copy'} options={{ copy: <Copy className="flex-none" size={13} />, done: <Check size={13} /> }} /><SwapText text={copied ? t('Copied') : t('Copy')} /></button>{turn.scope && <AnswerScope chips={turn.scope} />}<span role="status" className={failed ? 'text-danger' : 'sr-only'}>{failed ? t("Yogurt couldn't copy.") : copied ? t('Copied') : ''}</span></div>}
+    }}><Swap show={copied ? 'done' : 'copy'} options={{ copy: <Copy className="flex-none" size={13} />, done: <Check size={13} /> }} /><SwapText text={copied ? t('Copied') : t('Copy')} /></button>{turn.scope && <AnswerScope chips={turn.scope} />}<span role="status" className={failed ? 'text-danger' : 'sr-only'}>{failed ? t("Noe Taker couldn't copy.") : copied ? t('Copied') : ''}</span></div>}
     {turn.status === 'stopped' && <p className="text-xs text-muted">{answer ? t('Stopped') : t('Stopped before answering')}</p>}
-    {turn.status === 'failed' && <InlineError testId="chat-answer-error"><span>{t("Yogurt couldn't answer that.")}</span><button type="button" className="workspace-button" disabled={retryDisabled} onClick={onRetry}>{t('Try again')}</button></InlineError>}
+    {turn.status === 'failed' && <InlineError testId="chat-answer-error"><span>{t("Noe Taker couldn't answer that.")}</span><button type="button" className="workspace-button" disabled={retryDisabled} onClick={onRetry}>{t('Try again')}</button></InlineError>}
   </div>
 }
 

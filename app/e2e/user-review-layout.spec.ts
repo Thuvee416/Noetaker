@@ -5,7 +5,7 @@ import { join } from 'node:path'
 
 test('primary views keep their heading aligned, with room below the window toolbar', async () => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-layout-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-layout-')),
   } })
   try {
     const page = await app.firstWindow()

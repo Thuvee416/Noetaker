@@ -6,7 +6,7 @@ import { join } from 'node:path'
 
 test('the hidden sidebar peeks over a full-width page and keeps folder actions available, including at narrow widths', async () => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-peek-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-peek-')),
   } })
   try {
     const page = await app.firstWindow()
@@ -85,7 +85,7 @@ test('the hidden sidebar peeks over a full-width page and keeps folder actions a
     const library = page.locator('.native-home > .native-library')
     expect(await library.evaluate(el => [2, 12, 15].every(x => el.contains(document.elementFromPoint(x, 200))))).toBe(true)
     expect(await page.locator('.workspace-sidebar-body').evaluate(el => getComputedStyle(el).overflowX)).toBe('hidden')
-    await page.evaluate(() => window.yogurt.settings.setLanguage('ar'))
+    await page.evaluate(() => window.noetaker.settings.setLanguage('ar'))
     await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
     await toggle.press('ArrowDown')
     const box = (await corner.boundingBox())!

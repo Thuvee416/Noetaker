@@ -11,7 +11,7 @@ import { isId } from './ipcArgs'
 import { pack, unpack } from './zip'
 
 /**
- * A backup is one zip: manifest.json, a snapshot of yogurt.db and meetings/<id>/ with each meeting's recordings.
+ * A backup is one zip: manifest.json, a snapshot of noetaker.db and meetings/<id>/ with each meeting's recordings.
  * Importing adds the meetings that are not here yet and never changes or removes one that is.
  */
 export const BACKUP_FORMAT = backupFormat.format
@@ -143,12 +143,12 @@ const scratch = (name: string) => name.endsWith('.f32')
 // Cleanup cannot undo a committed export/import or replace the original failure.
 const cleanup = (dir: string) => rm(dir, { recursive: true, force: true }).catch((e) => console.warn('backup cleanup failed', dir, e))
 
-/** Everything to one zip: a snapshot of the database (safe while Yogurt runs), each meeting's recordings, and a manifest */
+/** Everything to one zip: a snapshot of the database (safe while Noe Taker runs), each meeting's recordings, and a manifest */
 export async function exportBackup(o: { db: DatabaseSync; meetingsDir: string; out: string; appVersion: string; now?: number; showRecordingPill?: boolean }): Promise<{ meetings: number }> {
-  const work = await mkdtemp(join(tmpdir(), 'yogurt-export-'))
+  const work = await mkdtemp(join(tmpdir(), 'noetaker-export-'))
   let staging: string | undefined
   try {
-    const file = join(work, 'yogurt.db')
+    const file = join(work, 'noetaker.db')
     o.db.exec(`VACUUM INTO '${file.replace(/'/g, "''")}'`)
     const snap = new DatabaseSync(file)
     // meetings in the Trash are on their way out: not in the backup (their rows go with them by ON DELETE CASCADE)
@@ -176,7 +176,7 @@ export async function exportBackup(o: { db: DatabaseSync; meetingsDir: string; o
     await writeFile(join(work, 'manifest.json'), JSON.stringify(manifest, null, 2))
     // Keep the previous backup until its replacement is complete. Stage beside the
     // destination so the final rename stays atomic, including on an external disk.
-    staging = await mkdtemp(join(dirname(o.out), '.yogurt-backup-'))
+    staging = await mkdtemp(join(dirname(o.out), '.noetaker-backup-'))
     const archive = join(staging, 'backup.zip')
     await pack(work, archive)
     await rename(archive, o.out)
@@ -198,7 +198,7 @@ export async function importBackup(o: { db: DatabaseSync; meetingsDir: string; z
   const copied: string[] = []
   let from: DatabaseSync | undefined
   try {
-    work = await mkdtemp(join(tmpdir(), 'yogurt-import-'))
+    work = await mkdtemp(join(tmpdir(), 'noetaker-import-'))
     // Extraction can fail for disk or permission errors; that does not prove the archive is invalid.
     await unpack(o.zip, work)
     let manifest: string
@@ -212,7 +212,7 @@ export async function importBackup(o: { db: DatabaseSync; meetingsDir: string; z
     try { raw = JSON.parse(manifest) } catch { return { ok: false, error: 'invalid' } }
     const ok = checkManifest(raw)
     if (ok !== 'ok') return { ok: false, error: ok }
-    from = new DatabaseSync(join(work, 'yogurt.db'), { readOnly: true })
+    from = new DatabaseSync(join(work, 'noetaker.db'), { readOnly: true })
     if (!tables(from).has('meetings') || !columns(from, 'meetings').some((c) => c.name === 'id')) return { ok: false, error: 'invalid' }
     for (const id of newIds(o.db, from).add) {
       const src = join(work, 'meetings', id), dest = join(o.meetingsDir, id)

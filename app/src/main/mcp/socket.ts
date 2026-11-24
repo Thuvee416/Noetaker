@@ -8,7 +8,7 @@ const MAX_LINE = 1024 * 1024
 
 /**
  * The MCP server on a Unix socket in the profile folder (a named pipe on Windows), one JSON message a line (MCP's stdio framing, which the
- * yogurt-mcp helper passes through). Only this Mac's user can open it. clients: the apps connected now, by the
+ * noetaker-mcp helper passes through). Only this Mac's user can open it. clients: the apps connected now, by the
  * name they gave (onClients hears every change, for Settings).
  */
 export async function serveMcp(path: string, mcp: Mcp, onClients: (names: string[]) => void) {

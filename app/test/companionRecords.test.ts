@@ -82,13 +82,13 @@ describe('companion change log', () => {
   })
 
   it('gives the log an epoch that stays the same across opens', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'yogurt-companion-'))
+    const dir = mkdtempSync(join(tmpdir(), 'noetaker-companion-'))
     try {
-      const a = openStore(join(dir, 'yogurt.db'))
+      const a = openStore(join(dir, 'noetaker.db'))
       const epoch = changesSince(a, 0, 10).epoch
       expect(epoch).toMatch(/^[0-9a-f-]{36}$/)
       a.close()
-      const b = openStore(join(dir, 'yogurt.db'))
+      const b = openStore(join(dir, 'noetaker.db'))
       expect(changesSince(b, 0, 10).epoch).toBe(epoch)
       b.close()
       expect(changesSince(store, 0, 10).epoch).not.toBe(epoch)
@@ -96,13 +96,13 @@ describe('companion change log', () => {
   })
 
   it('triggers are made again under a new version, so their columns can change', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'yogurt-companion-'))
+    const dir = mkdtempSync(join(tmpdir(), 'noetaker-companion-'))
     try {
-      const a = openStore(join(dir, 'yogurt.db'))
+      const a = openStore(join(dir, 'noetaker.db'))
       a.db.exec('DROP TRIGGER companion_meetings_au')
       a.db.prepare("UPDATE companion_meta SET value = '0' WHERE key = 'triggers'").run()
       a.close()
-      const b = openStore(join(dir, 'yogurt.db'))
+      const b = openStore(join(dir, 'noetaker.db'))
       const m = b.createMeeting({ ...base, title: 'Kiwi', startedAt: 1000 })
       const since = changesSince(b, 0, 500).cursor
       b.updateMeeting(m.id, { title: 'Kiwi two' })
@@ -112,15 +112,15 @@ describe('companion change log', () => {
   })
 
   it('what was there before the log existed is sent from the start', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'yogurt-companion-'))
+    const dir = mkdtempSync(join(tmpdir(), 'noetaker-companion-'))
     try {
-      const old = openStore(join(dir, 'yogurt.db'))
+      const old = openStore(join(dir, 'noetaker.db'))
       const m = old.createMeeting({ ...base, title: 'Old one', startedAt: 1000 })
       // a database from before the companion: no log, no triggers
       for (const r of old.db.prepare("SELECT name FROM sqlite_master WHERE type = 'trigger' AND name LIKE 'companion_%'").all()) old.db.exec(`DROP TRIGGER ${String(r.name)}`)
       old.db.exec('DROP TABLE companion_changes')
       old.close()
-      const reopened = openStore(join(dir, 'yogurt.db'))
+      const reopened = openStore(join(dir, 'noetaker.db'))
       expect(keys(changesSince(reopened, 0, 100).changes)).toContain(`meeting:${m.id}`)
       reopened.close()
     } finally { rmSync(dir, { recursive: true, force: true }) }

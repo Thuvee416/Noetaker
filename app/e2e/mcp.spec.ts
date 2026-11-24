@@ -6,14 +6,14 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 const main = join(import.meta.dirname, '../out/main/index.js')
-const helper = join(import.meta.dirname, '../resources/bin/yogurt-mcp')
+const helper = join(import.meta.dirname, '../resources/bin/noetaker-mcp')
 
 const fake = <T>(app: ElectronApplication, fn: string, arg?: unknown): Promise<T> =>
   app.evaluate((_e, [fn, arg]) => (globalThis as unknown as Record<string, Record<string, (a?: unknown) => unknown>>).__fake__[fn as string](arg), [fn, arg] as const) as Promise<T>
 
-/** an AI app: starts yogurt-mcp as Claude would and talks MCP to it, one JSON message a line */
+/** an AI app: starts noetaker-mcp as Claude would and talks MCP to it, one JSON message a line */
 function aiApp(userData: string) {
-  const child: ChildProcessWithoutNullStreams = spawn(helper, [], { env: { ...process.env, YOGURT_USER_DATA: userData, YOGURT_MCP_NO_LAUNCH: '1' } })
+  const child: ChildProcessWithoutNullStreams = spawn(helper, [], { env: { ...process.env, NOETAKER_USER_DATA: userData, NOETAKER_MCP_NO_LAUNCH: '1' } })
   const replies = new Map<number, unknown>()
   let buf = '', next = 1
   child.stdout.setEncoding('utf8')
@@ -31,16 +31,16 @@ function aiApp(userData: string) {
   return { ask, tool, close: () => child.stdin.end() }
 }
 
-test('an AI app on this Mac reads meetings through yogurt-mcp only once Settings allows it, and Settings shows it connected', async () => {
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-mcp-'))
-  const app = await electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData } })
+test('an AI app on this Mac reads meetings through noetaker-mcp only once Settings allows it, and Settings shows it connected', async () => {
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-mcp-'))
+  const app = await electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData } })
   const page = await app.firstWindow()
   const ai = aiApp(userData)
   try {
     await expect(page.getByTestId('home')).toBeVisible()
     await fake(app, 'manyMeetings', { n: 2, clean: true })
     const hello = await ai.ask('initialize', { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'Test client', version: '1' } })
-    expect(hello.result.serverInfo!.name).toBe('yogurt')
+    expect(hello.result.serverInfo!.name).toBe('noetaker')
     // off by default: nothing is read
     const off = await ai.tool('list_meetings')
     expect(off.isError).toBe(true)
@@ -52,7 +52,7 @@ test('an AI app on this Mac reads meetings through yogurt-mcp only once Settings
     await toggle.click()
     await expect(toggle).toHaveAttribute('aria-checked', 'true')
     await expect(page.getByTestId('ai-apps-clients')).toHaveText('Connected apps · Test client')
-    await expect(page.getByTestId('ai-apps-command')).toHaveValue(/yogurt-mcp$/)
+    await expect(page.getByTestId('ai-apps-command')).toHaveValue(/noetaker-mcp$/)
     await expect(page.getByTestId('ai-apps-claude')).toHaveCount(0)
     await expect(page.getByTestId('ai-apps')).toContainText('Copy this command and add it as a local MCP server in your AI app.')
     await page.evaluate(() => {

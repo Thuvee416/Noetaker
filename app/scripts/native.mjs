@@ -1,7 +1,7 @@
 // Builds the helpers for this computer into resources/bin.
 // Mac: scripts/native.sh, unchanged.
 // Windows and Linux: the Rust helpers (recorder, system helper, AI apps relay) with cargo, then whisper-server and the
-// VAD model (scripts/whisper-build.mjs). YOGURT_NO_WHISPER=1 leaves whisper-server out (CI's fake-mode tests don't use it).
+// VAD model (scripts/whisper-build.mjs). NOETAKER_NO_WHISPER=1 leaves whisper-server out (CI's fake-mode tests don't use it).
 // Needs Rust (each crate's rust-toolchain.toml pins the version), CMake, and on Linux libpulse-dev and pkg-config.
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
@@ -26,9 +26,9 @@ const bin = join(app, 'resources', 'bin')
 const exe = (name) => (win ? `${name}.exe` : name)
 /** crate folder in native/, and the program it builds */
 const CRATES = [
-  [win ? 'yogurt-audio-win' : 'yogurt-audio-linux', 'yogurt-audio'],
-  ['yogurt-system', 'yogurt-system'],
-  ['yogurt-mcp-relay', 'yogurt-mcp'],
+  [win ? 'noetaker-audio-win' : 'noetaker-audio-linux', 'noetaker-audio'],
+  ['noetaker-system', 'noetaker-system'],
+  ['noetaker-mcp-relay', 'noetaker-mcp'],
 ]
 
 /** newest change to anything a crate builds from */
@@ -64,13 +64,13 @@ for (const [crate, name] of CRATES) {
 // exports both functions, and its own test passes.
 if (!win) {
   const src = join(app, 'native', 'bigalloc')
-  const so = join(bin, 'libyogurt-bigalloc.so')
+  const so = join(bin, 'libnoetaker-bigalloc.so')
   run('gcc', ['-O2', '-fPIC', '-shared', '-Wall', '-Wextra', '-Werror', '-o', so, join(src, 'bigalloc.c')])
   const syms = spawnSync('nm', ['-D', '--defined-only', so], { encoding: 'utf8' }).stdout ?? ''
   for (const name of ['ggml_aligned_malloc', 'ggml_aligned_free']) {
     if (!new RegExp(`\\sT ${name}$`, 'm').test(syms)) { console.error(`${so} doesn't export ${name}`); process.exit(1) }
   }
-  const test = join(tmpdir(), 'yogurt-bigalloc-test')
+  const test = join(tmpdir(), 'noetaker-bigalloc-test')
   run('gcc', ['-O2', '-Wall', '-Werror', '-o', test, join(src, 'test.c'), so, `-Wl,-rpath,${bin}`])
   run(test, [])
   console.log(`built ${so}`)
@@ -93,5 +93,5 @@ if (!existsSync(words) || sha(words) !== WORDS_SHA256) {
   console.log(`fetched ${words}`)
 }
 
-if (process.env.YOGURT_NO_WHISPER === '1') console.log('whisper-server left out (YOGURT_NO_WHISPER=1)')
+if (process.env.NOETAKER_NO_WHISPER === '1') console.log('whisper-server left out (NOETAKER_NO_WHISPER=1)')
 else run(process.execPath, [join(here, 'whisper-build.mjs'), ...process.argv.slice(2)])

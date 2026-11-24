@@ -6,7 +6,7 @@ import { join } from 'node:path'
 
 async function launch() {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-feedback-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-feedback-')),
   } })
   const page = await app.firstWindow()
   await expect(page.getByTestId('home')).toBeVisible()
@@ -44,7 +44,7 @@ test('first reads have skeletons; a loaded transcript stays mounted across tabs'
     await expect(page.getByTestId('chat-loading')).toBeVisible()
     await expect(page.getByTestId('chat-loading')).toHaveCount(0)
     await expect(page.getByTestId('chat-recent-list')).toHaveCount(0)
-    await page.evaluate(id => window.yogurt.nav.go(`/note/${id}`), id)
+    await page.evaluate(id => window.noetaker.nav.go(`/note/${id}`), id)
     await expect(page.getByTestId('note-loading')).toBeVisible()
     // Like the real note, the header pads under the toolbar, so its title row must sit below it.
     expect((await page.locator('.loading-note .note-title-type').boundingBox())!.y).toBeGreaterThan((await page.locator('.workspace-toolbar').boundingBox())!.height)
@@ -69,11 +69,11 @@ test('Undo stays in its window corner across pages and above the modal backdrop'
   try {
     await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().find(w => !w.isDestroyed())!.setSize(1280, 900))
     const ids = await app.evaluate(() => [(globalThis as any).__fake__.bigMeeting(4), (globalThis as any).__fake__.bigMeeting(6)])
-    await page.evaluate(id => window.yogurt.nav.go(`/note/${id}`), ids[0])
+    await page.evaluate(id => window.noetaker.nav.go(`/note/${id}`), ids[0])
     await expect(page.getByTestId('chat-open')).toBeVisible()
     // Use the same public UI action so the real Undo toast and timer are exercised.
     await page.getByTestId('nav-home').click()
-    await page.evaluate(id => window.yogurt.meetings.rename(id, 'Toast test removal'), ids[1])
+    await page.evaluate(id => window.noetaker.meetings.rename(id, 'Toast test removal'), ids[1])
     const removal = page.locator('.native-meeting-row').filter({ hasText: 'Toast test removal' })
     await removal.hover()
     await removal.getByTestId('past-note-more').click()
@@ -90,16 +90,16 @@ test('Undo stays in its window corner across pages and above the modal backdrop'
       return !!toast && !!composer && composer.y + composer.height < toast.y
     }).toBe(true)
     await expectCorner()
-    await page.evaluate(() => window.yogurt.nav.go('/settings'))
+    await page.evaluate(() => window.noetaker.nav.go('/settings'))
     await expect(page.locator('.settings-screen')).toBeVisible()
     await expectCorner()
     await page.getByTestId('sidebar-collapse').click()
     await expectCorner()
     await page.emulateMedia({ reducedMotion: 'reduce' })
-    await page.evaluate(() => window.yogurt.nav.go('/trash'))
+    await page.evaluate(() => window.noetaker.nav.go('/trash'))
     await expect(page.getByTestId('trash-page')).toBeVisible()
     await expectCorner()
-    await page.evaluate(id => window.yogurt.nav.go(`/note/${id}`), ids[0])
+    await page.evaluate(id => window.noetaker.nav.go(`/note/${id}`), ids[0])
     await expect(page.getByTestId('chat-open')).toBeVisible()
     await expectCorner()
     await toast.hover()

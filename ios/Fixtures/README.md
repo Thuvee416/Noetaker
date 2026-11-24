@@ -1,7 +1,7 @@
 # Crypto test vectors
 
 Shared by the desktop tests (`app/test/companionCpace.test.ts`, `app/test/companionNoise.test.ts`) and the
-YogurtKit Swift tests, so both sides are checked against the same published values.
+NoetakerKit Swift tests, so both sides are checked against the same published values.
 
 ## noise-kk-vectors.json
 
@@ -23,5 +23,5 @@ SHA-512", decoded from the draft's own BASE64 JSON blocks (B.3.1.1, B.3.9, B.3.1
 hex listings. https://www.ietf.org/archive/id/draft-irtf-cfrg-cpace-21.txt — IETF Trust, BCP 78 / Revised BSD
 licence for code components.
 
-`ISK_IR` is the initiator/responder transcript (the one Yogurt uses); `ISK_SY` the ordered-concatenation one.
+`ISK_IR` is the initiator/responder transcript (the one Noe Taker uses); `ISK_SY` the ordered-concatenation one.
 `invalidPoints` must make `scalar_mult_vfy` fail (a non-canonical encoding and the identity).

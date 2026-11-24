@@ -18,8 +18,8 @@ const windowOf = async (app: ElectronApplication, hash: string): Promise<Page> =
 
 // #30: a meeting recorded before the speech model was in is transcribed from its saved recording once the model is
 test('a meeting with audio and no transcript is transcribed from its recording', async () => {
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
-  const app = await electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData } })
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
+  const app = await electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData } })
   try {
     const page = await app.firstWindow()
     await expect(page.getByTestId('home')).toBeVisible()

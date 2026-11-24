@@ -7,16 +7,16 @@ import { join } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 
 async function launch(env: Record<string, string> = {}) {
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-autosave-'))
-  const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData, ...env } })
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-autosave-'))
+  const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData, ...env } })
   const page = await app.firstWindow()
   await expect(page.getByTestId('home')).toBeVisible()
   await app.evaluate(() => (globalThis as unknown as { __fake__: { manyMeetings(o: { n: number; clean: boolean }): void } }).__fake__.manyMeetings({ n: 1, clean: true }))
   await page.reload()
   await page.getByTestId('past-note').click()
   await expect(page.getByTestId('note-enhanced')).toBeVisible()
-  const id = (await page.evaluate(() => window.yogurt.nav.current())).slice('/note/'.length)
-  const db = new DatabaseSync(join(userData, 'yogurt.db'), { timeout: 5000 })
+  const id = (await page.evaluate(() => window.noetaker.nav.current())).slice('/note/'.length)
+  const db = new DatabaseSync(join(userData, 'noetaker.db'), { timeout: 5000 })
   return { app, page, db, id }
 }
 const failWrites = (db: DatabaseSync) => db.exec("CREATE TRIGGER test_note_write_failure BEFORE INSERT ON notes BEGIN SELECT RAISE(FAIL, 'test note write failure'); END")
@@ -40,7 +40,7 @@ test('failed My notes saves retain exact text across navigation and reload; Copy
     await expect(page.getByTestId('note-save-status')).toHaveAttribute('data-state', 'failed')
     await expect(page.getByTestId('note-save-warning')).toBeVisible()
     await expect(page.getByTestId('note-save-status')).toHaveAttribute('role', 'alert')
-    await expect(page.getByTestId('note-save-status')).not.toContainText('Yogurt can make mistakes.')
+    await expect(page.getByTestId('note-save-status')).not.toContainText('Noe Taker can make mistakes.')
     await expect(page.getByTestId('note-mine')).toBeFocused()
     await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().find((w) => !w.webContents.getURL().includes('#'))!.setSize(720, 520))
     await expect(page.getByTestId('note-mine')).toBeInViewport()
@@ -160,13 +160,13 @@ test('closing retains the renderer and last keystroke; failed quit returns to no
 })
 
 test('backup refuses unsaved text without replacing the previous archive; retry exports the exact latest note', async () => {
-  const out = join(mkdtempSync(join(tmpdir(), 'yogurt-autosave-backup-')), 'backup.zip')
-  const { app, page, db, id } = await launch({ YOGURT_BACKUP_PATH: out })
+  const out = join(mkdtempSync(join(tmpdir(), 'noetaker-autosave-backup-')), 'backup.zip')
+  const { app, page, db, id } = await launch({ NOETAKER_BACKUP_PATH: out })
   try {
     await selectNoteVersion(page, 'mine')
     await page.getByTestId('note-mine').fill('Saved before the failed edit')
     await expect(page.getByTestId('note-save-status')).toHaveAttribute('data-state', 'saved')
-    expect((await page.evaluate(() => window.yogurt.backup.export())).ok).toBe(true)
+    expect((await page.evaluate(() => window.noetaker.backup.export())).ok).toBe(true)
     const original = readFileSync(out)
     failWrites(db)
     const latest = 'Exact latest text included only after successful save.'
@@ -183,9 +183,9 @@ test('backup refuses unsaved text without replacing the previous archive; retry 
     await page.keyboard.press('Meta+,')
     await page.getByTestId('backup-export').click()
     await expect(page.getByTestId('backup-said')).toContainText('Exported 1 meeting')
-    const unpacked = mkdtempSync(join(tmpdir(), 'yogurt-autosave-unpacked-'))
+    const unpacked = mkdtempSync(join(tmpdir(), 'noetaker-autosave-unpacked-'))
     execFileSync('/usr/bin/ditto', ['-x', '-k', out, unpacked])
-    const snapshot = new DatabaseSync(join(unpacked, 'yogurt.db'), { readOnly: true })
+    const snapshot = new DatabaseSync(join(unpacked, 'noetaker.db'), { readOnly: true })
     try { expect(snapshot.prepare('SELECT mine FROM notes WHERE meeting_id = ?').get(id)).toMatchObject({ mine: latest }) }
     finally { snapshot.close() }
   } finally { recoverWrites(db); db.close(); await app.close() }
@@ -196,9 +196,9 @@ test('a final unload handoff veto restores interactivity and the next quit prote
   let closed = false
   app.on('close', () => { closed = true })
   try {
-    await page.evaluate(() => window.yogurt.meetings.start(null))
+    await page.evaluate(() => window.noetaker.meetings.start(null))
     await expect(page.getByTestId('note-state')).toHaveAttribute('data-state', 'recording')
-    const recordingId = (await page.evaluate(() => window.yogurt.nav.current())).slice('/note/'.length)
+    const recordingId = (await page.evaluate(() => window.noetaker.nav.current())).slice('/note/'.length)
     await app.evaluate(({ ipcMain, dialog }) => {
       const state = globalThis as unknown as { __quitChoice: number; __quitDialogs: number; __vetoes: number }
       state.__quitChoice = 0; state.__quitDialogs = 0; state.__vetoes = 0
@@ -209,7 +209,7 @@ test('a final unload handoff veto restores interactivity and the next quit prote
     })
     await page.evaluate((id) => {
       window.addEventListener('beforeunload', (e) => {
-        const result = window.yogurt.notes.flushSync(id, 'mine', 'Final handoff transport probe', 99)
+        const result = window.noetaker.notes.flushSync(id, 'mine', 'Final handoff transport probe', 99)
         if (result.status !== 'saved' && !result.retained) { e.preventDefault(); e.returnValue = '' }
       })
     }, id)
@@ -221,11 +221,11 @@ test('a final unload handoff veto restores interactivity and the next quit prote
     expect(['stopped', 'done']).toContain(stopped.state)
     expect(stopped.ended_at).toEqual(expect.any(Number))
     // A resumed app can start a fresh recording: the active meeting was cleared along with capture.
-    await page.evaluate(() => window.yogurt.meetings.start(null))
-    const nextId = (await page.evaluate(() => window.yogurt.nav.current())).slice('/note/'.length)
+    await page.evaluate(() => window.noetaker.meetings.start(null))
+    const nextId = (await page.evaluate(() => window.noetaker.nav.current())).slice('/note/'.length)
     expect(nextId).not.toBe(recordingId)
-    await page.evaluate((id) => window.yogurt.meetings.stop(id), nextId)
-    await page.evaluate((id) => window.yogurt.nav.go(`/note/${id}`), id)
+    await page.evaluate((id) => window.noetaker.meetings.stop(id), nextId)
+    await page.evaluate((id) => window.noetaker.nav.go(`/note/${id}`), id)
     await selectNoteVersion(page, 'mine')
     failWrites(db)
     await page.getByTestId('note-mine').fill('The next quit must still protect this edit')
@@ -254,7 +254,7 @@ test('an older save view arriving during new typing cannot replace the visible e
     await selectNoteVersion(page, 'mine')
     await page.getByTestId('note-mine').fill('Saved older text')
     await expect(page.getByTestId('note-save-status')).toHaveAttribute('data-state', 'saved')
-    const older = await page.evaluate((id) => window.yogurt.notes.get(id), id)
+    const older = await page.evaluate((id) => window.noetaker.notes.get(id), id)
     await page.getByTestId('note-mine').fill('Newer visible text')
     await app.evaluate(({ BrowserWindow }, view) => {
       BrowserWindow.getAllWindows().find((w) => !w.webContents.getURL().includes('#'))!.webContents.send('notes:changed', view)
@@ -266,10 +266,10 @@ test('an older save view arriving during new typing cannot replace the visible e
 })
 
 test('backup flushes a renderer-only draft after transport failure before invoking the export handler', async () => {
-  const out = join(mkdtempSync(join(tmpdir(), 'yogurt-transport-backup-')), 'backup.zip')
-  const { app, page, db, id } = await launch({ YOGURT_BACKUP_PATH: out })
+  const out = join(mkdtempSync(join(tmpdir(), 'noetaker-transport-backup-')), 'backup.zip')
+  const { app, page, db, id } = await launch({ NOETAKER_BACKUP_PATH: out })
   try {
-    expect((await page.evaluate(() => window.yogurt.backup.export())).ok).toBe(true)
+    expect((await page.evaluate(() => window.noetaker.backup.export())).ok).toBe(true)
     const original = readFileSync(out), stored = db.prepare('SELECT mine FROM notes WHERE meeting_id = ?').get(id)
     await app.evaluate(({ ipcMain }) => {
       // Test-only wrappers around the actual pinned Electron handlers preserve the real recovery path.
@@ -297,7 +297,7 @@ test('backup flushes a renderer-only draft after transport failure before invoki
     await expect(page.getByTestId('note-save-status')).toHaveAttribute('data-state', 'failed')
     await page.keyboard.press('Meta+,')
     expect(db.prepare('SELECT mine FROM notes WHERE meeting_id = ?').get(id)).toEqual(stored)
-    expect((await page.evaluate((id) => window.yogurt.notes.get(id), id))!.saves?.mine).toBeUndefined()
+    expect((await page.evaluate((id) => window.noetaker.notes.get(id), id))!.saves?.mine).toBeUndefined()
     await page.getByTestId('backup-export').click()
     await expect(page.getByTestId('backup-said')).toHaveText("Couldn't save your latest changes. Return to your note and try again.")
     expect(await app.evaluate(() => (globalThis as unknown as { __backupCalls: number }).__backupCalls)).toBe(0)
@@ -306,9 +306,9 @@ test('backup flushes a renderer-only draft after transport failure before invoki
     await page.getByTestId('backup-export').click()
     await expect(page.getByTestId('backup-said')).toContainText('Exported 1 meeting')
     expect(await app.evaluate(() => (globalThis as unknown as { __backupCalls: number }).__backupCalls)).toBe(1)
-    const unpacked = mkdtempSync(join(tmpdir(), 'yogurt-transport-unpacked-'))
+    const unpacked = mkdtempSync(join(tmpdir(), 'noetaker-transport-unpacked-'))
     execFileSync('/usr/bin/ditto', ['-x', '-k', out, unpacked])
-    const snapshot = new DatabaseSync(join(unpacked, 'yogurt.db'), { readOnly: true })
+    const snapshot = new DatabaseSync(join(unpacked, 'noetaker.db'), { readOnly: true })
     try { expect(snapshot.prepare('SELECT mine FROM notes WHERE meeting_id = ?').get(id)).toMatchObject({ mine: latest }) }
     finally { snapshot.close() }
   } finally {

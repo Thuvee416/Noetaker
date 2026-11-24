@@ -17,7 +17,7 @@ export function RendererRecovery() {
   return <main className="renderer-recovery" data-testid="renderer-recovery">
     <div className="renderer-recovery-titlebar drag" aria-hidden="true" />
     <div className="renderer-recovery-content">
-      <p role="alert">{saveFailed ? t("Yogurt couldn't finish saving") : t("This window couldn't be displayed.")}</p>
+      <p role="alert">{saveFailed ? t("Noe Taker couldn't finish saving") : t("This window couldn't be displayed.")}</p>
       <button autoFocus type="button" className="modal-button primary" onClick={() => {
         // Reload only after main has saved or retained every pending edit.
         if (handoffOpenNotes()) window.location.reload()
@@ -31,10 +31,10 @@ export function RendererRecovery() {
 export function RendererFailureTest({ children }: { children: ReactNode }) {
   const [failed, setFailed] = useState(false)
   useEffect(() => {
-    if (!window.yogurt.fake) return
+    if (!window.noetaker.fake) return
     const fail = () => setFailed(true)
-    window.addEventListener('yogurt:renderer-fail', fail)
-    return () => window.removeEventListener('yogurt:renderer-fail', fail)
+    window.addEventListener('noetaker:renderer-fail', fail)
+    return () => window.removeEventListener('noetaker:renderer-fail', fail)
   }, [])
   if (failed) throw new Error('Renderer recovery test')
   return children

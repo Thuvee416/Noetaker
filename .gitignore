@@ -45,8 +45,8 @@ output/
 # written by next dev
 
 # Swift package builds
-ios/YogurtKit/.build/
-ios/YogurtKit/.swiftpm/
+ios/NoetakerKit/.build/
+ios/NoetakerKit/.swiftpm/
 
 # plans, specs and agent notes stay local
 docs/superpowers/

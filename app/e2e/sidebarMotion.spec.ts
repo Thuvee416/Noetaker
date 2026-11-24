@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 async function launch() {
-  const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-sidebar-')) } })
+  const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-sidebar-')) } })
   const page = await app.firstWindow()
   await expect(page.getByTestId('home')).toBeVisible()
   await page.emulateMedia({ reducedMotion: 'no-preference' })
@@ -17,8 +17,8 @@ test('Ask opens in the note panel, and Command-J starts a conversation elsewhere
     await expect(page.getByTestId('assistant-open')).toHaveCount(0)
     // away from a note, ⌘J opens Chat across all meetings
     await page.keyboard.press('Meta+j')
-    await expect.poll(() => page.evaluate(() => window.yogurt.nav.current())).toMatch(/^\/chat\/[^/]+$/)
-    await page.evaluate(() => window.yogurt.nav.go(''))
+    await expect.poll(() => page.evaluate(() => window.noetaker.nav.current())).toMatch(/^\/chat\/[^/]+$/)
+    await page.evaluate(() => window.noetaker.nav.go(''))
     await expect(page.getByTestId('home')).toBeVisible()
     await app.evaluate(() => (globalThis as unknown as { __fake__: { manyMeetings(o: { n: number; clean: boolean }): void } }).__fake__.manyMeetings({ n: 1, clean: true }))
     await page.reload()

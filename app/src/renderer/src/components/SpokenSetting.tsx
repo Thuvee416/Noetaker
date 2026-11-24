@@ -9,8 +9,8 @@ const label = (s: Spoken) => (s === 'en' ? t('English only') : t('Multi-language
 /** Settings → Language: the language people speak in meetings, the same choice as the picker under a note */
 export function SpokenSetting() {
   const [spoken, setSpoken] = useState<Spoken>()
-  useEffect(() => { void window.yogurt.settings.get().then((p) => setSpoken(p.spoken)) }, [])
-  const choose = (v: Spoken) => { setSpoken(v); void window.yogurt.settings.setSpoken(v) }
+  useEffect(() => { void window.noetaker.settings.get().then((p) => setSpoken(p.spoken)) }, [])
+  const choose = (v: Spoken) => { setSpoken(v); void window.noetaker.settings.setSpoken(v) }
   const arrows = (e: React.KeyboardEvent<HTMLDivElement>) => {
     const rtl = getComputedStyle(e.currentTarget).direction === 'rtl'
     const step = { ArrowDown: 1, ArrowUp: -1, ArrowRight: rtl ? -1 : 1, ArrowLeft: rtl ? 1 : -1 }[e.key]

@@ -4,14 +4,14 @@ import type { WidgetLayout } from '../shared/widgetMorph'
 import { contextBridge, ipcRenderer } from 'electron'
 import { capabilities, platformOf } from '../shared/platform'
 import { phoneCompanionOn, type CompanionStatus } from '../shared/companion'
-import type { ChatView, ConversationSummary, ConversationView, NoteView, PromptAction, SetupState, UpdateStatus, WidgetView, YogurtApi } from '../shared/types'
+import type { ChatView, ConversationSummary, ConversationView, NoteView, PromptAction, SetupState, UpdateStatus, WidgetView, NoetakerApi } from '../shared/types'
 
-const api: YogurtApi = {
+const api: NoetakerApi = {
   reportRendererError: report => ipcRenderer.send('renderer:error', report),
   platform: process.platform,
   os: platformOf(process.platform, process.env),
   capabilities: capabilities(platformOf(process.platform, process.env)),
-  fake: process.env.YOGURT_FAKE === '1',
+  fake: process.env.NOETAKER_FAKE === '1',
   phone: phoneCompanionOn(process.env),
   setup: {
     state: () => ipcRenderer.invoke('setup:state'),
@@ -314,4 +314,4 @@ const api: YogurtApi = {
     },
   },
 }
-contextBridge.exposeInMainWorld('yogurt', api)
+contextBridge.exposeInMainWorld('noetaker', api)

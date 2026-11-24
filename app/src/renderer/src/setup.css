@@ -341,7 +341,7 @@
 @keyframes ob-from { 0%,28%,100% { opacity:1;filter:blur(0); } 32%,74% { opacity:0;filter:blur(2px); } 78% { opacity:1;filter:blur(0); } }
 @keyframes ob-to { 0%,28%,100% { opacity:0;filter:blur(2px); } 32%,74% { opacity:1;filter:blur(0); } 78% { opacity:0;filter:blur(2px); } }
 
-/* System Settings, drawn small: the pane, Yogurt's switch turning on, and + under the list */
+/* System Settings, drawn small: the pane, Noe Taker's switch turning on, and + under the list */
 .ob-settings { display:grid;grid-template-columns:92px minmax(0,1fr);width:100%;max-width:380px;overflow:hidden;border:1px solid var(--line);border-radius:12px;background:var(--float);box-shadow:var(--ob-card-shadow);text-align:start; }
 .ob-settings-side { display:flex;flex-direction:column;gap:8px;padding:11px 10px;border-inline-end:1px solid var(--line);background:var(--chrome); }
 .ob-settings-dots { display:flex;gap:5px;margin-bottom:8px; }
@@ -357,9 +357,9 @@
 .ob-settings-row+.ob-settings-row { border-top:1px solid var(--line); }
 .ob-settings-app { flex:1; }
 .ob-app-icon { display:grid;place-items:center;flex:none;width:18px;height:18px;border-radius:5px;background:var(--control); }
-.ob-app-yogurt { background:var(--primary); }
+.ob-app-noetaker { background:var(--primary); }
 .ob-app-name { flex:1;max-width:64px;height:6px;margin-inline-end:auto;border-radius:3px;background:var(--control); }
-.ob-settings-yogurt { animation:ob-row 3.6s ease infinite; }
+.ob-settings-noetaker { animation:ob-row 3.6s ease infinite; }
 .ob-settings-tools { display:flex;align-items:center;height:24px;padding-inline:7px;border-top:1px solid var(--line);color:var(--muted); }
 .ob-settings-minus { width:8px;height:1.5px;margin-inline-start:12px;border-radius:1px;background:currentColor; }
 .ob-switch { position:relative;flex:none;width:26px;height:15px;border-radius:8px;background:var(--control-pressed); }
@@ -404,14 +404,14 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .ob-copy,.ob-stage-art { animation:motion-fade var(--dur-micro) var(--ease-out); }
-  .boot-band,.ob-lane,.ob-meeting-note,.ob-people li,.ob-prompt,.ob-rec-dot,.ob-settings-yogurt { animation:none; }
+  .boot-band,.ob-lane,.ob-meeting-note,.ob-people li,.ob-prompt,.ob-rec-dot,.ob-settings-noetaker { animation:none; }
   .ob-button,.ob-steps span,.ob-progress-fill { transition:none; }
   /* the end of each story, still */
   .ob-swap-from { animation:none;opacity:0; }
   .ob-swap-to { animation:none;opacity:1;filter:none; }
   .ob-switch-on { animation:none;background:var(--primary); }
   .ob-switch-on::after { animation:none;transform:translateX(var(--knob-travel));background:var(--primary-ink); }
-  .ob-settings-yogurt { background:var(--accent-soft); }
+  .ob-settings-noetaker { background:var(--accent-soft); }
 }
 
 .settings-disclosure { width:100%;text-align:start;border-radius:12px; }

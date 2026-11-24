@@ -69,12 +69,12 @@ export function NoteDate({ m }: { m: Meeting }) {
 function DateCard({ m, details, event, eventTitle, color, refreshLinked, chip, motionProps, onClose }: { m: Meeting; details?: NoteCalendar; event?: CalEvent; eventTitle?: string; color?: string; refreshLinked: () => void; chip: RefObject<HTMLButtonElement | null>; motionProps: ReturnType<typeof usePopoverPresence>['props']; onClose: (restore?: boolean) => void }) {
   const card = useRef<HTMLDivElement>(null)
   // no calendar on this computer (Windows, Linux): the date and length only, as for a note with no event
-  const calendar = window.yogurt.capabilities.calendar
+  const calendar = window.noetaker.capabilities.calendar
   const linked = calendar && !!m.eventId
   const [revision, setRevision] = useState(0)
   const [picking, setPicking] = useState(false)
   const [day, setDay] = useState(m.eventStartedAt ?? m.startedAt)
-  const [dayResult, setResult] = useState<Awaited<ReturnType<typeof window.yogurt.calendar.day>> | undefined>(details?.result)
+  const [dayResult, setResult] = useState<Awaited<ReturnType<typeof window.noetaker.calendar.day>> | undefined>(details?.result)
   const result = linked ? details?.result : dayResult
   const reserveCalendar = useRef(linked && !details)
   const [linking, setLinking] = useState(false)
@@ -86,7 +86,7 @@ function DateCard({ m, details, event, eventTitle, color, refreshLinked, chip, m
   const toggle = useRef<HTMLButtonElement>(null)
   const recovery = useRef<HTMLButtonElement>(null)
   useNotePopover(card, chip, onClose, !motionProps.inert)
-  const days = useRef(new Map<string, Awaited<ReturnType<typeof window.yogurt.calendar.day>>>())
+  const days = useRef(new Map<string, Awaited<ReturnType<typeof window.noetaker.calendar.day>>>())
   if (details) {
     if (details.result.status !== 'granted') days.current.clear()
     days.current.set(new Date(m.eventStartedAt ?? m.startedAt).toDateString(), details.result)
@@ -102,7 +102,7 @@ function DateCard({ m, details, event, eventTitle, color, refreshLinked, chip, m
   useEffect(() => {
     if (!calendar || linked) return
     let active = true
-    void window.yogurt.calendar.day(day, 'link-event').catch(() => ({ status: 'error' as const, events: [] })).then(value => {
+    void window.noetaker.calendar.day(day, 'link-event').catch(() => ({ status: 'error' as const, events: [] })).then(value => {
       if (!active) return
       if (value.status !== 'granted') days.current.clear()
       days.current.set(new Date(day).toDateString(), value)
@@ -120,12 +120,12 @@ function DateCard({ m, details, event, eventTitle, color, refreshLinked, chip, m
   useEffect(() => {
     if (!calendar || linked) return
     const refresh = () => setRevision(n => n + 1)
-    const off = window.yogurt.calendar.onChange(refresh)
+    const off = window.noetaker.calendar.onChange(refresh)
     window.addEventListener('focus', refresh)
     return () => { off(); window.removeEventListener('focus', refresh) }
   }, [calendar, linked])
   const refresh = () => linked ? refreshLinked() : setRevision(n => n + 1)
-  const connect = () => void window.yogurt.calendar.connect().then(refresh, () => linked ? refreshLinked() : setResult({ status: 'error', events: [] }))
+  const connect = () => void window.noetaker.calendar.connect().then(refresh, () => linked ? refreshLinked() : setResult({ status: 'error', events: [] }))
   const available = result?.status === 'granted'
   const browsing = calendar && !linked && (!result || available)
   useEffect(() => {
@@ -161,7 +161,7 @@ function DateCard({ m, details, event, eventTitle, color, refreshLinked, chip, m
     </div>
   </div>
   const recoveryAction = result && !available ? <div className="note-date-access flex flex-wrap items-center gap-x-3 gap-y-2">
-    <p role="status" className="text-xs text-muted">{result.status === 'error' ? t("Yogurt couldn't read your calendar") : t('Calendar access is off')}</p>
+    <p role="status" className="text-xs text-muted">{result.status === 'error' ? t("Noe Taker couldn't read your calendar") : t('Calendar access is off')}</p>
     <div className="ms-auto flex shrink-0"><button ref={recovery} className="workspace-button" onClick={result.status === 'error' ? refresh : connect}>{result.status === 'error' ? t('Try again') : result.status === 'denied' ? t('Open System Settings') : t('Connect calendar')}</button></div>
   </div> : null
   return <div ref={card} data-testid="note-date-card" {...motionProps} data-anchor="start" data-picking={browsing || picking} role="dialog" aria-label={t('Date')}
@@ -223,7 +223,7 @@ function EventPicker({ open = true, keyboard, m, day, result, loading, previous,
   const link = async (eventId: string | null) => {
     if (linking) return
     onLinking(true); setLinkError(false)
-    try { await window.yogurt.meetings.linkEvent(m.id, eventId, day); onLinked() }
+    try { await window.noetaker.meetings.linkEvent(m.id, eventId, day); onLinked() }
     catch { setLinkError(true) }
     finally { onLinking(false) }
   }
@@ -246,7 +246,7 @@ function EventPicker({ open = true, keyboard, m, day, result, loading, previous,
         </button>)}
     </div></ScrollFade>}
     {m.eventId && <button ref={unlink} data-testid="note-date-unlink" className="note-date-link" disabled={linking} onClick={() => void link(null)}><Link2Off size={14} aria-hidden="true" /><span>{t('Unlink calendar event')}<small>{t('Keep the title, attendees and notes.')}</small></span></button>}
-    {linkError && <p role="alert" className="text-xs text-danger">{t("Yogurt couldn't update the calendar link. Try again.")}</p>}
+    {linkError && <p role="alert" className="text-xs text-danger">{t("Noe Taker couldn't update the calendar link. Try again.")}</p>}
   </div>
 }
 

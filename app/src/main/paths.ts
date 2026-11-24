@@ -3,16 +3,16 @@ import electron from 'electron'
 import { readFileSync } from 'node:fs'
 import { isAbsolute, join } from 'node:path'
 
-/** One profile folder however Yogurt is started (dev, packaged): ~/Library/Application Support/Yogurt. YOGURT_USER_DATA uses a separate one (tests) */
-export const userDataDir = (): string => process.env.YOGURT_USER_DATA ?? join(electron.app.getPath('appData'), 'Yogurt')
+/** One profile folder however Noe Taker is started (dev, packaged): ~/Library/Application Support/Noe Taker. NOETAKER_USER_DATA uses a separate one (tests) */
+export const userDataDir = (): string => process.env.NOETAKER_USER_DATA ?? join(electron.app.getPath('appData'), 'Noe Taker')
 
 /**
- * Where the downloaded models live (5 to 12 GB): YOGURT_MODELS_DIR, else the folder the Windows installer asked for
+ * Where the downloaded models live (5 to 12 GB): NOETAKER_MODELS_DIR, else the folder the Windows installer asked for
  * (build/installer.nsh writes it to models-dir.txt, UTF-16 with a byte-order mark), else <profile>/models.
  * Settings, meetings and logs stay in the profile either way.
  */
 export const modelsFolder = (): string => {
-  const env = process.env.YOGURT_MODELS_DIR
+  const env = process.env.NOETAKER_MODELS_DIR
   if (env && isAbsolute(env)) return env
   try {
     const raw = readFileSync(join(userDataDir(), 'models-dir.txt'))
@@ -24,4 +24,4 @@ export const modelsFolder = (): string => {
 }
 
 /** Test mode: stand-ins for everything that needs a model, the microphone or a calendar */
-export const isFake = (): boolean => process.env.YOGURT_FAKE === '1'
+export const isFake = (): boolean => process.env.NOETAKER_FAKE === '1'

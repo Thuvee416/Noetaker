@@ -8,9 +8,9 @@ import { join } from 'node:path'
 const main = join(import.meta.dirname, '../out/main/index.js')
 
 async function launch(env: Record<string, string> = {}) {
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
-  // Let the renderer follow Yogurt's appearance setting across reloads.
-  const app = await electron.launch({ colorScheme: null, args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData, ...env } })
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
+  // Let the renderer follow Noe Taker's appearance setting across reloads.
+  const app = await electron.launch({ colorScheme: null, args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData, ...env } })
   const page = await app.firstWindow()
   await expect(page.getByTestId('home')).toBeVisible()
   return { app, page }
@@ -82,7 +82,7 @@ test('folders reorder within their section, persist, and remain keyboard accessi
     const labels = page.getByTestId('sidebar-folder-open')
     await expect(labels).toHaveText([/Charlie/, /Alpha/, /Bravo/])
     await expect(page.getByTestId('home')).toBeVisible()
-    await expect.poll(() => page.evaluate(async () => (await window.yogurt.folders.list()).map(f => f.name))).toEqual(['Charlie', 'Alpha', 'Bravo'])
+    await expect.poll(() => page.evaluate(async () => (await window.noetaker.folders.list()).map(f => f.name))).toEqual(['Charlie', 'Alpha', 'Bravo'])
     await page.reload()
     await expect(labels).toHaveText([/Charlie/, /Alpha/, /Bravo/])
     await folder(page, 'Charlie').getByTestId('sidebar-folder-open').focus()
@@ -126,14 +126,14 @@ test('a folder is made in the sidebar, opens empty, and is renamed in place and 
 for (const theme of ['light', 'dark'] as const) test(`add existing meetings from a folder by keyboard in ${theme}`, async () => {
   const { app, page } = await launch()
   try {
-    await page.evaluate(theme => window.yogurt.settings.setTheme(theme), theme)
+    await page.evaluate(theme => window.noetaker.settings.setTheme(theme), theme)
     await withMeetings(app, page)
     await expect.poll(() => page.evaluate(() => matchMedia('(prefers-color-scheme: dark)').matches)).toBe(theme === 'dark')
     await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().find(w => !w.webContents.getURL().includes('#'))!.setSize(720, 520))
     const longTitle = 'Planning'.repeat(25)
     await page.evaluate(async title => {
-      const [first] = await window.yogurt.meetings.cards({ limit: 1 })
-      await window.yogurt.meetings.rename(first.id, title)
+      const [first] = await window.noetaker.meetings.cards({ limit: 1 })
+      await window.noetaker.meetings.rename(first.id, title)
     }, longTitle)
     await page.getByTestId('sidebar-expand').press('ArrowDown')
     await newFolder(page, 'Reviews')
@@ -281,7 +281,7 @@ test('a note goes into folders from its menu and its chip, and a new folder from
 for (const theme of ['light', 'dark'] as const) for (const action of ['confirm', 'cancel'] as const) for (const input of ['pointer', 'keyboard'] as const) test(`a row can ${action} its suggested folder by ${input} without opening the note in ${theme}`, async () => {
   const { app, page } = await launch()
   try {
-    await page.evaluate(theme => window.yogurt.settings.setTheme(theme), theme)
+    await page.evaluate(theme => window.noetaker.settings.setTheme(theme), theme)
     await withMeetings(app, page)
     await newFolder(page, 'Acme')
     await page.getByTestId('nav-home').click()
@@ -290,12 +290,12 @@ for (const theme of ['light', 'dark'] as const) for (const action of ['confirm',
     await expect(chip).toHaveText('Acme')
     const name = 'Acme community research and planning with the customer success team'
     const ids = await page.evaluate(async name => {
-      const f = (await window.yogurt.folders.list())[0]
-      await window.yogurt.folders.rename(f.id, name)
-      await window.yogurt.folders.appearance(f.id, { icon: 'rocket', color: 'violet' })
-      const meetings = await window.yogurt.meetings.cards({ limit: 4 })
+      const f = (await window.noetaker.folders.list())[0]
+      await window.noetaker.folders.rename(f.id, name)
+      await window.noetaker.folders.appearance(f.id, { icon: 'rocket', color: 'violet' })
+      const meetings = await window.noetaker.meetings.cards({ limit: 4 })
       const meeting = meetings.find(m => m.title === 'Customer call with Acme')!
-      await window.yogurt.folders.add(f.id, meetings.find(m => m.title === 'Weekly sync')!.id)
+      await window.noetaker.folders.add(f.id, meetings.find(m => m.title === 'Weekly sync')!.id)
       return { folder: f.id, meeting: meeting.id }
     }, name)
     await expect(chip).toHaveText(name)
@@ -331,12 +331,12 @@ for (const theme of ['light', 'dark'] as const) for (const action of ['confirm',
     await expect(page.getByTestId('home')).toBeVisible()
     await expect(chip).toHaveCount(0)
     await expect(row.locator('.native-meeting-link')).toBeFocused()
-    expect(await page.evaluate(id => window.yogurt.folders.of(id), ids.meeting)).toHaveLength(action === 'confirm' ? 1 : 0)
+    expect(await page.evaluate(id => window.noetaker.folders.of(id), ids.meeting)).toHaveLength(action === 'confirm' ? 1 : 0)
     if (action === 'confirm') {
       await expect(row.getByTestId('past-note-folder')).toHaveText(name)
-      await page.evaluate(({ folder, meeting }) => window.yogurt.folders.remove(folder, meeting), ids)
+      await page.evaluate(({ folder, meeting }) => window.noetaker.folders.remove(folder, meeting), ids)
     }
-    await page.evaluate(() => window.yogurt.folders.create('Another folder'))
+    await page.evaluate(() => window.noetaker.folders.create('Another folder'))
     await page.reload()
     await expect(row).toBeVisible()
     await expect(chip).toHaveCount(0)
@@ -359,7 +359,7 @@ for (const input of ['pointer', 'keyboard'] as const) test(`the suggested row na
       await expect(target).toHaveCSS('width', '24px')
       await expect(target).toHaveCSS('height', '24px')
     }
-    await page.evaluate(() => window.yogurt.folders.create('Alpha'))
+    await page.evaluate(() => window.noetaker.folders.create('Alpha'))
     if (input === 'keyboard') {
       await row.getByTestId('note-folders').focus()
       await page.keyboard.press('Enter')
@@ -371,7 +371,7 @@ for (const input of ['pointer', 'keyboard'] as const) test(`the suggested row na
     await expect(row.getByTestId('past-note-folder')).toHaveText('Alpha')
     await expect(row.getByTestId('folder-suggestion')).toHaveCount(0)
     await page.keyboard.press('Escape')
-    await page.evaluate(() => window.yogurt.folders.create('Customer calls'))
+    await page.evaluate(() => window.noetaker.folders.create('Customer calls'))
     await page.reload()
     await expect(row.getByTestId('past-note-folder')).toHaveText('Alpha')
     await expect(row.getByTestId('folder-suggestion')).toHaveCount(0)
@@ -392,10 +392,10 @@ for (const colorScheme of ['light', 'dark'] as const) test(`the divided suggesti
     await expect(proposal).toBeVisible()
     const name = 'Acme community research and planning with the customer success team'
     await page.evaluate(async name => {
-      const f = (await window.yogurt.folders.list())[0]
-      await window.yogurt.folders.rename(f.id, name)
-      await window.yogurt.folders.appearance(f.id, { icon: 'rocket', color: 'violet' })
-      await window.yogurt.folders.create('Alpha')
+      const f = (await window.noetaker.folders.list())[0]
+      await window.noetaker.folders.rename(f.id, name)
+      await window.noetaker.folders.appearance(f.id, { icon: 'rocket', color: 'violet' })
+      await window.noetaker.folders.create('Alpha')
     }, name)
     await expect(proposal).toHaveText(name)
     await expect(proposal.locator('[data-folder-icon=rocket]')).toHaveAttribute('data-folder-color', 'violet')
@@ -418,7 +418,7 @@ for (const colorScheme of ['light', 'dark'] as const) test(`the divided suggesti
     await expect(proposal).toHaveCount(0)
     await expect(label).toHaveText('Add to folder')
     await expect(page.getByTestId('note-folders')).toBeFocused()
-    await page.evaluate(() => window.yogurt.folders.create('Another folder'))
+    await page.evaluate(() => window.noetaker.folders.create('Another folder'))
     await page.reload()
     await expect(page.getByTestId('note-folders-summary')).toHaveText('Add to folder')
     await expect(proposal).toHaveCount(0)
@@ -519,8 +519,8 @@ test('deleting a folder asks first and keeps its meetings; deleting a meeting ta
 })
 
 test('a backup carries folders and which meetings are in them', async () => {
-  const file = join(mkdtempSync(join(tmpdir(), 'yogurt-backup-')), 'Yogurt backup.zip')
-  const a = await launch({ YOGURT_BACKUP_PATH: file })
+  const file = join(mkdtempSync(join(tmpdir(), 'noetaker-backup-')), 'Noe Taker backup.zip')
+  const a = await launch({ NOETAKER_BACKUP_PATH: file })
   try {
     await withMeetings(a.app, a.page)
     await newFolder(a.page, 'Partners')
@@ -528,13 +528,13 @@ test('a backup carries folders and which meetings are in them', async () => {
     await a.page.getByTestId('past-note').filter({ hasText: 'Weekly sync' }).dragTo(folder(a.page, 'Partners').getByTestId('sidebar-folder-open'))
     await expect(folder(a.page, 'Partners').getByTestId('sidebar-folder-count')).toHaveText('1')
     await newFolder(a.page, 'Zulu')
-    await a.page.evaluate(async () => { const folders = await window.yogurt.folders.list(); await window.yogurt.folders.reorder(folders.map(f => f.id).reverse()) })
+    await a.page.evaluate(async () => { const folders = await window.noetaker.folders.list(); await window.noetaker.folders.reorder(folders.map(f => f.id).reverse()) })
     await openFromCorner(a.page, 'settings-open')
     await a.page.getByTestId('backup-export').click()
     await expect(a.page.getByTestId('backup-said')).toContainText('Exported 4 meetings')
   } finally { await a.app.close() }
 
-  const b = await launch({ YOGURT_BACKUP_PATH: file })
+  const b = await launch({ NOETAKER_BACKUP_PATH: file })
   try {
     await expect(b.page.getByTestId('sidebar-folder')).toHaveCount(0)
     await openFromCorner(b.page, 'settings-open')

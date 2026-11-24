@@ -6,7 +6,7 @@ import { join } from 'node:path'
 
 test('native glass stays in the window chrome, with solid reading surfaces and a reduced-transparency fallback', async ({}, info) => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-glass-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-glass-')),
   } })
   try {
     const page = await app.firstWindow()
@@ -52,7 +52,7 @@ test('native glass stays in the window chrome, with solid reading surfaces and a
           evidence.wallpaper = photo ?? 'not available'
           let image = ''
           if (photo) {
-            const png = join(mkdtempSync(join(tmpdir(), 'yogurt-backdrop-')), 'wallpaper.png')
+            const png = join(mkdtempSync(join(tmpdir(), 'noetaker-backdrop-')), 'wallpaper.png')
             execFileSync('/usr/bin/sips', ['-Z', '1200', '-s', 'format', 'png', join(desktop, photo), '--out', png])
             image = `data:image/png;base64,${readFileSync(png).toString('base64')}`
           }

@@ -8,7 +8,7 @@ export default defineConfig({
     build: {
       // yauzl, yazl and zod are bundled in, so their licences go next to the bundle
       license: { fileName: 'LICENSES.txt' },
-      externalizeDeps: { exclude: ['@yogurt/picker'] },
+      externalizeDeps: { exclude: ['@noetaker/picker'] },
       rollupOptions: { input: { index: resolve('src/main/index.ts'), engine: resolve('src/engine/worker.ts') } },
     },
   },
@@ -24,10 +24,10 @@ export default defineConfig({
       tailwindcss(),
       {
         // Strict CSP for shipped builds; dev needs inline scripts for hot reload.
-        name: 'yogurt-csp',
+        name: 'noetaker-csp',
         apply: 'build',
         transformIndexHtml: (html: string) =>
-          html.replace('<head>', `<head>\n    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; connect-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; media-src 'self' blob: yogurt-audio:" />`),
+          html.replace('<head>', `<head>\n    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; connect-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; media-src 'self' blob: noetaker-audio:" />`),
       },
     ],
   },

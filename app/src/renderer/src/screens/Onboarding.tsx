@@ -20,9 +20,9 @@ export function Onboarding({ state, plan, onDone }: { state: SetupState; plan: O
   const screens = useMemo(() => screensOf(plan.steps), [plan])
   const [stage, setStage] = useState<'intro' | 'steps' | 'progress'>(plan.intro ? 'intro' : screens.length ? 'steps' : 'progress')
   const [i, setI] = useState(0)
-  const finish = () => { setStage('progress'); void window.yogurt.onboarding.done().finally(onDone) }
+  const finish = () => { setStage('progress'); void window.noetaker.onboarding.done().finally(onDone) }
   const introDone = () => {
-    void window.yogurt.onboarding.introSeen()
+    void window.noetaker.onboarding.introSeen()
     if (screens.length) setStage('steps'); else finish()
   }
   const next = () => { if (i + 1 < screens.length) setI(i + 1); else finish() }
@@ -33,7 +33,7 @@ export function Onboarding({ state, plan, onDone }: { state: SetupState; plan: O
   return (
     <div data-testid="onboarding" data-phase={state.phase} data-stage={stage} className="setup-screen">
       {stage === 'intro' ? <Welcome state={state} progress={progress} onDone={introDone} />
-        : stage === 'steps' && screen ? (screen.id === 'calendar' && window.yogurt.capabilities.calendarLink
+        : stage === 'steps' && screen ? (screen.id === 'calendar' && window.noetaker.capabilities.calendarLink
           ? <CalendarLinkScreen key={screen.id} state={state} progress={progress} onNext={next} />
           : <PermissionScreen key={screen.id} screen={screen} state={state} progress={progress} onNext={next} />)
           : <Ready state={state} />}
@@ -91,7 +91,7 @@ function useFocus(ref: RefObject<HTMLButtonElement | null>, deps: unknown[]) {
   useEffect(() => { ref.current?.focus() }, deps)
 }
 
-/** What Yogurt is, in the website's words */
+/** What Noe Taker is, in the website's words */
 function Welcome({ state, progress, onDone }: { state: SetupState; progress: Progress; onDone(): void }) {
   const c = screenCopy('welcome')
   const primary = useRef<HTMLButtonElement>(null)
@@ -156,7 +156,7 @@ function Ask({ screen, step, leaving, state, progress, onOn, onLater }: {
   const label = back ? t('Continue') : away || denied ? t('Open System Settings') : t('Allow')
   const note = away ? <GuideNote kind={kind} />
     : flow.phase === 'failed' ? <p data-testid="step-access-status" role="status" className="ob-note">{t("Couldn't check access. Try again.")}</p>
-      : flow.phase === 'idle' && denied ? <p data-testid="step-access-status" role="status" className="ob-note">{t('This was turned off before, so only System Settings can turn it on. Yogurt shows you where.')}</p>
+      : flow.phase === 'idle' && denied ? <p data-testid="step-access-status" role="status" className="ob-note">{t('This was turned off before, so only System Settings can turn it on. Noe Taker shows you where.')}</p>
         : null
   // the picture changes only when there is a new thing to show: System Settings, or the screen's own drawing
   const art = away ? <SettingsArt kind={kind} /> : <ScreenArt kind={kind} />
@@ -164,7 +164,7 @@ function Ask({ screen, step, leaving, state, progress, onOn, onLater }: {
     <Layout
       testId="onboarding-step" step={screen.id} kind={kind} motionKey={away ? `${screen.id}-away` : screen.id}
       art={art} progress={progress} state={state} note={note}
-      title={away ? t('Turn on Yogurt in System Settings') : back ? t('All set') : sc.title}
+      title={away ? t('Turn on Noe Taker in System Settings') : back ? t('All set') : sc.title}
       text={away ? c.where : back ? t('{name} is on. You can change this any time in Settings.', { name: c.name }) : sc.text}
       actions={<>
         <button ref={primary} data-testid="step-allow" aria-describedby="step-reason" disabled={busy}
@@ -177,7 +177,7 @@ function Ask({ screen, step, leaving, state, progress, onOn, onLater }: {
   )
 }
 
-/** Under the buttons while System Settings is open: that Yogurt notices by itself, what to do if it isn't listed, and a reopen for the ones that need it */
+/** Under the buttons while System Settings is open: that Noe Taker notices by itself, what to do if it isn't listed, and a reopen for the ones that need it */
 function GuideNote({ kind }: { kind: PermissionKind }) {
   const [failed, setFailed] = useState(false)
   return (
@@ -186,14 +186,14 @@ function GuideNote({ kind }: { kind: PermissionKind }) {
       <details key={kind} className="ob-guide-help">
         <summary>{t('Still not working?')}</summary>
         <div className="ob-guide-help-content">
-        {(kind === 'accessibility' || kind === 'systemAudio') && <p>{t('Not in the list? Click +, then choose Yogurt in Applications.')}</p>}
-        <p>{t('If you turned access on and this stays open, restart Yogurt.')}</p>
+        {(kind === 'accessibility' || kind === 'systemAudio') && <p>{t('Not in the list? Click +, then choose Noe Taker in Applications.')}</p>}
+        <p>{t('If you turned access on and this stays open, restart Noe Taker.')}</p>
         <button data-testid="settings-guide-relaunch" className="workspace-button no-drag" onClick={() => {
-          void window.yogurt.permissions.relaunch().then((ok) => setFailed(!ok), () => setFailed(true))
-        }}>{t('Restart Yogurt')}</button>
+          void window.noetaker.permissions.relaunch().then((ok) => setFailed(!ok), () => setFailed(true))
+        }}>{t('Restart Noe Taker')}</button>
       </div>
       </details>
-      {failed && <p role="alert" className="ob-note-line ob-note-error">{t("Yogurt couldn't reopen. Quit it from the menu bar and open it again.")}</p>}
+      {failed && <p role="alert" className="ob-note-line ob-note-error">{t("Noe Taker couldn't reopen. Quit it from the menu bar and open it again.")}</p>}
     </div>
   )
 }
@@ -209,7 +209,7 @@ function Ready({ state }: { state: SetupState }) {
       testId="setup-ready" motionKey={error ? 'error' : 'ready'} art={<ReadyArt fraction={state.fraction} paused={error} onShown={setShown} />}
       title={error ? t("Couldn't finish setting up") : c.title} text={error ? state.message ?? '' : c.text} textTestId={error ? 'setup-error' : undefined}
       actions={error ? (
-        <button data-testid="setup-retry" className="ob-button primary no-drag" onClick={() => void window.yogurt.setup.retry()}>{t('Try again')}</button>
+        <button data-testid="setup-retry" className="ob-button primary no-drag" onClick={() => void window.noetaker.setup.retry()}>{t('Try again')}</button>
       ) : (
         <div className="ob-progress">
           <div data-testid="setup-progress" role="progressbar" aria-label={transcriptionPhase(state)} aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct} className="ob-progress-track">

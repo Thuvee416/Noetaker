@@ -5,7 +5,7 @@ import { join } from 'node:path'
 
 test('a full agenda starts at the next event and gives the list priority while details open on demand', async () => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-agenda-timeline-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-agenda-timeline-')),
   } })
   try {
     const page = await app.firstWindow()
@@ -29,7 +29,7 @@ test('a full agenda starts at the next event and gives the list priority while d
     await expect(row(0)).toBeInViewport()
     await row(0).click({ position: { x: 20, y: 8 } })
     await expect(page.getByTestId('home')).toBeVisible()
-    expect(await page.evaluate(() => window.yogurt.meetings.cards({ limit: 10 }))).toEqual([])
+    expect(await page.evaluate(() => window.noetaker.meetings.cards({ limit: 10 }))).toEqual([])
     await expect(detail).toContainText('Meeting 0')
     await expect(detail.getByTestId('event-open')).toHaveText('Prepare note')
     await expect(row(0)).toHaveAttribute('data-selected', 'true')
@@ -74,7 +74,7 @@ test('a full agenda starts at the next event and gives the list priority while d
 
 test('granting calendar access initializes the timeline after events arrive, including after the last event', async () => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_FAKE_CALENDAR: 'notDetermined', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-agenda-first-grant-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_FAKE_CALENDAR: 'notDetermined', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-agenda-first-grant-')),
   } })
   try {
     const page = await app.firstWindow()
@@ -94,7 +94,7 @@ test('granting calendar access initializes the timeline after events arrive, inc
     await expect(details.getByRole('heading')).toHaveText('Earlier 17')
     await expect(details.getByTestId('event-open')).toHaveText('Prepare note')
     await expect(page.getByTestId('event-start')).toHaveCount(0)
-    expect(await page.evaluate(() => window.yogurt.meetings.cards({ limit: 10 }))).toEqual([])
+    expect(await page.evaluate(() => window.noetaker.meetings.cards({ limit: 10 }))).toEqual([])
     await page.keyboard.press('Escape')
     await expect(details).toHaveCount(0)
     await expect(page.getByTestId('event').last().getByTestId('event-details')).toBeFocused()
@@ -103,7 +103,7 @@ test('granting calendar access initializes the timeline after events arrive, inc
 
 test('a solo timed block can be prepared and then recorded from its agenda details', async () => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'agenda-solo-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'agenda-solo-')),
   } })
   try {
     const page = await app.firstWindow()
@@ -121,7 +121,7 @@ test('a solo timed block can be prepared and then recorded from its agenda detai
     await expect(action).toHaveText('Prepare note')
     await action.click()
     await expect(page.getByTestId('note')).toBeVisible()
-    const [prepared] = await page.evaluate(() => window.yogurt.meetings.cards({ limit: 10 }))
+    const [prepared] = await page.evaluate(() => window.noetaker.meetings.cards({ limit: 10 }))
     expect(prepared.state).toBe('prepared')
     await page.getByTestId('nav-home').click()
     await page.clock.setFixedTime(start)
@@ -131,7 +131,7 @@ test('a solo timed block can be prepared and then recorded from its agenda detai
     await expect(action).toHaveText('Take notes')
     await action.click()
     await expect(page.getByTestId('note-state')).toHaveAttribute('data-state', 'recording')
-    const notes = await page.evaluate(() => window.yogurt.meetings.cards({ limit: 10 }))
+    const notes = await page.evaluate(() => window.noetaker.meetings.cards({ limit: 10 }))
     expect(notes).toHaveLength(1)
     expect(notes[0].id).toBe(prepared.id)
   } finally { await app.close() }

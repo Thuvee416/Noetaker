@@ -11,10 +11,10 @@ import { isFake } from './paths'
 import { t, onLanguage } from '../shared/i18n'
 import { widgetLayout, widgetDragLayout, widgetRestLayout, widgetContains, type WidgetSurface, type WidgetLayout } from '../shared/widgetMorph'
 
-const BACKGROUND = process.env.YOGURT_BACKGROUND === '1'
+const BACKGROUND = process.env.NOETAKER_BACKGROUND === '1'
 const FIRST_W = 127, FIRST_H = 42
 
-/** Remembered while Yogurt runs, including the next meeting and temporary warning cards. */
+/** Remembered while Noe Taker runs, including the next meeting and temporary warning cards. */
 let lastWidth = FIRST_W
 let lastPosition: { x: number; y: number } | null = null
 
@@ -59,7 +59,7 @@ const broadcast = (channel: string, v: unknown) => { for (const w of BrowserWind
 export function createWidget(d: { open(meetingId: string): void; stop(meetingId: string): void; foreground(): boolean; showRecordingPill?(): boolean; os?: string
   /** the computer the windows are made for (a Mac's panel, a tool window elsewhere) */
   windowOs?: string
-  /** the computer Yogurt really runs on (tests pass one) */
+  /** the computer Noe Taker really runs on (tests pass one) */
   platform?: NodeJS.Platform }) {
   const model = new WidgetModel(d.os)
   let speech = silentSpeech

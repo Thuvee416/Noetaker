@@ -12,7 +12,7 @@ import { micIsOff, type MicState } from '../shared/types'
 import { helperFile } from '../shared/platform'
 
 /**
- * Recording a meeting: yogurt-audio writes me.m4a and them.m4a (Windows and Linux: me.ogg and them.ogg, Ogg Opus) into the meeting's folder and streams
+ * Recording a meeting: noetaker-audio writes me.m4a and them.m4a (Windows and Linux: me.ogg and them.ogg, Ogg Opus) into the meeting's folder and streams
  * 16 kHz mono audio for transcription, sound levels and warnings on stdout.
  * Each message is a JSON line; a pcm line is followed by n float32 samples (little-endian).
  */
@@ -209,11 +209,11 @@ export const captureArgs = (dir: string, o?: CaptureOpts): string[] =>
 export function startCapture(meetingDir: string, o?: CaptureOpts): Capture {
   mkdirSync(meetingDir, { recursive: true })
   if (isFake()) return new Capture(fakeCaptureProc(meetingDir, o?.startMs ?? 0, { speech: !!o?.speech, part: o?.part, mic: o?.mic, micMuted: o?.micMuted }), { startMs: o?.startMs })
-  // straight from Yogurt, never through a shell: Windows leaves the helper's parent's process tree (Yogurt) out of the call audio
+  // straight from Noe Taker, never through a shell: Windows leaves the helper's parent's process tree (Noe Taker) out of the call audio
   const child = spawn(audioHelperPath(), captureArgs(meetingDir, o), { stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true })
-  child.stderr.on('data', (d: Buffer) => console.error('yogurt-audio:', d.toString().trim()))
+  child.stderr.on('data', (d: Buffer) => console.error('noetaker-audio:', d.toString().trim()))
   // a missing or broken helper is a crash, not an exception in the main process
-  child.on('error', (e) => { console.error('yogurt-audio failed to start', e); child.emit('exit', null, null) })
+  child.on('error', (e) => { console.error('noetaker-audio failed to start', e); child.emit('exit', null, null) })
   return new Capture(child, { startMs: o?.startMs })
 }
 
@@ -222,9 +222,9 @@ export function joinParts(meetingDir: string): Promise<void> {
   if (isFake()) { joinFakeParts(meetingDir); return Promise.resolve() }
   return new Promise((resolve, reject) => {
     const child = spawn(audioHelperPath(), ['join', '--dir', meetingDir], { stdio: ['ignore', 'ignore', 'pipe'], windowsHide: true })
-    child.stderr.on('data', (d: Buffer) => console.error('yogurt-audio join:', d.toString().trim()))
+    child.stderr.on('data', (d: Buffer) => console.error('noetaker-audio join:', d.toString().trim()))
     child.on('error', reject)
-    child.on('exit', (code) => (code === 0 ? resolve() : reject(new Error(`yogurt-audio join exited with ${code}`))))
+    child.on('exit', (code) => (code === 0 ? resolve() : reject(new Error(`noetaker-audio join exited with ${code}`))))
   })
 }
 

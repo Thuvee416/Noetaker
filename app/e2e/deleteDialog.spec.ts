@@ -7,7 +7,7 @@ import { join } from 'node:path'
 
 test('delete is centered over the whole workspace, traps focus safely and restores its opener on cancellation', async () => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-delete-dialog-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-delete-dialog-')),
   } })
   try {
     const page = await app.firstWindow()
@@ -15,7 +15,7 @@ test('delete is centered over the whole workspace, traps focus safely and restor
     await app.evaluate(() => (globalThis as unknown as { __fake__: { manyMeetings: (n: number) => unknown } }).__fake__.manyMeetings(1))
     await page.reload()
     // Delete forever lives in the Trash: every meeting goes there first
-    await page.evaluate(async () => { for (const c of await window.yogurt.meetings.cards({ limit: 10 })) await window.yogurt.meetings.trash(c.id) })
+    await page.evaluate(async () => { for (const c of await window.noetaker.meetings.cards({ limit: 10 })) await window.noetaker.meetings.trash(c.id) })
     await openFromCorner(page, 'nav-trash')
     const opener = page.getByTestId('trash-delete')
     const modal = page.getByTestId('delete-confirm')
@@ -79,7 +79,7 @@ test('delete is centered over the whole workspace, traps focus safely and restor
     await page.keyboard.press('Escape')
     await page.mouse.click(10, 100)
     await expect(modal).toBeVisible()
-    await expect(modal).toContainText("Yogurt couldn't finish deleting this note.")
+    await expect(modal).toContainText("Noe Taker couldn't finish deleting this note.")
     await expect(yes).toBeEnabled()
     await cancel.click()
     await expect(opener).toBeFocused()

@@ -1,17 +1,17 @@
 #!/bin/sh
-# Builds the Mac helpers (Apple Silicon) into resources/bin: yogurt-mac (calendar, mic apps, names from calls),
-# yogurt-audio (recording), yogurt-mcp (AI apps reading meetings) and whisper-server (speech to text, built from a pinned whisper.cpp).
+# Builds the Mac helpers (Apple Silicon) into resources/bin: noetaker-mac (calendar, mic apps, names from calls),
+# noetaker-audio (recording), noetaker-mcp (AI apps reading meetings) and whisper-server (speech to text, built from a pinned whisper.cpp).
 # Skipped off a Mac, or when a helper is newer than its source.
 set -e
 [ "$(uname)" = "Darwin" ] || exit 0
 cd "$(dirname "$0")/.."
 mkdir -p resources/bin
-for name in yogurt-mac yogurt-audio yogurt-mcp; do
+for name in noetaker-mac noetaker-audio noetaker-mcp; do
   src=native/$name/main.swift
   plist=native/$name/Info.plist
   out=resources/bin/$name
   if [ -f "$out" ] && [ "$out" -nt "$src" ] && [ "$out" -nt "$plist" ]; then continue; fi
-  # the plist is embedded so the system's Calendar, Microphone and audio recording prompts have Yogurt's words.
+  # the plist is embedded so the system's Calendar, Microphone and audio recording prompts have Noe Taker's words.
   # 14.4: Core Audio process taps arrived in 14.2, their permission prompt in 14.4
   xcrun swiftc -O -target arm64-apple-macos14.4 "$src" -o "$out" -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __info_plist -Xlinker "$plist"
   echo "built $out"

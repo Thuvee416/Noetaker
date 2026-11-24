@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
 const builder = readFileSync(join(__dirname, '../electron-builder.yml'), 'utf8')
 const nsh = readFileSync(join(__dirname, '../build/installer.nsh'), 'utf8')
 
-// a small C: drive: the installer asks where Yogurt goes and where its AI models go; nothing about it in the app
+// a small C: drive: the installer asks where Noe Taker goes and where its AI models go; nothing about it in the app
 describe('Windows installer', () => {
   it('lets the person pick the install folder, still per user with no admin prompt', () => {
     expect(builder).toMatch(/oneClick: false/)
@@ -20,8 +20,8 @@ describe('Windows installer', () => {
   it('asks where the models go after the install folder, never on an update or when models already exist, and saves it where the app reads it', () => {
     expect(nsh).toContain('!macro customPageAfterChangeDir')
     expect(nsh).toContain('${If} ${Silent}')
-    expect(nsh).toContain('$APPDATA\\Yogurt\\models\\*.*')
-    expect(nsh).toContain('$APPDATA\\Yogurt\\models-dir.txt')
+    expect(nsh).toContain('$APPDATA\\Noe Taker\\models\\*.*')
+    expect(nsh).toContain('$APPDATA\\Noe Taker\\models-dir.txt')
     expect(nsh).toContain('FileWriteUTF16LE')
   })
   it('the models page has its own heading, not the install folder page\'s', () => {

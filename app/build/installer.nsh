@@ -26,12 +26,12 @@
 !macroend
 
 ; After the install folder, a page asks where to keep the AI models (5 to 12 GB), so a small C: drive
-; isn't filled. The answer goes to %APPDATA%\Yogurt\models-dir.txt, which the app reads (src/main/paths.ts modelsFolder).
+; isn't filled. The answer goes to %APPDATA%\Noe Taker\models-dir.txt, which the app reads (src/main/paths.ts modelsFolder).
 ; Not asked on updates (silent), or when models are already somewhere: nothing is ever moved.
 !include nsDialogs.nsh
 
 ; An installer with pages would first ask "Anyone who uses this computer" or "Only for me"; the first needs an admin.
-; Yogurt is always installed just for this person (perMachine: false), so that page is skipped.
+; Noe Taker is always installed just for this person (perMachine: false), so that page is skipped.
 !macro customInstallMode
   StrCpy $isForceCurrentInstall "1"
 !macroend
@@ -44,13 +44,13 @@ Function modelsPageCreate
   ${If} ${Silent}
     Abort
   ${EndIf}
-  ${If} ${FileExists} "$APPDATA\Yogurt\models-dir.txt"
+  ${If} ${FileExists} "$APPDATA\Noe Taker\models-dir.txt"
     Abort
   ${EndIf}
-  ${If} ${FileExists} "$APPDATA\Yogurt\models\*.*"
+  ${If} ${FileExists} "$APPDATA\Noe Taker\models\*.*"
     Abort
   ${EndIf}
-  StrCpy $ModelsDir "$APPDATA\Yogurt\models"
+  StrCpy $ModelsDir "$APPDATA\Noe Taker\models"
   ; the heading above the page (MUI2 isn't loaded yet where this file is included, so set directly)
   GetDlgItem $0 $HWNDPARENT 1037
   SendMessage $0 ${WM_SETTEXT} 0 "STR:Choose where the AI models go"
@@ -58,7 +58,7 @@ Function modelsPageCreate
   SendMessage $0 ${WM_SETTEXT} 0 "STR:They're big, so pick a drive with space."
   nsDialogs::Create 1018
   Pop $0
-  ${NSD_CreateLabel} 0 0 100% 36u "Yogurt downloads its AI models once, about 5 to 12 GB. Choose where to keep them. A drive with room to spare is best."
+  ${NSD_CreateLabel} 0 0 100% 36u "Noe Taker downloads its AI models once, about 5 to 12 GB. Choose where to keep them. A drive with room to spare is best."
   Pop $0
   ${NSD_CreateDirRequest} 0 44u 76% 13u "$ModelsDir"
   Pop $ModelsField
@@ -70,7 +70,7 @@ FunctionEnd
 
 Function modelsBrowse
   ${NSD_GetText} $ModelsField $0
-  nsDialogs::SelectFolderDialog "Folder for Yogurt's AI models" "$0"
+  nsDialogs::SelectFolderDialog "Folder for Noe Taker's AI models" "$0"
   Pop $0
   ${If} $0 != error
     ${NSD_SetText} $ModelsField "$0"
@@ -80,17 +80,17 @@ FunctionEnd
 Function modelsPageLeave
   ${NSD_GetText} $ModelsField $ModelsDir
   ${If} $ModelsDir == ""
-  ${OrIf} $ModelsDir == "$APPDATA\Yogurt\models"
+  ${OrIf} $ModelsDir == "$APPDATA\Noe Taker\models"
     Return
   ${EndIf}
   CreateDirectory "$ModelsDir"
   ${IfNot} ${FileExists} "$ModelsDir\*.*"
-    MessageBox MB_ICONEXCLAMATION "Yogurt can't use that folder. Pick another one."
+    MessageBox MB_ICONEXCLAMATION "Noe Taker can't use that folder. Pick another one."
     Abort
   ${EndIf}
-  CreateDirectory "$APPDATA\Yogurt"
+  CreateDirectory "$APPDATA\Noe Taker"
   ; UTF-16 with a byte-order mark, so any folder name survives
-  FileOpen $0 "$APPDATA\Yogurt\models-dir.txt" w
+  FileOpen $0 "$APPDATA\Noe Taker\models-dir.txt" w
   FileWriteWord $0 0xFEFF
   FileWriteUTF16LE $0 "$ModelsDir"
   FileClose $0

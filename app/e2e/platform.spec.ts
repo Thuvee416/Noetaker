@@ -5,10 +5,10 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { backgroundPixel } from './backgroundPixel'
 
-// @everywhere: these also run on the Windows and Linux CI. YOGURT_FAKE_PLATFORM lets the Mac try those screens too.
+// @everywhere: these also run on the Windows and Linux CI. NOETAKER_FAKE_PLATFORM lets the Mac try those screens too.
 const main = join(import.meta.dirname, '../out/main/index.js')
 const launch = (env: Record<string, string> = {}) =>
-  electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-e2e-')), ...env } })
+  electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-e2e-')), ...env } })
 
 test('@everywhere the search palette follows appearance and transparency preferences', async () => {
   const app = await launch()
@@ -40,11 +40,11 @@ for (const platform of ['win32', 'linux']) {
   // Linux reads names from calls through AT-SPI and Windows through UI Automation: nothing to ask for, so it reads as on
   const names = true
   test(`@everywhere on ${platform}: the agenda, and Settings' calendars by calendar link (no calendar permission), and names from calls`, async () => {
-    const app = await launch({ YOGURT_FAKE_PLATFORM: platform })
+    const app = await launch({ NOETAKER_FAKE_PLATFORM: platform })
     try {
       const page = await app.firstWindow()
       await expect(page.getByTestId('home')).toBeVisible({ timeout: 15_000 })
-      expect(await page.evaluate(() => window.yogurt.capabilities)).toEqual({ calendar: true, calendarLink: true, callNames: names, permissionPrompts: false, mediaPause: false })
+      expect(await page.evaluate(() => window.noetaker.capabilities)).toEqual({ calendar: true, calendarLink: true, callNames: names, permissionPrompts: false, mediaPause: false })
       await expect(page.getByRole('complementary', { name: 'Agenda' })).toBeVisible()
       await openFromCorner(page, 'settings-open')
       await expect(page.getByTestId('settings')).toBeVisible()
@@ -60,7 +60,7 @@ for (const platform of ['win32', 'linux']) {
   })
 
   test(`@everywhere on ${platform}: the first run asks only for a calendar link (no prompts there; mic, call audio and notifications are on)`, async () => {
-    const app = await launch({ YOGURT_FAKE_PLATFORM: platform, YOGURT_FAKE_PERMISSIONS: 'unknown', YOGURT_FAKE_CALENDAR: 'notDetermined' })
+    const app = await launch({ NOETAKER_FAKE_PLATFORM: platform, NOETAKER_FAKE_PERMISSIONS: 'unknown', NOETAKER_FAKE_CALENDAR: 'notDetermined' })
     try {
       const page = await app.firstWindow()
       await page.getByTestId('intro-next').click()
@@ -74,11 +74,11 @@ for (const platform of ['win32', 'linux']) {
 }
 
 test('@everywhere a Mac keeps the agenda and every permission', async () => {
-  const app = await launch({ YOGURT_FAKE_PLATFORM: 'darwin' })
+  const app = await launch({ NOETAKER_FAKE_PLATFORM: 'darwin' })
   try {
     const page = await app.firstWindow()
     await expect(page.getByTestId('home')).toBeVisible({ timeout: 15_000 })
-    expect(await page.evaluate(() => window.yogurt.capabilities)).toEqual({ calendar: true, calendarLink: false, callNames: true, permissionPrompts: true, mediaPause: true })
+    expect(await page.evaluate(() => window.noetaker.capabilities)).toEqual({ calendar: true, calendarLink: false, callNames: true, permissionPrompts: true, mediaPause: true })
     await expect(page.getByRole('complementary', { name: 'Agenda' })).toBeVisible()
     await openFromCorner(page, 'settings-open')
     await expect(page.getByTestId('permission-row')).toHaveCount(5)

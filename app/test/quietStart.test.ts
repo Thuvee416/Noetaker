@@ -10,7 +10,7 @@ const make = (reason: Parameters<typeof createQuietStart>[0]['reason'], busy = (
   return { q, quit }
 }
 
-describe('a Yogurt an AI app started (#147)', () => {
+describe('a Noe Taker an AI app started (#147)', () => {
   it('watches for no calls and offers nothing until the person opens it', async () => {
     const { q } = make('ai-app')
     const tick = vi.fn(async () => {})
@@ -63,7 +63,7 @@ describe('a Yogurt an AI app started (#147)', () => {
     vi.advanceTimersByTime(QUIT_AFTER_MS)
     expect(quit).toHaveBeenCalledOnce()
   })
-  it('stays once the person opened it, and never quits a Yogurt they started', () => {
+  it('stays once the person opened it, and never quits a Noe Taker they started', () => {
     const opened = make('ai-app')
     opened.q.opened()
     opened.q.clients(0)
@@ -76,7 +76,7 @@ describe('a Yogurt an AI app started (#147)', () => {
       expect(other.quit).not.toHaveBeenCalled()
     }
   })
-  it('a login start while it waits quietly makes it a normal Yogurt, still without a window', async () => {
+  it('a login start while it waits quietly makes it a normal Noe Taker, still without a window', async () => {
     const { q, quit } = make('ai-app')
     q.startedAgain('login')
     expect(q.quiet()).toBe(false)

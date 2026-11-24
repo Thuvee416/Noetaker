@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 // @everywhere: Windows and Linux connect their calendar with a private calendar address (iCal), in Settings and in the
-// first run, with one form. A made-up feed is served on this computer; YOGURT_FAKE_PLATFORM shows Windows' screens.
+// first run, with one form. A made-up feed is served on this computer; NOETAKER_FAKE_PLATFORM shows Windows' screens.
 const main = join(import.meta.dirname, '../out/main/index.js')
 const stamp = (ms: number) => new Date(ms).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
 
@@ -21,8 +21,8 @@ function serve(): Promise<{ server: Server; base: string }> {
 
 test('@everywhere on win32: the agenda sends you to Settings, a calendar link connects there, and its events show up', async () => {
   const { server, base } = await serve()
-  const profile = mkdtempSync(join(tmpdir(), 'yogurt-callink-'))
-  const app = await electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_FAKE_PLATFORM: 'win32', YOGURT_USER_DATA: profile } })
+  const profile = mkdtempSync(join(tmpdir(), 'noetaker-callink-'))
+  const app = await electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_FAKE_PLATFORM: 'win32', NOETAKER_USER_DATA: profile } })
   try {
     const page = await app.firstWindow()
     await expect(page.getByTestId('home')).toBeVisible({ timeout: 15_000 })
@@ -70,7 +70,7 @@ test('@everywhere on win32: the agenda sends you to Settings, a calendar link co
 })
 
 test('@everywhere on win32: the first run asks for a calendar link with the same form, and Not now goes on', async () => {
-  const app = await electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_FAKE_PLATFORM: 'win32', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-callink-ob-')), YOGURT_FAKE_PERMISSIONS: 'unknown' } })
+  const app = await electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_FAKE_PLATFORM: 'win32', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-callink-ob-')), NOETAKER_FAKE_PERMISSIONS: 'unknown' } })
   try {
     const page = await app.firstWindow()
     await page.getByTestId('intro-next').click()
@@ -84,7 +84,7 @@ test('@everywhere on win32: the first run asks for a calendar link with the same
 
 test('@everywhere a Mac keeps its own calendar and can add a calendar link next to it (only "other": no Google or Outlook tabs)', async () => {
   const { server, base } = await serve()
-  const app = await electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_FAKE_PLATFORM: 'darwin', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-callink-mac-')) } })
+  const app = await electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_FAKE_PLATFORM: 'darwin', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-callink-mac-')) } })
   try {
     const page = await app.firstWindow()
     await expect(page.getByTestId('home')).toBeVisible({ timeout: 15_000 })
@@ -124,7 +124,7 @@ test('@everywhere a Mac keeps its own calendar and can add a calendar link next 
 
 test('an unavailable source offers Retry without claiming the day is empty', async () => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-feed-retry-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-feed-retry-')),
   } })
   try {
     const page = await app.firstWindow()

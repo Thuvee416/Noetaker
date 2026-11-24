@@ -28,13 +28,13 @@ export function MicMenu({ recording, paused }: { recording: boolean; paused?: bo
   const root = useRef<HTMLDivElement>(null)
   const button = useRef<HTMLButtonElement>(null)
   const shown = useRef<MicsView | undefined>(undefined)
-  const load = useCallback(() => window.yogurt.audio.mics().then((v) => { shown.current = v; setView(v) }).catch(() => {}), [])
+  const load = useCallback(() => window.noetaker.audio.mics().then((v) => { shown.current = v; setView(v) }).catch(() => {}), [])
 
   useEffect(() => {
     void load()
     window.addEventListener('focus', load)
     const timer = recording ? setInterval(load, RECORDING_REFRESH_MS) : undefined
-    const off = window.yogurt.audio.onMics(({ fellBack }) => {
+    const off = window.noetaker.audio.onMics(({ fellBack }) => {
       if (fellBack) setLost(shown.current?.using ?? '')
       void load()
     })
@@ -63,7 +63,7 @@ export function MicMenu({ recording, paused }: { recording: boolean; paused?: bo
   const choose = async (id: string | null) => {
     setOpen(false); setLost(null); button.current?.focus()
     if (view) setView({ ...view, choice: id, using: id ? view.devices.find((d) => d.id === id)?.name ?? view.using : view.defaultName })
-    await window.yogurt.audio.setMic(id).catch(() => false)
+    await window.noetaker.audio.setMic(id).catch(() => false)
     void load()
   }
   const onKey = (e: KeyboardEvent) => {

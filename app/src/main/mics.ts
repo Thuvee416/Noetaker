@@ -8,7 +8,7 @@ import { loadSettings, updateSettings } from './settings'
 const isMicId = (x: unknown): x is string => typeof x === 'string' && x.length > 0 && x.length <= 512 && !/[\r\n]/.test(x)
 
 /**
- * The mic picker: which mics there are (yogurt-mac mic-devices), the one chosen (remembered in settings.json, null is Auto)
+ * The mic picker: which mics there are (noetaker-mac mic-devices), the one chosen (remembered in settings.json, null is Auto)
  * and, while recording, the one the recorder says it uses. Choosing one switches the meeting being recorded without stopping.
  */
 export function hookMics(d: { helper: Helper; settingsFile: string; send: (channel: string, payload: unknown) => void }) {

@@ -1,10 +1,10 @@
 {
-  "name": "yogurt",
+  "name": "noetaker",
   "private": true,
   "packageManager": "pnpm@10.7.0",
   "scripts": {
     "test": "pnpm -r test",
-    "dev": "pnpm --filter @yogurt/app dev"
+    "dev": "pnpm --filter @noetaker/app dev"
   },
   "license": "MIT"
 }

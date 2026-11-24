@@ -4,9 +4,9 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 test('a continuous scrub follows smoothly, settles on release and gives manual scrolling back', async ({}, info) => {
-  const review = process.env.YOGURT_SCRUB_REVIEW === 'before' ? 'before' : 'after'
+  const review = process.env.NOETAKER_SCRUB_REVIEW === 'before' ? 'before' : 'after'
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-scrub-motion-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-scrub-motion-')),
   }, ...(process.env.CI ? { recordVideo: { dir: info.outputPath('scrub-motion', review), size: { width: 1100, height: 760 } } } : {}) })
   try {
     const page = await app.firstWindow()

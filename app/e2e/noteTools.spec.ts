@@ -5,7 +5,7 @@ import { join } from 'node:path'
 
 test('meeting tools expose all copy choices, an anchored search, and a multiline chat composer', async () => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_BACKGROUND: '1', YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-note-tools-')),
+    ...process.env, NOETAKER_BACKGROUND: '1', NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-note-tools-')),
   } })
   try {
     const page = await app.firstWindow()

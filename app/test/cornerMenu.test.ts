@@ -36,7 +36,7 @@ beforeEach(() => {
   restart.mockResolvedValue(true)
   const store = new Map<string, string>()
   vi.stubGlobal('localStorage', { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: string) => store.set(k, v), removeItem: (k: string) => store.delete(k) })
-  vi.stubGlobal('window', { addEventListener: vi.fn(), removeEventListener: vi.fn(), yogurt: { updates: {
+  vi.stubGlobal('window', { addEventListener: vi.fn(), removeEventListener: vi.fn(), noetaker: { updates: {
     status: () => new Promise<UpdateStatus>(resolve => { initial = resolve }),
     onStatus: (fn: typeof notify) => { notify = fn; return off }, restart,
   } } })
@@ -45,9 +45,9 @@ afterEach(() => vi.unstubAllGlobals())
 
 it('uses the approved seven rows and appends the downloaded version nearest the corner button', () => {
   mount(); notify(ready); render()
-  expect(cornerRows).toEqual(['news','github','discord','shortcuts','feedback','settings','trash'])
+  expect(cornerRows).toEqual(['news','github','discussions','shortcuts','feedback','settings','trash'])
   const items = nodes(tree).filter(n => n.type === Menu.Item || n.type === Menu.LinkItem)
-  expect(items.slice(0,-1).map(n => n.props.label)).toEqual(["What's new",'Star us on GitHub','Join Discord','Keyboard shortcuts','Send feedback','Settings','Trash'])
+  expect(items.slice(0,-1).map(n => n.props.label)).toEqual(["What's new",'Star us on GitHub','Discussions','Keyboard shortcuts','Send feedback','Settings','Trash'])
   expect(items.at(-1)?.props['data-testid']).toBe('update-restart')
   expect(JSON.stringify(tree)).toContain('Restart to update · 0.3.10')
   const links = items.filter(n => n.type === Menu.LinkItem)
@@ -58,8 +58,8 @@ it('uses the approved seven rows and appends the downloaded version nearest the 
   }
   expect(nodes(tree).filter(n => n.type === 'kbd').map(n => n.props.children)).toEqual(['⌘/', '⌘,', '⌘3'])
   expect(links.map(n => n.props.href)).toEqual([
-    'https://yogurt.so/updates', 'https://github.com/FrigadeHQ/yogurt', 'https://yogurt.so/discord',
-    'https://github.com/FrigadeHQ/yogurt/issues/new',
+    'https://github.com/Thuvee416/Noetaker/releases', 'https://github.com/Thuvee416/Noetaker', 'https://github.com/Thuvee416/Noetaker/discussions',
+    'https://github.com/Thuvee416/Noetaker/issues/new',
   ])
   expect(props('settings-open')!['aria-current']).toBe('page')
   const focus = vi.fn()
@@ -124,7 +124,7 @@ it.each(['false','reject'])('keeps a failed restart visible and retryable (%s)',
   else restart.mockRejectedValueOnce(new Error('unavailable'))
   props('update-restart')!.onClick(); props('update-restart')!.onClick(); render()
   expect(props('update-restart')!.disabled).toBe(true); expect(restart).toHaveBeenCalledOnce()
-  await vi.waitFor(() => { render(); expect(JSON.stringify(tree)).toContain("Yogurt couldn't restart. Try again.") })
+  await vi.waitFor(() => { render(); expect(JSON.stringify(tree)).toContain("Noe Taker couldn't restart. Try again.") })
   expect(root().open).toBe(true)
   props('update-restart')!.onClick()
   await vi.waitFor(() => { render(); expect(root().open).toBe(false) })

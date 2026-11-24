@@ -1,6 +1,6 @@
 import { transcriptSpeaker } from './transcript'
 /**
- * Notes out of Yogurt: plain text and simple HTML for the clipboard (Gmail, Docs and Slack paste them cleanly), and a
+ * Notes out of Noe Taker: plain text and simple HTML for the clipboard (Gmail, Docs and Slack paste them cleanly), and a
  * Markdown file with the notes and the transcript. Built from the same document the editor uses (markdown.ts), so
  * what is copied is what is shown. The person's own words keep their text, not their styling.
  */
@@ -90,16 +90,17 @@ function docHtml(doc: PMNode): string {
 }
 
 const recordedWith = (app: string) => t('Recorded with {app}', { app })
-const siteName = new URL(projectWebsite).hostname
+const siteUrl = new URL(projectWebsite)
+const siteName = `${siteUrl.host}${siteUrl.pathname}`.replace(/\/$/, '')
 
 /** What goes on the clipboard for these notes: both formats, so the place pasted into takes the one it likes */
 export function toClipboard(md: string, includeCredit = false): { text: string; html: string } {
   const doc = mdToDoc(md)
   const text = docText(doc), html = docHtml(doc)
   if (!includeCredit || !text.trim()) return { text, html }
-  const link = `<a href="${projectWebsite}" style="color:inherit">Yogurt</a>`
+  const link = `<a href="${projectWebsite}" style="color:inherit">Noe Taker</a>`
   return {
-    text: `${text}\n\n${recordedWith('Yogurt')} · ${siteName}`,
+    text: `${text}\n\n${recordedWith('Noe Taker')} · ${siteName}`,
     html: `${html}<p style="margin:1em 0 0;color:#767676"><small>${recordedWith(link)} · ${siteName}</small></p>`,
   }
 }
@@ -133,12 +134,12 @@ export function transcriptDoc(lines: Segment[], o: { gap?: boolean } = {}): PMNo
 
 // ---------- file ----------
 
-/** The Markdown file: title, date and a link to Yogurt, people, the notes, then the transcript with names */
+/** The Markdown file: title, date and a link to Noe Taker, people, the notes, then the transcript with names */
 export function toMarkdownFile(meeting: Meeting, notes: string, segments: Segment[], includeCredit = true): string {
   const when = new Date(meeting.startedAt).toLocaleString(language(), { dateStyle: 'long', timeStyle: 'short' })
   const title = meeting.title.replace(/\s+/g, ' ').trim()
   // a small credit on the date line: whoever the file is shared with can find the app
-  const dateLine = includeCredit ? `${when} · ${recordedWith(`[Yogurt](${projectWebsite})`)}` : when
+  const dateLine = includeCredit ? `${when} · ${recordedWith(`[Noe Taker](${projectWebsite})`)}` : when
   const head = [`# ${escapeText(title)}`, '', dateLine]
   const people = meeting.attendees.map((a) => a.name.trim()).filter(Boolean)
   if (people.length) head.push('', t('With: {names}', { names: people.join(', ') }))

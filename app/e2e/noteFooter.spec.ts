@@ -6,7 +6,7 @@ import { join } from 'node:path'
 
 test('recording controls stay in the header and Ask lives in the footer with stable labels and usable targets at minimum size', async () => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_BACKGROUND: '1', YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-header-')),
+    ...process.env, NOETAKER_BACKGROUND: '1', NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-header-')),
   } })
   try {
     const page = await app.firstWindow()
@@ -20,7 +20,7 @@ test('recording controls stay in the header and Ask lives in the footer with sta
     })).toBe(true)
     await reminder.getByRole('button', { name: 'Close', exact: true }).click()
     await expect(page.locator('.note-footer')).toHaveCSS('margin-block-end', '0px')
-    await expect(page.locator('.note-footer').getByRole('status').filter({ hasText: 'Mic on in Yogurt' })).toHaveText('Mic on in Yogurt')
+    await expect(page.locator('.note-footer').getByRole('status').filter({ hasText: 'Mic on in Noe Taker' })).toHaveText('Mic on in Noe Taker')
     await expect(page.getByTestId('note-notes-tab')).toHaveAttribute('aria-selected', 'true')
     await page.getByTestId('note-transcript-toggle').click()
     const header = page.locator('.note-header'), controls = header.getByTestId('note-state')
@@ -31,7 +31,7 @@ test('recording controls stay in the header and Ask lives in the footer with sta
     const mic = controls.getByRole('button', { name: 'Mute my mic', exact: true })
     await expect(mic).toHaveAttribute('aria-pressed', 'false')
     await mic.hover()
-    await expect(page.getByRole('tooltip', { name: 'Mute my mic in Yogurt' })).toBeVisible()
+    await expect(page.getByRole('tooltip', { name: 'Mute my mic in Noe Taker' })).toBeVisible()
     await expect(controls.getByTestId('note-pause')).toBeVisible()
     await expect(controls.getByTestId('note-stop')).toBeVisible()
     await expect(controls).toHaveCSS('border-top-width', '1px')

@@ -1,7 +1,7 @@
 // The wire under the iPhone companion: every frame is a 2-byte big-endian length then that many bytes (a pairing JSON
 // message, a Noise handshake message, or a Noise transport message). App messages bigger than CHUNK_AT bytes go as
 // several transport messages {chunk: base64 of the next slice of the message's UTF-8 JSON, of: how many}, in order.
-// The phone's sync client (YogurtKit) speaks exactly this.
+// The phone's sync client (NoetakerKit) speaks exactly this.
 
 export const MAX_FRAME = 65535
 /** an app message longer than this is split */

@@ -6,8 +6,8 @@ import { join } from 'node:path'
 for (const theme of ['light', 'dark'] as const) for (const status of ['notDetermined', 'denied', 'error', 'granted'] as const) {
   test(`date popover recovers from ${status} (${theme})`, async () => {
     const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-      ...process.env, YOGURT_FAKE: '1', YOGURT_FAKE_CALENDAR: status,
-      YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-date-states-')),
+      ...process.env, NOETAKER_FAKE: '1', NOETAKER_FAKE_CALENDAR: status,
+      NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-date-states-')),
     } })
     try {
       const page = await app.firstWindow()
@@ -16,7 +16,7 @@ for (const theme of ['light', 'dark'] as const) for (const status of ['notDeterm
         const fake = (globalThis as any).__fake__
         fake.manyMeetings({ n: 1, clean: true }); fake.calendarEvents([])
       })
-      await page.evaluate(theme => window.yogurt.settings.setTheme(theme), theme)
+      await page.evaluate(theme => window.noetaker.settings.setTheme(theme), theme)
       await page.reload()
       await page.getByTestId('past-note').click()
       await page.getByTestId('note-date').click()
@@ -39,7 +39,7 @@ for (const theme of ['light', 'dark'] as const) for (const status of ['notDeterm
           await app.evaluate(() => (globalThis as any).__fake__.calendarStatus('granted'))
           await page.evaluate(() => window.dispatchEvent(new Event('focus')))
         } else if (status === 'error') {
-          await expect(card).toContainText("Yogurt couldn't read your calendar")
+          await expect(card).toContainText("Noe Taker couldn't read your calendar")
           await app.evaluate(() => (globalThis as any).__fake__.calendarStatus('granted'))
           await action.click()
         } else if (status === 'notDetermined') {

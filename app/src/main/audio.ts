@@ -2,8 +2,8 @@ import { createReadStream, existsSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { Readable } from 'node:stream'
 
-/** yogurt-audio://<meetingId>/<track>: a meeting's recording, for the transcript's player */
-export const AUDIO_SCHEME = 'yogurt-audio'
+/** noetaker-audio://<meetingId>/<track>: a meeting's recording, for the transcript's player */
+export const AUDIO_SCHEME = 'noetaker-audio'
 const TRACKS = ['me', 'them'] as const
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 

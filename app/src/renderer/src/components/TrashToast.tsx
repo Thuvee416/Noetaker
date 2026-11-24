@@ -27,11 +27,11 @@ export function retryToast(id: string, title: string, actionTestId: string, retr
 
 /** Confirm manual audio deletion without changing the retention preference. */
 export async function recordingDeletedToast() {
-  const prefs = await window.yogurt.settings.get().catch(() => undefined)
+  const prefs = await window.noetaker.settings.get().catch(() => undefined)
   const id = toasts.add({ title: t('Recording deleted'), timeout: 8000,
     data: { testId: 'recording-deleted-toast', actionTestId: 'recording-settings' },
     actionProps: prefs?.keepRecordings ? { children: t('Settings'), onClick: () => {
-      window.yogurt.nav.go('/settings/recordings')
+      window.noetaker.nav.go('/settings/recordings')
       toasts.close(id)
     } } : undefined,
   })
@@ -47,10 +47,10 @@ export async function moveToTrash(id: string, from?: string): Promise<boolean> {
 }
 
 export async function moveMeetingsToTrash(ids: string[], from?: string, bulk = true): Promise<string[]> {
-  const result = await changeMeetingRows('trash', ids, () => trashMeetings(ids, id => window.yogurt.meetings.trash(id)), result => result.done)
+  const result = await changeMeetingRows('trash', ids, () => trashMeetings(ids, id => window.noetaker.meetings.trash(id)), result => result.done)
   const error = result.error === 'recording' ? t('Stop the recording first, then try again.')
     : result.error === 'save-pending' ? t('Open this note and finish saving before deleting it.')
-    : result.error ? t("Yogurt couldn't move this note to the Trash. Try again.") : undefined
+    : result.error ? t("Noe Taker couldn't move this note to the Trash. Try again.") : undefined
   if (result.trashed.length || error) show?.({ ids: result.trashed, from, bulk, error })
   return result.done
 }
@@ -68,8 +68,8 @@ export function TrashToast({ go }: { go: (route: string) => void }) {
         toasts.add({ title: t("Summaries and Ask are ready."), data: { testId: 'notes-ready-toast' } })
       }
     }
-    const off = window.yogurt.setup.onState(update)
-    void window.yogurt.setup.state().then(state => { if (active && !current) update(state) })
+    const off = window.noetaker.setup.onState(update)
+    void window.noetaker.setup.state().then(state => { if (active && !current) update(state) })
     const visibility = () => { if (current) update(current) }
     document.addEventListener('visibilitychange', visibility)
     return () => { active = false; off(); document.removeEventListener('visibilitychange', visibility) }
@@ -81,11 +81,11 @@ export function TrashToast({ go }: { go: (route: string) => void }) {
   }, [host])
   useEffect(() => {
     const remind = () => {
-      void window.yogurt.meetings.takeRecordingReminder().then(id => {
+      void window.noetaker.meetings.takeRecordingReminder().then(id => {
         if (id) toasts.add({ id: `recording-reminder-${id}`, title: t("Let everyone know you're recording."), timeout: 4000, data: { testId: 'recording-reminder' } })
       })
     }
-    const off = window.yogurt.meetings.onChange(remind)
+    const off = window.noetaker.meetings.onChange(remind)
     remind()
     return off
   }, [])
@@ -102,11 +102,11 @@ export function TrashToast({ go }: { go: (route: string) => void }) {
           if (restoring) return
           restoring = true
           try {
-            remaining = await changeMeetingRows('restore', remaining, () => restoreMeetings(remaining, id => window.yogurt.meetings.restore(id)), failed => remaining.filter(id => !failed.includes(id)))
-            if (remaining.length) { toasts.update(id, { title: t("Yogurt couldn't make that change. Try again."), timeout: 0 }); return }
+            remaining = await changeMeetingRows('restore', remaining, () => restoreMeetings(remaining, id => window.noetaker.meetings.restore(id)), failed => remaining.filter(id => !failed.includes(id)))
+            if (remaining.length) { toasts.update(id, { title: t("Noe Taker couldn't make that change. Try again."), timeout: 0 }); return }
             toasts.close(id)
             if (s.from) go(s.from)
-          } catch { toasts.update(id, { title: t("Yogurt couldn't make that change. Try again."), timeout: 0 }) }
+          } catch { toasts.update(id, { title: t("Noe Taker couldn't make that change. Try again."), timeout: 0 }) }
           finally { restoring = false }
         } },
       })

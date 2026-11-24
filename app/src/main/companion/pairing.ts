@@ -1,7 +1,7 @@
 // Pairing over one connection, before any Noise session (the desktop is CPace initiator A):
 //   pairHello {v:1, phoneSession, phoneName} → pairStart {v:1, desktopSession, desktopId, desktopName, ya}
 //   → pairReply {yb} → pairConfirm {box} → pairDone {box} → pairOk {} | pairFail {reason: code | expired | tooMany | busy}
-// sid = desktopSession ‖ phoneSession, CI = "yogurt-pair-v1" ‖ desktopSession ‖ phoneSession, no AD. The boxes are
+// sid = desktopSession ‖ phoneSession, CI = "noetaker-pair-v1" ‖ desktopSession ‖ phoneSession, no AD. The boxes are
 // XChaCha20-Poly1305 under pairKeys(ISK) (toPhone, AD "pairConfirm"; toDesktop, AD "pairDone") holding JSON
 // {key, name, id}; opening one is the key confirmation. Binary fields are base64. Every frame has a "type".
 import { randomInt } from 'node:crypto'
@@ -76,7 +76,7 @@ export async function pair(io: PairIo, hello: Record<string, unknown>, ctx: Pair
   if (!code) { io.send({ type: 'pairFail', reason: 'expired' }); return { fail: 'expired' } }
   const desktopSession = sodium().randombytes_buf(16)
   const sid = new Uint8Array([...desktopSession, ...phoneSession])
-  const ci = new Uint8Array([...enc.encode('yogurt-pair-v1'), ...desktopSession, ...phoneSession])
+  const ci = new Uint8Array([...enc.encode('noetaker-pair-v1'), ...desktopSession, ...phoneSession])
   const { ya, secret } = cpaceStart(code, ci, sid)
   io.send({ type: 'pairStart', v: 1, desktopSession: b64(desktopSession), desktopId: ctx.desktop.id, desktopName: ctx.desktop.name, ya: b64(ya) })
   let yb: Uint8Array

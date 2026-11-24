@@ -9,7 +9,7 @@ for (const theme of ['light', 'dark'] as const) for (const width of [420, 860]) 
     // the window's own setting (hidden locally, shown on CI): the summary unrolls on animation frames, which a hidden
     // window pauses on Linux and Windows, so forcing it hidden left the summary empty now and then
     const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-      ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-summary-rim-')),
+      ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-summary-rim-')),
     } })
     try {
       const page = await app.firstWindow()
@@ -17,11 +17,11 @@ for (const theme of ['light', 'dark'] as const) for (const width of [420, 860]) 
       const win = await app.browserWindow(page)
       await win.evaluate(w => w.setContentSize(1200, 850))
       const id = await app.evaluate(async () => (await (globalThis as unknown as { __fake__: { chatMeetings(): Promise<string[]> } }).__fake__.chatMeetings())[0])
-      await page.evaluate(id => window.yogurt.nav.go(`/note/${id}`), id)
+      await page.evaluate(id => window.noetaker.nav.go(`/note/${id}`), id)
       await page.emulateMedia({ colorScheme: theme, reducedMotion: 'no-preference' })
       await page.getByTestId('note-summary-tab').click()
       await page.locator('.note-layout').evaluate((el, width) => { el.style.flex = 'none'; el.style.width = `${width}px` }, width)
-      const base = await page.evaluate(id => window.yogurt.notes.get(id), id)
+      const base = await page.evaluate(id => window.noetaker.notes.get(id), id)
       const push = async (status: NoteView['status'], draft: string) => {
         const view = { ...base, status, draft, enhanced: status === 'done' ? draft : null }
         await app.evaluate(({ BrowserWindow }, view) => {

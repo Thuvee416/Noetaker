@@ -1,7 +1,7 @@
 import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs'
 import { userDataDir } from './paths'
 import { basename, dirname, join } from 'node:path'
-import type { Hardware } from '@yogurt/picker'
+import type { Hardware } from '@noetaker/picker'
 import { DiskSpaceError, type DownloadDeps } from './downloader'
 import type { Helper } from './calendar'
 import type { Reading } from './detectSignals'
@@ -11,12 +11,12 @@ let releaseAudioMetadata: (() => void) | undefined, audioMetadataGate: Promise<v
 let audioMetadataReleased = false
 /** Deterministic CI ordering for a transcript click before the player's metadata is available. */
 export function waitForFakeAudioMetadata(): Promise<void> | undefined {
-  if (process.env.YOGURT_FAKE_AUDIO_METADATA_GATE !== '1' || audioMetadataReleased) return
+  if (process.env.NOETAKER_FAKE_AUDIO_METADATA_GATE !== '1' || audioMetadataReleased) return
   return audioMetadataGate ??= new Promise<void>(resolve => { releaseAudioMetadata = resolve })
 }
 
 /** Fake mode: the same Mac every time, so tests don't depend on the one they run on */
-/** a fake Mac; with YOGURT_FAKE_PLATFORM the same machine says it runs Windows or Linux (so their speed check runs) */
+/** a fake Mac; with NOETAKER_FAKE_PLATFORM the same machine says it runs Windows or Linux (so their speed check runs) */
 export const fakeHardware = async (platform = 'darwin'): Promise<Hardware> => ({
   os: platform as Hardware['os'], arch: 'arm64', cpuModel: 'Apple M2 Max', totalRamGB: 34.4, freeDiskGB: 500, gpu: { kind: 'unified', name: 'Apple M2 Max', vramGB: 0 },
 })
@@ -42,8 +42,8 @@ export const fakeDownloadDeps = (opts: { freeDiskGB?: number; stepMs?: number; n
 
 // ---- calendar and meeting detection (fake mode only) ----
 
-/** Fake mode: Calendar access as YOGURT_FAKE_CALENDAR says (granted unless told notDetermined or denied); asking grants it unless denied */
-let calendar = process.env.YOGURT_FAKE_CALENDAR ?? 'granted'
+/** Fake mode: Calendar access as NOETAKER_FAKE_CALENDAR says (granted unless told notDetermined or denied); asking grants it unless denied */
+let calendar = process.env.NOETAKER_FAKE_CALENDAR ?? 'granted'
 /** tests: the calendar's events as given, instead of the usual two (null: the usual) */
 let eventsOverride: unknown[] | null = null
 export const setFakeCalendar = (o: { status?: string; events?: unknown[] | null }) => {
@@ -51,31 +51,31 @@ export const setFakeCalendar = (o: { status?: string; events?: unknown[] | null 
   if (o.events !== undefined) eventsOverride = o.events
 }
 /**
- * Fake mode: microphone, call audio and notifications as YOGURT_FAKE_PERMISSIONS says (granted unless told unknown or denied).
- * Asking turns unknown into granted; denied stays denied. Calendar follows YOGURT_FAKE_CALENDAR.
+ * Fake mode: microphone, call audio and notifications as NOETAKER_FAKE_PERMISSIONS says (granted unless told unknown or denied).
+ * Asking turns unknown into granted; denied stays denied. Calendar follows NOETAKER_FAKE_CALENDAR.
  */
-const startAs = (process.env.YOGURT_FAKE_PERMISSIONS ?? 'granted') as FakeAccess
+const startAs = (process.env.NOETAKER_FAKE_PERMISSIONS ?? 'granted') as FakeAccess
 type FakeAccess = 'granted' | 'denied' | 'unknown' | 'restricted'
-/** YOGURT_FAKE_MIC, YOGURT_FAKE_NOTIFICATIONS and YOGURT_FAKE_AX override one of them (restricted: a managed Mac) */
+/** NOETAKER_FAKE_MIC, NOETAKER_FAKE_NOTIFICATIONS and NOETAKER_FAKE_AX override one of them (restricted: a managed Mac) */
 export const fakeAccess: Record<'mic' | 'systemAudio' | 'notifications' | 'accessibility', FakeAccess> = {
-  mic: (process.env.YOGURT_FAKE_MIC as FakeAccess) ?? startAs, systemAudio: startAs, notifications: (process.env.YOGURT_FAKE_NOTIFICATIONS as FakeAccess) ?? startAs,
-  // YOGURT_FAKE_AX: Accessibility on its own (names from the fake Zoom call need it)
-  accessibility: (process.env.YOGURT_FAKE_AX as FakeAccess) ?? startAs,
+  mic: (process.env.NOETAKER_FAKE_MIC as FakeAccess) ?? startAs, systemAudio: startAs, notifications: (process.env.NOETAKER_FAKE_NOTIFICATIONS as FakeAccess) ?? startAs,
+  // NOETAKER_FAKE_AX: Accessibility on its own (names from the fake Zoom call need it)
+  accessibility: (process.env.NOETAKER_FAKE_AX as FakeAccess) ?? startAs,
 }
-/** YOGURT_FAKE_PLAYER=1: Music is running, and the Mac hasn't asked about controlling it yet */
-let playerAsked = process.env.YOGURT_FAKE_PLAYER !== '1'
-/** YOGURT_FAKE_ANSWER=deny: the person says no to the Mac's prompts */
-const answer: FakeAccess = process.env.YOGURT_FAKE_ANSWER === 'deny' ? 'denied' : 'granted'
+/** NOETAKER_FAKE_PLAYER=1: Music is running, and the Mac hasn't asked about controlling it yet */
+let playerAsked = process.env.NOETAKER_FAKE_PLAYER !== '1'
+/** NOETAKER_FAKE_ANSWER=deny: the person says no to the Mac's prompts */
+const answer: FakeAccess = process.env.NOETAKER_FAKE_ANSWER === 'deny' ? 'denied' : 'granted'
 const ask = (k: keyof typeof fakeAccess) => { if (fakeAccess[k] === 'unknown') fakeAccess[k] = answer }
 export const askFakeNotifications = () => { ask('notifications'); return fakeAccess.notifications }
-/** fake mode: every media-pause, media-resume and media-auth the helper was asked for; YOGURT_FAKE_MUSIC=1 has Music playing */
+/** fake mode: every media-pause, media-resume and media-auth the helper was asked for; NOETAKER_FAKE_MUSIC=1 has Music playing */
 export const mediaCalls: string[][] = []
-/** also on disk, so a test can see what happened while Yogurt quit */
+/** also on disk, so a test can see what happened while Noe Taker quit */
 const logMedia = (args: string[]) => { mediaCalls.push(args); try { appendFileSync(join(userDataDir(), 'fake-media.log'), args.join(' ') + '\n') } catch { /* tests only */ } }
-let musicPlaying = process.env.YOGURT_FAKE_MUSIC === '1'
+let musicPlaying = process.env.NOETAKER_FAKE_MUSIC === '1'
 const standupAt = Date.now() + 5 * 60_000
 
-/** Fake mode: the Mac's microphones, as yogurt-mac mic-devices lists them; the built-in one is the Mac's input */
+/** Fake mode: the Mac's microphones, as noetaker-mac mic-devices lists them; the built-in one is the Mac's input */
 export type FakeMic = { uid: string; name: string; default: boolean }
 const FAKE_MICS: FakeMic[] = [
   { uid: 'BuiltInMicrophoneDevice', name: 'MacBook Pro Microphone', default: true },
@@ -123,8 +123,8 @@ export const fakeHelper: Helper = async (args) => {
     case 'media-auth': mediaCalls.push(args); playerAsked = true; return { players: [] }
     case 'mic-auth': ask('mic'); return {}
     case 'audio-auth': ask('systemAudio'); return {}
-    // like the Mac: asking only puts Yogurt in the list unless YOGURT_FAKE_AX_PROMPT=grant; it is turned on in System Settings
-    case 'ax-auth': if (process.env.YOGURT_FAKE_AX_PROMPT === 'grant') ask('accessibility'); return { trusted: fakeAccess.accessibility === 'granted' }
+    // like the Mac: asking only puts Noe Taker in the list unless NOETAKER_FAKE_AX_PROMPT=grant; it is turned on in System Settings
+    case 'ax-auth': if (process.env.NOETAKER_FAKE_AX_PROMPT === 'grant') ask('accessibility'); return { trusted: fakeAccess.accessibility === 'granted' }
     case 'media-pause': { logMedia(args); const paused = musicPlaying ? ['com.apple.Music'] : []; musicPlaying = false; return { paused } }
     case 'media-resume': logMedia(args); if (args.includes('com.apple.Music')) musicPlaying = true; return { resumed: args.slice(1) }
     default: return {}
@@ -134,12 +134,12 @@ export const fakeHelper: Helper = async (args) => {
 /** Fake mode: every prompt whisper and the notes model were given, for tests to read (prompts()) */
 export const fakePrompts = { whisper: [] as string[], notes: [] as string[], /** what was read in ahead of a prompt */ preloads: [] as string[], /** the language whisper was told for each chunk ('auto': detect) */ languages: [] as string[] }
 
-/** Fake mode: a clock tests can move forward, so "30 seconds without the mic" does not take 30 seconds. YOGURT_FAKE_CALL_GONE_MS shortens the wait before a recording stops by itself when its call ends */
+/** Fake mode: a clock tests can move forward, so "30 seconds without the mic" does not take 30 seconds. NOETAKER_FAKE_CALL_GONE_MS shortens the wait before a recording stops by itself when its call ends */
 let skew = 0
 export const fakeNow = () => Date.now() + skew
 
 /**
- * The hook the end-to-end tests drive, reachable from the test as globalThis.__fake__. Installed only under YOGURT_FAKE=1.
+ * The hook the end-to-end tests drive, reachable from the test as globalThis.__fake__. Installed only under NOETAKER_FAKE=1.
  *   signals({ micApps, events })  pretend the Mac said this, then look at it right away
  *   advance(ms)                   move the clock forward
  *   silence(ms | null)            confirmed live quiet time; null restores real audio observation

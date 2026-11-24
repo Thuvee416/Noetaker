@@ -43,7 +43,7 @@ const MAC_HELPERS: Record<string, string> = {
 }
 const named = (name: string, ids: string[], browser?: boolean): CallApp[] => ids.map((id) => ({ id, name, ...(browser ? { browser } : {}) }))
 /**
- * yogurt-system names an app by its program on Windows (lowercase .exe; Edge WebView2 already resolved to the app that
+ * noetaker-system names an app by its program on Windows (lowercase .exe; Edge WebView2 already resolved to the app that
  * owns it) and on Linux by its Flatpak or portal id, else its program. Google Meet is a browser call everywhere.
  */
 const APPS_BY_OS: Record<string, CallApp[]> = {
@@ -68,8 +68,8 @@ const HELPERS_BY_OS: Record<string, Record<string, string>> = {
   win32: { 'cpthost.exe': 'zoom.exe', 'zoomwebviewhost.exe': 'zoom.exe' },
   linux: {},
 }
-/** Yogurt's own recorder holds the mic while it records; yogurt-system lists it like any app off a Mac */
-const OWN_BY_OS: Record<string, string[]> = { darwin: [], win32: ['yogurt-audio.exe', 'yogurt.exe'], linux: ['yogurt-audio', 'yogurt', 'Yogurt'] }
+/** Noe Taker's own recorder holds the mic while it records; noetaker-system lists it like any app off a Mac */
+const OWN_BY_OS: Record<string, string[]> = { darwin: [], win32: ['noetaker-audio.exe', 'noetaker.exe'], linux: ['noetaker-audio', 'noetaker', 'Noe Taker'] }
 let APPS = MAC_APPS
 let HELPERS = MAC_HELPERS
 let OWN: string[] = []
@@ -79,7 +79,7 @@ export function useCallApps(platform: string) {
   HELPERS = HELPERS_BY_OS[platform] ?? MAC_HELPERS
   OWN = OWN_BY_OS[platform] ?? []
 }
-/** Yogurt's own recorder (or Yogurt) on the mic: never a call */
+/** Noe Taker's own recorder (or Noe Taker) on the mic: never a call */
 export const isOwnMicApp = (bundleId: string): boolean => OWN.includes(bundleId)
 const appOf = (bundleId: string) => {
   if (OWN.includes(bundleId)) return undefined
@@ -114,7 +114,7 @@ export function matchEvent(events: CalEvent[], now: number): CalEvent | null {
   return near[0] ?? null
 }
 
-/** Should Yogurt offer to take notes now? A call app using the mic is the trigger; a meeting on the calendar alone waits for the call. */
+/** Should Noe Taker offer to take notes now? A call app using the mic is the trigger; a meeting on the calendar alone waits for the call. */
 export function decide(s: Signals, now: number, recent: Dismissals): Prompt | null {
   if (s.recording) return null
   const event = matchEvent(s.events, now)

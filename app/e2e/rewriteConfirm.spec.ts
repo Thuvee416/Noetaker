@@ -4,9 +4,9 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 async function launchEdited() {
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-rewrite-confirm-'))
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-rewrite-confirm-'))
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData, YOGURT_FAKE_LLM_MS: '2',
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData, NOETAKER_FAKE_LLM_MS: '2',
   } })
   const page = await app.firstWindow()
   await expect(page.getByTestId('home')).toBeVisible()

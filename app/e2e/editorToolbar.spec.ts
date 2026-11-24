@@ -5,12 +5,12 @@ import { join } from 'node:path'
 
 async function launch() {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-editor-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-editor-')),
   } })
   const page = await app.firstWindow()
   await expect(page.getByTestId('home')).toBeVisible()
   const id = await app.evaluate(() => (globalThis as unknown as { __fake__: { bigMeeting(n: number): string } }).__fake__.bigMeeting(20))
-  await page.evaluate(id => window.yogurt.nav.go(`/note/${id}`), id)
+  await page.evaluate(id => window.noetaker.nav.go(`/note/${id}`), id)
   await page.getByTestId('note-notes-tab').click()
   return { app, page, id }
 }
@@ -42,7 +42,7 @@ test('the selection toolbar formats notes, reflects active marks, and keeps edit
     await expect(editor.locator('ol li')).toHaveText('Discuss the launch plan')
     await editor.press('Meta+z')
     await expect(editor.locator('ul li')).toHaveText('Discuss the launch plan')
-    await expect.poll(() => page.evaluate(id => window.yogurt.notes.get(id).then(n => n.mine), id)).toBe('- ***Discuss the launch plan***')
+    await expect.poll(() => page.evaluate(id => window.noetaker.notes.get(id).then(n => n.mine), id)).toBe('- ***Discuss the launch plan***')
     await page.reload()
     await page.getByTestId('note-notes-tab').click()
     await expect(editor.locator('ul li strong em')).toHaveText('Discuss the launch plan')
@@ -72,7 +72,7 @@ test('toolbar supports keyboard focus and Escape; generating summaries remain re
     await expect.poll(() => editor.evaluate(el => (el as HTMLElement & { editor: { state: { selection: { empty: boolean } } } }).editor.state.selection.empty)).toBe(true)
     await selectAll(page)
     await expect(toolbar).toBeVisible()
-    await page.evaluate(id => window.yogurt.notes.writeAgain(id), id)
+    await page.evaluate(id => window.noetaker.notes.writeAgain(id), id)
     await page.getByTestId('note-summary-tab').click()
     const summary = page.getByTestId('note-enhanced-editor')
     await expect(page.getByTestId('note-enhanced')).toHaveAttribute('data-status', 'writing')
@@ -81,6 +81,6 @@ test('toolbar supports keyboard focus and Escape; generating summaries remain re
     await expect(page.getByTestId('note-enhanced')).toHaveAttribute('data-status', 'done', { timeout: 20_000 })
     await selectAll(page, 'note-enhanced-editor')
     await toolbar.getByRole('button', { name: 'Bold', exact: true }).click()
-    await expect.poll(() => page.evaluate(id => window.yogurt.notes.get(id).then(n => n.edited), id)).toBe(true)
+    await expect.poll(() => page.evaluate(id => window.noetaker.notes.get(id).then(n => n.edited), id)).toBe(true)
   } finally { await app.close() }
 })

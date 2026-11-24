@@ -6,7 +6,7 @@ import { join } from 'node:path'
 
 const main = join(import.meta.dirname, '../out/main/index.js')
 async function launch() {
-  const app = await electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-call-controls-')) } })
+  const app = await electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-call-controls-')) } })
   const page = await app.firstWindow()
   await expect(page.getByTestId('home')).toBeVisible()
   return { app, page }
@@ -91,7 +91,7 @@ test('Custom words has the same visible unfocused field boundary in light and da
   try {
     await openFromCorner(page, 'settings-open')
     for (const theme of ['light', 'dark'] as const) {
-      await page.evaluate(theme => window.yogurt.settings.setTheme(theme), theme)
+      await page.evaluate(theme => window.noetaker.settings.setTheme(theme), theme)
       const input = page.getByTestId('jargon-input')
       await input.evaluate(el => el.blur())
       await input.scrollIntoViewIfNeeded()

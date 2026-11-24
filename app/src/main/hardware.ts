@@ -1,5 +1,5 @@
 import os from 'node:os'
-import type { Hardware, OS } from '@yogurt/picker'
+import type { Hardware, OS } from '@noetaker/picker'
 import { realDeps } from './downloader'
 
 export type SysInfo = { platform: string; arch: string; cpuModel: string; totalRamBytes: number; freeDiskGB: number; cores?: number }

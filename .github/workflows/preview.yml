@@ -37,14 +37,14 @@ jobs:
           - os: windows-latest
             platform: --win
             unpacked: win-unpacked
-            files: app/dist/Yogurt-windows-*.exe
+            files: app/dist/noetaker-windows-*.exe
           - os: ubuntu-22.04
             platform: --linux
             unpacked: linux-unpacked
-            files: app/dist/Yogurt-linux-*.AppImage
+            files: app/dist/noetaker-linux-*.AppImage
     runs-on: ${{ matrix.os }}
     timeout-minutes: 120
-    # Azure trusts sign-in tokens from this repository's signing environment only (managed identity yogurt-github-signing)
+    # Azure trusts sign-in tokens from this repository's signing environment only (managed identity noetaker-github-signing)
     environment: ${{ inputs.release && 'signing' || '' }}
     defaults:
       run:
@@ -121,20 +121,20 @@ jobs:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
           # a preview (by hand) was never released: it is marked so it never looks for updates (src/main/updates.ts)
           PREVIEW: ${{ inputs.release != true }}
-          # Windows releases are signed by Microsoft's Artifact Signing (account yogurt-signing, East US), using the Azure
+          # Windows releases are signed by Microsoft's Artifact Signing (account noetaker-signing, East US), using the Azure
           # sign-in above; without the repository's Azure variables the installer stays unsigned
           SIGN: ${{ inputs.release && vars.AZURE_CLIENT_ID != '' }}
           # the name on the certificate, exactly as Microsoft validated it
-          PUBLISHER: ${{ vars.WINDOWS_PUBLISHER_NAME || 'Frigade Inc.' }}
-          PROFILE: ${{ vars.WINDOWS_CERT_PROFILE || 'yogurt' }}
+          PUBLISHER: ${{ vars.WINDOWS_PUBLISHER_NAME || 'Noe Taker' }}
+          PROFILE: ${{ vars.WINDOWS_CERT_PROFILE || 'noetaker' }}
         run: |
           cd app
           set -- ${{ matrix.platform }} --publish never
-          [ "$PREVIEW" = true ] && set -- "$@" -c.extraMetadata.yogurtPreview=true
+          [ "$PREVIEW" = true ] && set -- "$@" -c.extraMetadata.noetakerPreview=true
           if [ "$RUNNER_OS" = Windows ] && [ "$SIGN" = true ]; then
             echo "::notice::Signing the Windows installer as $PUBLISHER"
             set -- "$@" "-c.win.azureSignOptions.publisherName=$PUBLISHER" -c.win.azureSignOptions.endpoint=https://eus.codesigning.azure.net/ \
-              -c.win.azureSignOptions.codeSigningAccountName=yogurt-signing "-c.win.azureSignOptions.certificateProfileName=$PROFILE"
+              -c.win.azureSignOptions.codeSigningAccountName=noetaker-signing "-c.win.azureSignOptions.certificateProfileName=$PROFILE"
             echo "SIGNED=true" >> "$GITHUB_ENV"
           fi
           pnpm exec electron-builder "$@"
@@ -143,26 +143,26 @@ jobs:
         if: runner.os == 'Windows' && env.SIGNED == 'true'
         shell: pwsh
         run: |
-          foreach ($f in @('app/dist/Yogurt-windows-x64.exe', 'app/dist/win-unpacked/Yogurt.exe')) {
+          foreach ($f in @('app/dist/noetaker-windows-x64.exe', 'app/dist/win-unpacked/noetaker.exe')) {
             $s = Get-AuthenticodeSignature $f
             Write-Host "$f : $($s.Status) $($s.SignerCertificate.Subject)"
             if ($s.Status -ne 'Valid') { throw "$f is not signed: $($s.Status)" }
           }
-          # every program and library Yogurt ships is signed: Code Integrity blocks an unsigned one from loading (#99).
-          # Yogurt's own helpers must be; anything else unsigned is listed, so it can be added
+          # every program and library Noe Taker ships is signed: Code Integrity blocks an unsigned one from loading (#99).
+          # Noe Taker's own helpers must be; anything else unsigned is listed, so it can be added
           $all = Get-ChildItem app/dist/win-unpacked -Recurse -File -Include *.exe,*.dll,*.node
           $unsigned = $all | Where-Object { (Get-AuthenticodeSignature $_.FullName).Status -ne 'Valid' }
           Write-Host "signed $($all.Count - $unsigned.Count) of $($all.Count) programs and libraries"
           $unsigned | ForEach-Object { Write-Host "::warning::not signed: $($_.FullName)" }
           $ours = $unsigned | Where-Object { $_.FullName -match '\\resources\\bin\\' }
-          if ($ours) { throw "Yogurt's own helpers are not all signed: $($ours.Name -join ', ')" }
+          if ($ours) { throw "Noe Taker's own helpers are not all signed: $($ours.Name -join ', ')" }
       # a release also carries a website-only copy of the installer under its own name, so GitHub's download counts tell
       # new installs (the website's links) from updates (latest.yml / latest-linux.yml keep the plain name; never change it)
       - name: Website copy (release)
         if: inputs.release
         run: |
-          if [ "$RUNNER_OS" = Windows ]; then from=Yogurt-windows-x64.exe; to=Yogurt-windows-x64-setup.exe
-          else from=Yogurt-linux-x86_64.AppImage; to=Yogurt-linux-x86_64-setup.AppImage; fi
+          if [ "$RUNNER_OS" = Windows ]; then from=noetaker-windows-x64.exe; to=noetaker-windows-x64-setup.exe
+          else from=noetaker-linux-x86_64.AppImage; to=noetaker-linux-x86_64-setup.AppImage; fi
           cp "app/dist/$from" "app/dist/$to"
           cmp "app/dist/$from" "app/dist/$to"
           if grep -q -- "$to" app/dist/latest*.yml; then echo "::error::latest*.yml must name $from, not $to"; exit 1; fi
@@ -170,7 +170,7 @@ jobs:
       # kept before the checks below, so testers get the installer even when one of them fails
       - uses: actions/upload-artifact@v4
         with:
-          name: yogurt-preview-${{ runner.os }}
+          name: noetaker-preview-${{ runner.os }}
           # what installed copies update from goes too: latest.yml / latest-linux.yml and the installer's blockmap
           path: |
             ${{ matrix.files }}
@@ -185,7 +185,7 @@ jobs:
           node app/scripts/asar-check.mjs app/dist/${{ matrix.unpacked }}/resources/app.asar
           cd app
           # a preview never looks for updates; a release build does
-          node -e "const p=JSON.parse(require('@electron/asar').extractFile(process.argv[1],'package.json'));const want=process.argv[2]==='true';if((p.yogurtPreview===true)!==want){console.error('yogurtPreview is',p.yogurtPreview,'but this build is',want?'a preview':'for a release');process.exit(1)}" dist/${{ matrix.unpacked }}/resources/app.asar ${{ inputs.release != true }}
+          node -e "const p=JSON.parse(require('@electron/asar').extractFile(process.argv[1],'package.json'));const want=process.argv[2]==='true';if((p.noetakerPreview===true)!==want){console.error('noetakerPreview is',p.noetakerPreview,'but this build is',want?'a preview':'for a release');process.exit(1)}" dist/${{ matrix.unpacked }}/resources/app.asar ${{ inputs.release != true }}
           if [ "$RUNNER_OS" = "Linux" ]; then
             xvfb-run -a pnpm exec electron scripts/engine-smoke.cjs dist/${{ matrix.unpacked }}/resources/app.asar
           else
@@ -194,13 +194,13 @@ jobs:
       - name: Install it
         run: |
           if [ "$RUNNER_OS" = Windows ]; then
-            # one-click, per user: %LOCALAPPDATA%\Programs\Yogurt, as on a person's PC
-            ./app/dist/Yogurt-windows-x64.exe //S
-            dir="$LOCALAPPDATA/Programs/Yogurt/resources"
-            for i in $(seq 1 60); do [ -f "$dir/bin/yogurt-audio.exe" ] && break; sleep 2; done
+            # one-click, per user: %LOCALAPPDATA%\Programs\Noe Taker, as on a person's PC
+            ./app/dist/noetaker-windows-x64.exe //S
+            dir="$LOCALAPPDATA/Programs/Noe Taker/resources"
+            for i in $(seq 1 60); do [ -f "$dir/bin/noetaker-audio.exe" ] && break; sleep 2; done
           else
             mkdir -p "$RUNNER_TEMP/appimage" && cd "$RUNNER_TEMP/appimage"
-            "$GITHUB_WORKSPACE"/app/dist/Yogurt-linux-x86_64.AppImage --appimage-extract >/dev/null
+            "$GITHUB_WORKSPACE"/app/dist/noetaker-linux-x86_64.AppImage --appimage-extract >/dev/null
             dir="$RUNNER_TEMP/appimage/squashfs-root/resources"
           fi
           ls -la "$dir/bin"

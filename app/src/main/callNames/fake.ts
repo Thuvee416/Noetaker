@@ -5,7 +5,7 @@ import { fakeAccess } from '../fake'
 /**
  * Fake mode: a Zoom call with Ann Lee, Bo Park and Cy Dao (not on the invite), Sam Rivera being "(me)". Ann is marked
  * talking for the e2e fixture's first line of the other side (5.2 s), Bo for its second (13.3 s). Without the fake
- * Accessibility permission (YOGURT_FAKE_AX), nothing can be read.
+ * Accessibility permission (NOETAKER_FAKE_AX), nothing can be read.
  */
 export const fakeWatch = (): Watch => (_ids, onLine) => {
   const started = Date.now()

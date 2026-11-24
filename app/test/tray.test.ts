@@ -48,7 +48,7 @@ it('creates by default, destroys immediately, and recreates with the current rec
   expect(state.trays[1].setContextMenu).toHaveBeenCalled()
 })
 
-it('Quit Yogurt is the person quitting, so an AI app won\'t start Yogurt again (#147)', () => {
+it('Quit Noe Taker is the person quitting, so an AI app won\'t start Noe Taker again (#147)', () => {
   const tray = createTray({ show: true, ...actions() })
   tray.click('quit')
   expect(quitByUser).toHaveBeenCalledOnce()
@@ -76,7 +76,7 @@ it('never creates a native icon in background tests, even when toggled on', () =
   const tray = createTray({ show: false, ...d })
   tray.setVisible(false); tray.setVisible(true)
   expect(state.trays).toHaveLength(0)
-  expect(tray.items()).toContain('Open Yogurt')
+  expect(tray.items()).toContain('Open Noe Taker')
   tray.click('open'); expect(d.open).toHaveBeenCalledOnce()
 })
 
@@ -134,7 +134,7 @@ it('records the event named in the menu and ignores a stale click after it disap
   expect(d.event).toHaveBeenCalledTimes(1)
 })
 
-it('Windows and Linux: a colour icon that turns to the recording one, the time in the tooltip, and a click opens Yogurt', () => {
+it('Windows and Linux: a colour icon that turns to the recording one, the time in the tooltip, and a click opens Noe Taker', () => {
   const d = actions()
   const tray = createTray({ show: true, os: 'win32', ...d })
   const icon = state.trays[0]
@@ -317,7 +317,7 @@ it('keeps the recording warning available when the pill is hidden, through pause
   let pill = true
   const tray = createTray({ show: true, showNextMeeting: false, showRecordingPill: () => pill, ...actions() })
   state.meeting = { id: 'first', title: 'Review' }; state.change()
-  const warning = 'Yogurt is falling behind. Some lines may be missing.'
+  const warning = 'Noe Taker is falling behind. Some lines may be missing.'
   state.recording({ t: 'warn', code: 'falling-behind' })
   expect(tray.items()).not.toContain(warning)
   pill = false; tray.refresh()

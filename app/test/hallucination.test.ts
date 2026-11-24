@@ -42,11 +42,11 @@ describe('silence guesses', () => {
 })
 
 describe('the prompt read back as a speaker label', () => {
-  const prompt = 'Product board. With Eric and Christian Mathiesen.'
+  const prompt = 'Product board. With Eric and Maya Chen.'
   it('takes off names from the prompt that whisper put before real speech as a label', () => {
-    expect(withoutPromptLabel('Eric and Christian Mathiesen: So let me just get', prompt)).toBe('So let me just get')
-    expect(withoutPromptLabel('With Eric and Christian Mathiesen: Hurt to summarize the product board.', prompt)).toBe('Hurt to summarize the product board.')
-    expect(withoutPromptLabel('Christian Mathiesen: okay', prompt)).toBe('okay')
+    expect(withoutPromptLabel('Eric and Maya Chen: So let me just get', prompt)).toBe('So let me just get')
+    expect(withoutPromptLabel('With Eric and Maya Chen: Hurt to summarize the product board.', prompt)).toBe('Hurt to summarize the product board.')
+    expect(withoutPromptLabel('Maya Chen: okay', prompt)).toBe('okay')
     expect(withoutPromptLabel('Eric: yeah, let me check', prompt)).toBe('yeah, let me check')
   })
   it('also when whisper shuffles the prompt\'s names and drops its little words (#30)', () => {
@@ -59,8 +59,8 @@ describe('the prompt read back as a speaker label', () => {
   it('leaves speech alone: a colon that follows words of its own, or names nobody gave it', () => {
     expect(withoutPromptLabel('Here is the plan: ship Friday', prompt)).toBe('Here is the plan: ship Friday')
     expect(withoutPromptLabel('Note: the product board is late', prompt)).toBe('Note: the product board is late')
-    expect(withoutPromptLabel('Eric and Christian Mathiesen joined late', prompt)).toBe('Eric and Christian Mathiesen joined late')
-    expect(withoutPromptLabel('Eric and Christian Mathiesen:', prompt)).toBe('Eric and Christian Mathiesen:')
+    expect(withoutPromptLabel('Eric and Maya Chen joined late', prompt)).toBe('Eric and Maya Chen joined late')
+    expect(withoutPromptLabel('Eric and Maya Chen:', prompt)).toBe('Eric and Maya Chen:')
     expect(withoutPromptLabel('Eric: hi', '')).toBe('Eric: hi')
   })
 })

@@ -9,12 +9,12 @@ import { changeTools, changeHandlers } from './changes'
 import { importTools, importHandlers } from './importMeeting'
 
 /**
- * Yogurt as an MCP server, so an AI app on this Mac (Claude, Cursor, …) can use the person's meetings: JSON-RPC
- * messages in, answers out (socket.ts carries them; the yogurt-mcp helper connects the app to it).
+ * Noe Taker as an MCP server, so an AI app on this Mac (Claude, Cursor, …) can use the person's meetings: JSON-RPC
+ * messages in, answers out (socket.ts carries them; the noetaker-mcp helper connects the app to it).
  * Off until the person turns it on in Settings: until then every tool says where to turn it on and gives nothing.
  * Reading is all it does unless the person also lets AI apps make changes; then each change goes through the same
  * functions the app's own buttons use. Nothing is ever deleted for good: meetings go to the Trash.
- * Text here goes to the other app's model, never to Yogurt's interface, so it is not translated.
+ * Text here goes to the other app's model, never to Noe Taker's interface, so it is not translated.
  */
 
 type Track = 'me' | 'them'
@@ -53,7 +53,7 @@ export type McpDeps = {
   enabled: () => boolean
   /** Settings' "Let AI apps make changes": off unless the person turned it on */
   changesEnabled: () => boolean
-  /** the person using Yogurt, by name: "You" means nothing to another app */
+  /** the person using Noe Taker, by name: "You" means nothing to another app */
   me: () => string
   version: string
   /** a finished meeting's audio files (none while it records) */
@@ -79,27 +79,27 @@ const readOnly = { readOnlyHint: true, destructiveHint: false, openWorldHint: fa
 const readTools = (platform: string): Tool[] => [
   { name: 'list_folders', description: 'The folders the person files meetings in: id, name and how many meetings each holds. Pass a folder to list_meetings or search to read only its meetings.',
     inputSchema: { type: 'object', properties: {} } },
-  { name: 'list_meetings', description: 'Meetings recorded in Yogurt, newest first: id, title, start and end (ISO times), people invited (attendees: name and email from the calendar), call app, and the folders it is in. Optional query finds meetings by words in their title, transcript or notes; optional folder keeps only that folder\'s meetings; optional person keeps only meetings with them.',
+  { name: 'list_meetings', description: 'Meetings recorded in Noe Taker, newest first: id, title, start and end (ISO times), people invited (attendees: name and email from the calendar), call app, and the folders it is in. Optional query finds meetings by words in their title, transcript or notes; optional folder keeps only that folder\'s meetings; optional person keeps only meetings with them.',
     inputSchema: { type: 'object', properties: { query: { type: 'string' }, folder: inFolder, person, limit: { type: 'number', description: 'Most to return (default 20, at most 100)' }, before: { type: 'string', description: 'Only meetings that started before this ISO time, to page back' } } } },
-  { name: 'get_meeting', description: "One meeting: its details, its attendees with their emails, the calendar event it is linked to (calendar_event: title, start, end, calendar; null when none), the folder Yogurt suggests for it (suggested_folder, null when none), the notes the person typed (myNotes) and Yogurt's written summary (Markdown).",
+  { name: 'get_meeting', description: "One meeting: its details, its attendees with their emails, the calendar event it is linked to (calendar_event: title, start, end, calendar; null when none), the folder Noe Taker suggests for it (suggested_folder, null when none), the notes the person typed (myNotes) and Noe Taker's written summary (Markdown).",
     inputSchema: { type: 'object', properties: { id: idArg }, required: ['id'] } },
   { name: 'get_transcript', description: 'What was said in a meeting, line by line with who said it. format "text" (default): "[mm:ss] Name: words" lines. format "lines": JSON with start_ms, end_ms, speaker, is_me and text. "Them" is the other side of the call when the call app gave no name.',
     inputSchema: { type: 'object', properties: { id: idArg, format: { type: 'string', enum: ['text', 'lines'] } }, required: ['id'] } },
   { name: 'search', description: 'Finds words across every meeting (titles, transcripts, notes): meeting id, title, start and a snippet with the matched words in **bold**. Optional person keeps only meetings with them.',
     inputSchema: { type: 'object', properties: { query: { type: 'string' }, folder: inFolder, person, limit: { type: 'number', description: 'Most meetings to return (default 20, at most 100)' } }, required: ['query'] } },
-  { name: 'ask', description: "Yogurt answers a question from the person's meetings itself, on this computer, with numbered sources ([1], [2]) naming the meeting and the moment. Optional folder or meeting_ids limit what it reads. Slower than search (it writes an answer); use it for questions that need meetings read and put together.",
+  { name: 'ask', description: "Noe Taker answers a question from the person's meetings itself, on this computer, with numbered sources ([1], [2]) naming the meeting and the moment. Optional folder or meeting_ids limit what it reads. Slower than search (it writes an answer); use it for questions that need meetings read and put together.",
     inputSchema: { type: 'object', properties: { question: { type: 'string' }, folder: { type: 'string', description: 'Only meetings in this folder' }, meeting_ids: { type: 'array', items: { type: 'string' }, description: 'Only these meetings (at most 40)' } }, required: ['question'] } },
   { name: 'list_people', description: "The people in the person's meetings: name and email (null when the calendar gave none). Pass one as person to list_meetings or search.",
     inputSchema: { type: 'object', properties: { limit: { type: 'number', description: 'Most to return (default 200, at most 1000)' } } } },
-  { name: 'upcoming_meetings', description: "What is on the person's calendar for the rest of today and tomorrow, soonest first: event_id, title, start, end, calendar, meeting_link (the call's address, null when none), attendees, and meeting_id when Yogurt already has notes for it.",
+  { name: 'upcoming_meetings', description: "What is on the person's calendar for the rest of today and tomorrow, soonest first: event_id, title, start, end, calendar, meeting_link (the call's address, null when none), attendees, and meeting_id when Noe Taker already has notes for it.",
     inputSchema: { type: 'object', properties: {} } },
   { name: 'calendar_day', description: "The events on one day of the person's calendar, earliest first, the same way upcoming_meetings gives them.",
     inputSchema: { type: 'object', properties: { date: { type: 'string', description: 'The day, like 2026-11-03' } }, required: ['date'] } },
   { name: 'list_trash', description: 'Meetings in the Trash: id, title, start and when they were moved there. They are deleted for good 30 days after. restore_meeting brings one back.',
     inputSchema: { type: 'object', properties: {} } },
-  { name: 'get_settings', description: "Yogurt's settings that shape notes: the person's name, the interface language, the language spoken in meetings, the language summaries are written in, custom words spelled right in transcripts, whether recording stops when a call ends, and whether audio is kept.",
+  { name: 'get_settings', description: "Noe Taker's settings that shape notes: the person's name, the interface language, the language spoken in meetings, the language summaries are written in, custom words spelled right in transcripts, whether recording stops when a call ends, and whether audio is kept.",
     inputSchema: { type: 'object', properties: {} } },
-  { name: 'export_meeting', description: "A meeting as one Markdown document, exactly as Yogurt's Export Markdown saves it: title, date, people, the notes, and the transcript. side \"summary\" (default) uses Yogurt's summary, \"my_notes\" the person's own notes.",
+  { name: 'export_meeting', description: "A meeting as one Markdown document, exactly as Noe Taker's Export Markdown saves it: title, date, people, the notes, and the transcript. side \"summary\" (default) uses Noe Taker's summary, \"my_notes\" the person's own notes.",
     inputSchema: { type: 'object', properties: { id: idArg, side: { type: 'string', enum: ['summary', 'my_notes'] } }, required: ['id'] } },
   { name: 'get_audio', description: platform === 'darwin'
     ? "A meeting's recording as files on this Mac: one per side (track me: the person's microphone; them: the other side of the call), AAC in .m4a. Gives paths, which apps on this Mac can open."
@@ -165,7 +165,7 @@ export function createMcp(d: McpDeps): Mcp {
     if (!m || m.trashedAt != null) throw new Refusal(`No meeting with id ${JSON.stringify(v ?? null)}. list_meetings or search gives the ids.`)
     return m
   }
-  /** the folder Yogurt suggests for a meeting not filed yet, as the note's header offers it */
+  /** the folder Noe Taker suggests for a meeting not filed yet, as the note's header offers it */
   const suggestedFolder = (m: Meeting) => {
     if (d.store.foldersOf(m.id).length) return null
     const s = d.store.folderSuggestion(m.id)
@@ -175,8 +175,8 @@ export function createMcp(d: McpDeps): Mcp {
   const who = (speaker: string | null, track: Track) => (speaker === AUDIO_SPEAKER ? 'Audio' : track === 'me' || speaker === 'me' ? d.me() || 'You' : speaker || 'Them')
   const events = (r: { status: CalendarStatus; events: CalEvent[] }) => {
     if (!r.events.length && r.status !== 'granted') {
-      return r.status === 'unsupported' ? 'Yogurt has no calendar on this computer. The person can add a calendar link in Yogurt: Settings, Calendars.'
-        : `Yogurt can't read the calendar (${r.status === 'error' ? 'reading it failed' : 'it has no access'}). The person can connect it in Yogurt: Settings, Calendars.`
+      return r.status === 'unsupported' ? 'Noe Taker has no calendar on this computer. The person can add a calendar link in Noe Taker: Settings, Calendars.'
+        : `Noe Taker can't read the calendar (${r.status === 'error' ? 'reading it failed' : 'it has no access'}). The person can connect it in Noe Taker: Settings, Calendars.`
     }
     return JSON.stringify(r.events.map((e) => {
       const note = [e.id, ...(e.aliases ?? [])].map((id) => d.store.meetingForEvent(id)).find((m) => m && m.trashedAt == null)
@@ -233,8 +233,8 @@ export function createMcp(d: McpDeps): Mcp {
       const got = await d.app.ask(question, chips)
       if ('unavailable' in got) {
         throw new Refusal(got.unavailable === 'model'
-          ? "Yogurt's notes model is still downloading, so it can't answer questions yet. Use search and get_transcript instead, or ask again later."
-          : `Yogurt is recording a meeting, and on this ${mac ? 'Mac' : 'computer'} it answers questions once the recording ends. Use search and get_transcript meanwhile.`)
+          ? "Noe Taker's notes model is still downloading, so it can't answer questions yet. Use search and get_transcript instead, or ask again later."
+          : `Noe Taker is recording a meeting, and on this ${mac ? 'Mac' : 'computer'} it answers questions once the recording ends. Use search and get_transcript meanwhile.`)
       }
       return JSON.stringify({
         answer: got.answer, ...(got.stopped ? { note: 'The answer took too long and was stopped; this is what was written.' } : {}),
@@ -292,9 +292,9 @@ export function createMcp(d: McpDeps): Mcp {
         return ok(msgId, {
           protocolVersion: VERSIONS.includes(String(asked)) ? asked : VERSIONS[0],
           capabilities: { tools: {} },
-          serverInfo: { name: 'yogurt', title: 'Yogurt', version: d.version },
-          instructions: `Yogurt holds the person's meeting notes, transcripts and recordings on this ${mac ? 'Mac' : 'computer'}. Use list_meetings or search to find a meeting, then get_meeting, get_transcript or get_audio.`
-            + " With changes allowed in Yogurt's Settings, it can also file and edit meetings, take notes of a call, and bring in meetings from other notes apps (create_meeting).",
+          serverInfo: { name: 'noetaker', title: 'Noe Taker', version: d.version },
+          instructions: `Noe Taker holds the person's meeting notes, transcripts and recordings on this ${mac ? 'Mac' : 'computer'}. Use list_meetings or search to find a meeting, then get_meeting, get_transcript or get_audio.`
+            + " With changes allowed in Noe Taker's Settings, it can also file and edit meetings, take notes of a call, and bring in meetings from other notes apps (create_meeting).",
         })
       }
       if (method === 'ping') return ok(msgId, {})
@@ -303,12 +303,12 @@ export function createMcp(d: McpDeps): Mcp {
         const name = String(params?.name ?? '')
         const tool = tools[name]
         const a = params?.arguments && typeof params.arguments === 'object' && !Array.isArray(params.arguments) ? params.arguments as Args : {}
-        if (!tool) return said(msgId, `Yogurt has no tool called ${name}.`, true)
-        if (!d.enabled()) return said(msgId, 'Yogurt has connecting AI apps turned off. The person can turn it on in Yogurt: Settings, AI apps.', true)
+        if (!tool) return said(msgId, `Noe Taker has no tool called ${name}.`, true)
+        if (!d.enabled()) return said(msgId, 'Noe Taker has connecting AI apps turned off. The person can turn it on in Noe Taker: Settings, AI apps.', true)
         const change = CHANGES.has(name)
         if (change && !d.changesEnabled()) {
           logged(name, a, 'refused: changes off')
-          return said(msgId, 'Yogurt lets AI apps read meetings but not change them. The person can allow changes in Yogurt: Settings, AI apps, "Let AI apps make changes".', true)
+          return said(msgId, 'Noe Taker lets AI apps read meetings but not change them. The person can allow changes in Noe Taker: Settings, AI apps, "Let AI apps make changes".', true)
         }
         try {
           const body = await tool(a)
@@ -318,10 +318,10 @@ export function createMcp(d: McpDeps): Mcp {
           if (e instanceof Refusal) { if (change) logged(name, a, 'refused'); return said(msgId, e.message, true) }
           console.error(`mcp: ${name} failed`, e)
           if (change) logged(name, a, 'failed')
-          return said(msgId, `Yogurt couldn't do that (${name}). Try again.`, true)
+          return said(msgId, `Noe Taker couldn't do that (${name}). Try again.`, true)
         }
       }
-      return fail(msgId, -32601, `Yogurt doesn't do ${method}`)
+      return fail(msgId, -32601, `Noe Taker doesn't do ${method}`)
     },
   }
 }

@@ -5,7 +5,7 @@ export function reportRendererError(error: unknown, componentStack?: string | nu
     // A rejected data object can have fields named message or stack; it is not an exception.
     if (error && typeof error === 'object' && !(error instanceof Error) &&
       !(typeof DOMException !== 'undefined' && error instanceof DOMException)) error = undefined
-    window.yogurt.reportRendererError(rendererError(error, componentStack ?? ''))
+    window.noetaker.reportRendererError(rendererError(error, componentStack ?? ''))
   }
   catch { /* Reporting must not cause another renderer failure. */ }
 }

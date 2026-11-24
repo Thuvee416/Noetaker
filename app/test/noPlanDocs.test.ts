@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process'
 import { describe, expect, it } from 'vitest'
 
-// Plans, specs and agent notes are for working on Yogurt, not for the public repo.
+// Plans, specs and agent notes are for working on Noe Taker, not for the public repo.
 const notAllowed = [
   /(^|\/)docs\/superpowers\//i,
   /(^|\/)(plans?|specs?)\/[^/]+\.md$/i,

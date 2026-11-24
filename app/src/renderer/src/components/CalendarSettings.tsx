@@ -10,8 +10,8 @@ let expanded = false
 
 export function CalendarSettings({ connect = false }: { connect?: boolean } = {}) {
   // Windows and Linux: calendars are pasted calendar links, connected and removed here (and in the first run)
-  const link = !!globalThis.window?.yogurt?.capabilities?.calendarLink
-  const [view, setView] = useState<Awaited<ReturnType<typeof window.yogurt.calendar.list>>>()
+  const link = !!globalThis.window?.noetaker?.capabilities?.calendarLink
+  const [view, setView] = useState<Awaited<ReturnType<typeof window.noetaker.calendar.list>>>()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(false)
   const [open, setOpen] = useState(expanded || link)
@@ -30,14 +30,14 @@ export function CalendarSettings({ connect = false }: { connect?: boolean } = {}
     if (connect) { setOpen(true); setForm('requested') }
   }, [connect])
   const reload = useCallback(() => {
-    void window.yogurt.calendar.list().then(setView, () => setView({ status: 'error', calendars: [], hideEventsWithoutCallLink: false }))
+    void window.noetaker.calendar.list().then(setView, () => setView({ status: 'error', calendars: [], hideEventsWithoutCallLink: false }))
   }, [])
   useEffect(() => { reload(); window.addEventListener('focus', reload); return () => window.removeEventListener('focus', reload) }, [reload])
   const choose = async (id: string, enabled: boolean) => {
     setBusy(true); setError(false)
     setView((v) => v && { ...v, calendars: v.calendars.map((c) => c.id === id ? { ...c, enabled } : c) })
     try {
-      if (!await window.yogurt.calendar.setEnabled(id, enabled)) throw new Error('Calendar unavailable')
+      if (!await window.noetaker.calendar.setEnabled(id, enabled)) throw new Error('Calendar unavailable')
     } catch { setError(true); reload() } finally { setBusy(false) }
   }
   const hideWithoutLink = async () => {
@@ -46,7 +46,7 @@ export function CalendarSettings({ connect = false }: { connect?: boolean } = {}
     setBusy(true); setError(false)
     setView({ ...view, hideEventsWithoutCallLink: hide })
     try {
-      if (!await window.yogurt.calendar.setHideWithoutLink(hide)) throw new Error('Calendar unavailable')
+      if (!await window.noetaker.calendar.setHideWithoutLink(hide)) throw new Error('Calendar unavailable')
     } catch { setError(true); reload() } finally { setBusy(false) }
   }
   const selected = view?.calendars.filter(c => c.enabled) ?? []
@@ -54,10 +54,10 @@ export function CalendarSettings({ connect = false }: { connect?: boolean } = {}
   const sys = view?.systemStatus ?? view?.status
   const removeLink = async (id: string) => {
     setBusy(true); setError(false)
-    try { if (!await window.yogurt.calendar.removeLink(id)) throw new Error('Calendar unavailable') } catch { setError(true) } finally { setBusy(false); reload() }
+    try { if (!await window.noetaker.calendar.removeLink(id)) throw new Error('Calendar unavailable') } catch { setError(true) } finally { setBusy(false); reload() }
   }
   const summary = !view ? t('Loading calendars…')
-    : view.status === 'error' ? t("Yogurt couldn't read your calendars.")
+    : view.status === 'error' ? t("Noe Taker couldn't read your calendars.")
     : view.status !== 'granted' ? (link ? t('Connect a calendar to see your meetings.') : t('Allow calendar access to choose your calendars.'))
     : !view.calendars.length ? (link ? t('Connect a calendar to see your meetings.') : t('No calendars found on this Mac.'))
     : !selected.length ? t('No calendars selected.')
@@ -70,14 +70,14 @@ export function CalendarSettings({ connect = false }: { connect?: boolean } = {}
       <button type="button" data-testid="calendar-settings-toggle" aria-expanded={open} aria-controls="settings-calendar-list" onClick={() => { expanded = !open; setOpen(expanded) }} className="settings-row settings-disclosure">
         <span className="settings-row-copy">
           <LoadingContent pending={!view} skeleton={<span className="settings-label settings-calendar-summary"><span className="loading-bar" style={{ width: 150 }} /></span>}><span data-testid="calendar-settings-summary" className="settings-label settings-calendar-summary" title={summary}>{summary}</span></LoadingContent>
-          <span className="settings-description block">{t('Yogurt reads these calendars and never changes them.')}</span>
+          <span className="settings-description block">{t('Noe Taker reads these calendars and never changes them.')}</span>
         </span>
         <ChevronDown size={16} aria-hidden="true" />
       </button>
       <div id="settings-calendar-list" className="accordion" data-open={open} inert={!open || undefined}><div className="settings-calendar-list">
         <LoadingContent pending={!view} skeleton={<Loading layout="calendars" />}>{view && <>{(view.status === 'error' || !link && sys !== 'granted') && <div className="settings-row">
-            <p className="settings-description settings-row-copy">{readFailed ? t("Yogurt couldn't read your calendars.") : t('Allow calendar access to choose your calendars.')}</p>
-            <button className="workspace-button" onClick={() => { if (readFailed) reload(); else void window.yogurt.calendar.connect().then(reload) }}>{readFailed ? t('Try again') : t('Connect calendar')}</button>
+            <p className="settings-description settings-row-copy">{readFailed ? t("Noe Taker couldn't read your calendars.") : t('Allow calendar access to choose your calendars.')}</p>
+            <button className="workspace-button" onClick={() => { if (readFailed) reload(); else void window.noetaker.calendar.connect().then(reload) }}>{readFailed ? t('Try again') : t('Connect calendar')}</button>
           </div>}
           {!link && sys === 'granted' && !view.calendars.some((c) => !c.link) && <p className="settings-row settings-description">{t('No calendars found on this Mac.')}</p>}
           {view.calendars.map((c) => <label key={c.id} data-testid="calendar-choice" className="settings-row settings-calendar-choice">
@@ -112,8 +112,8 @@ export function CalendarSettings({ connect = false }: { connect?: boolean } = {}
               onClick={() => void hideWithoutLink()} className="settings-toggle"><span className="settings-toggle-knob" /></button>
           </div>
           {!link && <div className="settings-row">
-            <span className="settings-row-copy"><span className="settings-label">{t('Calendar access')}</span><span className="settings-description block">{t('Remove Yogurt’s access in System Settings.')}</span></span>
-            <button type="button" className="workspace-button shrink-0" onClick={() => void window.yogurt.permissions.open('calendar')}>{t('Open System Settings')}</button>
+            <span className="settings-row-copy"><span className="settings-label">{t('Calendar access')}</span><span className="settings-description block">{t('Remove Noe Taker’s access in System Settings.')}</span></span>
+            <button type="button" className="workspace-button shrink-0" onClick={() => void window.noetaker.permissions.open('calendar')}>{t('Open System Settings')}</button>
           </div>}
         </div>}
         {error && <p role="alert" className="settings-row text-danger">{t("Couldn't update your calendars. Try again.")}</p>}

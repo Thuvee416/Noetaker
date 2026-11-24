@@ -6,26 +6,26 @@ import { MARK } from '../src/shared/logo'
 
 const main = join(import.meta.dirname, '../out/main/index.js')
 
-test('@everywhere opens a window called Yogurt with the app shell', async () => {
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
-  const app = await electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData } })
+test('@everywhere opens a window called Noe Taker with the app shell', async () => {
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
+  const app = await electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData } })
   try {
     const page = await app.firstWindow()
     await expect(page.getByTestId('app-shell')).toBeVisible()
-    await expect(page).toHaveTitle('Yogurt')
+    await expect(page).toHaveTitle('Noe Taker')
     // the bridge is there, and knows it's a test run
-    expect(await page.evaluate(() => window.yogurt.fake)).toBe(true)
+    expect(await page.evaluate(() => window.noetaker.fake)).toBe(true)
   } finally { await app.close() }
 })
 
-test('@everywhere shows the Yogurt mark at launch and on the sidebar menu button', async () => {
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
+test('@everywhere shows the Noe Taker mark at launch and on the sidebar menu button', async () => {
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
   const app = await electron.launch({ args: [main], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData, YOGURT_FAKE_BOOT_MS: '4000',
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData, NOETAKER_FAKE_BOOT_MS: '4000',
   } })
   try {
     const page = await app.firstWindow()
-    const launch = page.getByRole('status', { name: 'Yogurt', exact: true })
+    const launch = page.getByRole('status', { name: 'Noe Taker', exact: true })
     const launchMark = launch.locator('svg')
     await expect(launchMark).toBeVisible()
     await expect(launchMark.locator('path')).toHaveAttribute('d', MARK)

@@ -7,8 +7,8 @@ const main = join(import.meta.dirname, '../out/main/index.js')
 const region = (el: Element) => getComputedStyle(el).getPropertyValue('-webkit-app-region')
 
 test('the top strip drags the window on onboarding, the shell and a note', async () => {
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
-  const app = await electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData, YOGURT_FAKE_STEP_MS: '1000' } })
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
+  const app = await electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData, NOETAKER_FAKE_STEP_MS: '1000' } })
   try {
     const page = await app.firstWindow()
     const bar = page.getByTestId('titlebar')
@@ -28,7 +28,7 @@ test('the top strip drags the window on onboarding, the shell and a note', async
 })
 
 test('a minimum window at high zoom preserves Search and Ask without a follow-up shortcut', async () => {
-  const app = await electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-zoom-')) } })
+  const app = await electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-zoom-')) } })
   try {
     const page = await app.firstWindow()
     await expect(page.getByTestId('home')).toBeVisible()

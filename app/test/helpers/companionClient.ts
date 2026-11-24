@@ -63,7 +63,7 @@ export async function pairAsPhone(port: number, code: string, phone: KeyPair, na
     if (start.type !== 'pairStart') return { result: start }
     const desktopSession = unb64(start.desktopSession)
     const sid = new Uint8Array([...desktopSession, ...phoneSession])
-    const ci = new Uint8Array([...enc.encode('yogurt-pair-v1'), ...desktopSession, ...phoneSession])
+    const ci = new Uint8Array([...enc.encode('noetaker-pair-v1'), ...desktopSession, ...phoneSession])
     const { yb, isk } = cpaceRespond(code, ci, sid, unb64(start.ya))
     c.sendJson({ type: 'pairReply', yb: b64(yb) })
     const keys = pairKeys(isk)
@@ -95,7 +95,7 @@ export type Phone = {
 /** A Noise KK session as the phone (initiator). `msg1` replaces the first handshake message (a replay). */
 export async function session(port: number, phone: KeyPair, desktopKey: Uint8Array, rekey?: Rekey, o: { sent?: (msg1: Uint8Array) => void } = {}): Promise<Phone> {
   const c = await raw(port)
-  const noise = new NoiseKK({ initiator: true, s: phone, rs: desktopKey, prologue: enc.encode('yogurt-v1') })
+  const noise = new NoiseKK({ initiator: true, s: phone, rs: desktopKey, prologue: enc.encode('noetaker-v1') })
   const msg1 = noise.writeMessage(new Uint8Array(0))
   o.sent?.(msg1)
   c.send(msg1)

@@ -1,9 +1,9 @@
-# A release: `sh app/scripts/release.sh 0.3.0` sets the version, tags v0.3.0 and pushes; this builds Yogurt for Mac
+# A release: `sh app/scripts/release.sh 0.3.0` sets the version, tags v0.3.0 and pushes; this builds Noe Taker for Mac
 # (Apple Silicon), Windows (x64, unsigned) and Linux (x86_64 AppImage) and publishes one GitHub release with all
 # three, only once every build and its checks have worked.
-# Download links point at releases/latest/download/Yogurt-mac-arm64.dmg, Yogurt-windows-x64-setup.exe and
-# Yogurt-linux-x86_64-setup.AppImage, and installed copies update themselves from the same release
-# (latest-mac.yml → the .zip, latest.yml → Yogurt-windows-x64.exe, latest-linux.yml → Yogurt-linux-x86_64.AppImage;
+# Download links point at releases/latest/download/noetaker-mac-arm64.dmg, noetaker-windows-x64-setup.exe and
+# noetaker-linux-x86_64-setup.AppImage, and installed copies update themselves from the same release
+# (latest-mac.yml → the .zip, latest.yml → noetaker-windows-x64.exe, latest-linux.yml → noetaker-linux-x86_64.AppImage;
 # app/src/main/updates.ts). The -setup files are byte-identical copies, so GitHub's download counts tell new installs
 # from updates; latest*.yml must never name them.
 # Running it by hand (Actions → Release → Run workflow) only builds: the files are attached to the run, nothing is published.
@@ -60,10 +60,10 @@ jobs:
           version=$(gh api "repos/$REPO/contents/app/package.json?ref=$sha" --jq .content | base64 -d | jq -r .version)
           [ "v$version" = "$DRAFT" ] || { echo "::error::The app at $sha is $version, not ${DRAFT#v}"; exit 1; }
           assets=$(echo "$r" | jq -r '.assets[].name')
-          for f in Yogurt-mac-arm64.dmg Yogurt-mac-arm64.zip latest-mac.yml; do
+          for f in noetaker-mac-arm64.dmg noetaker-mac-arm64.zip latest-mac.yml; do
             echo "$assets" | grep -qx "$f" || { echo "::error::$DRAFT has no $f: add the Mac built by hand first"; exit 1; }
           done
-          echo "$assets" | grep -qE '^(Yogurt-windows-|Yogurt-linux-|latest\.yml|latest-linux\.yml)' && { echo "::error::$DRAFT has Windows or Linux files already"; exit 1; }
+          echo "$assets" | grep -qE '^(noetaker-windows-|noetaker-linux-|latest\.yml|latest-linux\.yml)' && { echo "::error::$DRAFT has Windows or Linux files already"; exit 1; }
           echo "::notice::Building Windows and Linux for $DRAFT at $sha"
           echo "build=true" >> "$GITHUB_OUTPUT"; echo "mac=false" >> "$GITHUB_OUTPUT"; echo "ref=$sha" >> "$GITHUB_OUTPUT"
 
@@ -121,9 +121,9 @@ jobs:
         env:
           SIGNED: ${{ secrets.MAC_CERT_P12_BASE64 != '' }}
         run: |
-          node app/scripts/asar-check.mjs app/dist/mac-arm64/Yogurt.app/Contents/Resources/app.asar
-          pnpm -C app exec electron scripts/engine-smoke.cjs dist/mac-arm64/Yogurt.app/Contents/Resources/app.asar
-          if [ "$SIGNED" = true ]; then codesign --verify --deep --strict app/dist/mac-arm64/Yogurt.app; fi
+          node app/scripts/asar-check.mjs "app/dist/mac-arm64/Noe Taker.app/Contents/Resources/app.asar"
+          pnpm -C app exec electron scripts/engine-smoke.cjs "dist/mac-arm64/Noe Taker.app/Contents/Resources/app.asar"
+          if [ "$SIGNED" = true ]; then codesign --verify --deep --strict "app/dist/mac-arm64/Noe Taker.app"; fi
       # the app inside is notarized by electron-builder; the disk image is checked when downloaded too
       - name: Notarize the disk image
         env:
@@ -132,14 +132,14 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           [ -n "$APPLE_ID" ] || exit 0
-          xcrun notarytool submit app/dist/Yogurt-mac-arm64.dmg --apple-id "$APPLE_ID" --password "$APPLE_APP_SPECIFIC_PASSWORD" --team-id "$APPLE_TEAM_ID" --wait
-          xcrun stapler staple app/dist/Yogurt-mac-arm64.dmg
-          spctl -a -t open --context context:primary-signature -v app/dist/Yogurt-mac-arm64.dmg
+          xcrun notarytool submit app/dist/noetaker-mac-arm64.dmg --apple-id "$APPLE_ID" --password "$APPLE_APP_SPECIFIC_PASSWORD" --team-id "$APPLE_TEAM_ID" --wait
+          xcrun stapler staple app/dist/noetaker-mac-arm64.dmg
+          spctl -a -t open --context context:primary-signature -v app/dist/noetaker-mac-arm64.dmg
           # stapling changed the disk image: its checksum in latest-mac.yml again
           node app/scripts/refresh-latest.mjs app/dist/latest-mac.yml
       - uses: actions/upload-artifact@v4
         with:
-          name: yogurt-mac
+          name: noetaker-mac
           path: |
             app/dist/*.dmg
             app/dist/*.zip
@@ -177,15 +177,15 @@ jobs:
           ls -la files
           # the website's copies are there and identical, and installed copies keep updating from the plain names
           cd files
-          for f in Yogurt-windows-x64.exe Yogurt-windows-x64-setup.exe latest.yml Yogurt-linux-x86_64.AppImage Yogurt-linux-x86_64-setup.AppImage latest-linux.yml; do
+          for f in noetaker-windows-x64.exe noetaker-windows-x64-setup.exe latest.yml noetaker-linux-x86_64.AppImage noetaker-linux-x86_64-setup.AppImage latest-linux.yml; do
             [ -f "$f" ] || { echo "::error::$f is missing"; exit 1; }
           done
-          cmp Yogurt-windows-x64.exe Yogurt-windows-x64-setup.exe
-          cmp Yogurt-linux-x86_64.AppImage Yogurt-linux-x86_64-setup.AppImage
-          grep -q 'Yogurt-windows-x64\.exe' latest.yml && grep -q 'Yogurt-linux-x86_64\.AppImage' latest-linux.yml || { echo "::error::latest*.yml lost the installer"; exit 1; }
+          cmp noetaker-windows-x64.exe noetaker-windows-x64-setup.exe
+          cmp noetaker-linux-x86_64.AppImage noetaker-linux-x86_64-setup.AppImage
+          grep -q 'noetaker-windows-x64\.exe' latest.yml && grep -q 'noetaker-linux-x86_64\.AppImage' latest-linux.yml || { echo "::error::latest*.yml lost the installer"; exit 1; }
           if grep -q -- '-setup\.' latest*.yml; then echo "::error::latest*.yml must not name the website's copies"; exit 1; fi
           cd ..
-          gh release create "${{ github.ref_name }}" files/* --repo "${{ github.repository }}" --title "Yogurt ${GITHUB_REF_NAME#v}" --generate-notes --latest
+          gh release create "${{ github.ref_name }}" files/* --repo "${{ github.repository }}" --title "Noe Taker ${GITHUB_REF_NAME#v}" --generate-notes --latest
 
   # a draft with a Mac built by hand gets the Windows and Linux files; it stays a draft
   draft:
@@ -206,12 +206,12 @@ jobs:
           ls -la files
           # the website's copies are there and identical, and installed copies keep updating from the plain names
           cd files
-          for f in Yogurt-windows-x64.exe Yogurt-windows-x64-setup.exe latest.yml Yogurt-linux-x86_64.AppImage Yogurt-linux-x86_64-setup.AppImage latest-linux.yml; do
+          for f in noetaker-windows-x64.exe noetaker-windows-x64-setup.exe latest.yml noetaker-linux-x86_64.AppImage noetaker-linux-x86_64-setup.AppImage latest-linux.yml; do
             [ -f "$f" ] || { echo "::error::$f is missing"; exit 1; }
           done
-          cmp Yogurt-windows-x64.exe Yogurt-windows-x64-setup.exe
-          cmp Yogurt-linux-x86_64.AppImage Yogurt-linux-x86_64-setup.AppImage
-          grep -q 'Yogurt-windows-x64\.exe' latest.yml && grep -q 'Yogurt-linux-x86_64\.AppImage' latest-linux.yml || { echo "::error::latest*.yml lost the installer"; exit 1; }
+          cmp noetaker-windows-x64.exe noetaker-windows-x64-setup.exe
+          cmp noetaker-linux-x86_64.AppImage noetaker-linux-x86_64-setup.AppImage
+          grep -q 'noetaker-windows-x64\.exe' latest.yml && grep -q 'noetaker-linux-x86_64\.AppImage' latest-linux.yml || { echo "::error::latest*.yml lost the installer"; exit 1; }
           if grep -q -- '-setup\.' latest*.yml; then echo "::error::latest*.yml must not name the website's copies"; exit 1; fi
           cd ..
           id=$(gh api "repos/$REPO/releases" --paginate --jq ".[] | select(.tag_name == \"$DRAFT\" and .draft) | .id")

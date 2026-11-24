@@ -5,14 +5,14 @@ import { join } from 'node:path'
 
 for (const colorScheme of ['light', 'dark'] as const) test(`transcript fades directly below the tabs without moving text (${colorScheme})`, async ({}, testInfo) => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-transcript-edge-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-transcript-edge-')),
   } })
   try {
     const page = await app.firstWindow()
     await page.emulateMedia({ colorScheme, reducedMotion: 'reduce' })
     await expect(page.getByTestId('home')).toBeVisible()
     const id = await app.evaluate(() => (globalThis as any).__fake__.bigMeeting(100))
-    await page.evaluate(id => window.yogurt.nav.go(`/note/${id}`), id)
+    await page.evaluate(id => window.noetaker.nav.go(`/note/${id}`), id)
     await page.getByTestId('note-transcript-toggle').click()
     const list = page.getByTestId('transcript')
     await expect(page.getByTestId('transcript-line')).toHaveCount(100)

@@ -1,4 +1,4 @@
-// A tiny desktop stand-in for YogurtKit's interop tests: runs the pairing exchange and then Noise KK echo
+// A tiny desktop stand-in for NoetakerKit's interop tests: runs the pairing exchange and then Noise KK echo
 // sessions with the real companion crypto from src/main/companion.
 //   node app/scripts/companion-peer.mjs desktop <port> [code]
 // Prints JSON lines: {"listening": port}, then {"paired": {isk, phoneKey, desktopKey}} or {"pairFail": reason}.
@@ -76,7 +76,7 @@ async function pair(f) {
   const phoneSession = unb64(hello.phoneSession)
   const desktopSession = crypto.getRandomValues(new Uint8Array(16))
   const sid = concat(desktopSession, phoneSession)
-  const ci = concat(enc('yogurt-pair-v1'), desktopSession, phoneSession)
+  const ci = concat(enc('noetaker-pair-v1'), desktopSession, phoneSession)
   const { ya, secret } = cpaceStart(code, ci, sid)
   sendJson(f, { type: 'pairStart', v: 1, desktopSession: b64(desktopSession), desktopId, desktopName: 'Test Mac', ya: b64(ya) })
   const reply = await json(f)
@@ -99,7 +99,7 @@ async function pair(f) {
 }
 
 async function echo(f) {
-  const noise = new NoiseKK({ initiator: false, s: desktop, rs: phoneKey, prologue: enc('yogurt-v1') })
+  const noise = new NoiseKK({ initiator: false, s: desktop, rs: phoneKey, prologue: enc('noetaker-v1') })
   noise.readMessage(await f.next())
   f.send(noise.writeMessage(new Uint8Array(0)))
   const { send, recv } = noise.split()

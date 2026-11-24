@@ -6,7 +6,7 @@ import { join } from 'node:path'
 
 test('the header recorder returns from every other page and follows pause, rename and finish', async () => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_BACKGROUND: '1', YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-recording-return-')),
+    ...process.env, NOETAKER_BACKGROUND: '1', NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-recording-return-')),
   } })
   try {
     const page = await app.firstWindow()
@@ -15,10 +15,10 @@ test('the header recorder returns from every other page and follows pause, renam
     await expect(link).toHaveCount(0)
     await app.evaluate(() => (globalThis as unknown as { __fake__: { manyMeetings(o: { n: number; clean: boolean }): void } }).__fake__.manyMeetings({ n: 1, clean: true }))
     await page.reload()
-    const other = (await page.evaluate(() => window.yogurt.meetings.cards({ limit: 10 })))[0].id
+    const other = (await page.evaluate(() => window.noetaker.meetings.cards({ limit: 10 })))[0].id
     await page.getByTestId('new-note').click()
     await expect(page.getByTestId('note-state')).toHaveAttribute('data-state', 'recording')
-    const id = (await page.evaluate(() => window.yogurt.nav.current())).slice('/note/'.length)
+    const id = (await page.evaluate(() => window.noetaker.nav.current())).slice('/note/'.length)
     await page.getByTestId('note-title').getByRole('button').click()
     await page.getByTestId('note-title-input').fill('Launch planning and customer feedback')
     await page.getByTestId('note-title-input').press('Enter')
@@ -26,8 +26,8 @@ test('the header recorder returns from every other page and follows pause, renam
     await expect(link).toHaveCount(0)
 
     const go = async (route: string) => {
-      await page.evaluate((route) => window.yogurt.nav.go(route), route)
-      await expect.poll(() => page.evaluate(() => window.yogurt.nav.current())).toBe(route)
+      await page.evaluate((route) => window.noetaker.nav.go(route), route)
+      await expect.poll(() => page.evaluate(() => window.noetaker.nav.current())).toBe(route)
     }
     for (const route of ['/chat', '/trash', '/settings', '', `/note/${other}`]) {
       await go(route)
@@ -52,7 +52,7 @@ test('the header recorder returns from every other page and follows pause, renam
       await link.click()
       await expect(page.getByTestId('note-title')).toHaveText('Launch planning and customer feedback')
       await expect(link).toHaveCount(0)
-      await expect.poll(() => page.evaluate(() => window.yogurt.nav.current())).toBe(`/note/${id}`)
+      await expect.poll(() => page.evaluate(() => window.noetaker.nav.current())).toBe(`/note/${id}`)
     }
 
     await page.getByTestId('note-pause').click()
@@ -82,7 +82,7 @@ test('the header recorder returns from every other page and follows pause, renam
     await expect(page.getByTestId('note-pause')).toHaveAccessibleName('Pause recording')
     await go('/settings')
     await expect(link).not.toHaveAttribute('data-paused', 'true')
-    await page.evaluate((id) => window.yogurt.meetings.stop(id), id)
+    await page.evaluate((id) => window.noetaker.meetings.stop(id), id)
     await expect(link).toHaveCount(0)
     await expect(page.getByTestId('assistant-open')).toHaveCount(0)
   } finally { await app.close() }

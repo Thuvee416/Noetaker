@@ -8,9 +8,9 @@ const main = join(import.meta.dirname, '../out/main/index.js')
 const zoom = { bundleId: 'us.zoom.xos', name: 'zoom.us' }
 
 async function launch(o: { settings?: object; env?: Record<string, string> } = {}) {
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
   if (o.settings) writeFileSync(join(userData, 'settings.json'), JSON.stringify(o.settings))
-  const app = await electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData, ...o.env } })
+  const app = await electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData, ...o.env } })
   const page = await app.firstWindow()
   await expect(page.getByTestId('home')).toBeVisible()
   return { app, page, userData }
@@ -43,7 +43,7 @@ async function callAndRecord(app: ElectronApplication, page: Page) {
 }
 
 test('the quiet call ends: after the grace the recording stops by itself, with no question, and says so', async () => {
-  const { app, page } = await launch({ env: { YOGURT_BACKGROUND: '1' } })
+  const { app, page } = await launch({ env: { NOETAKER_BACKGROUND: '1' } })
   try {
     await callAndRecord(app, page)
     await fake(app, 'silence', 60_000)
@@ -80,7 +80,7 @@ test('a blip shorter than the grace does nothing', async () => {
 })
 
 test('the grace can be shortened in fake mode', async () => {
-  const { app, page } = await launch({ env: { YOGURT_FAKE_CALL_GONE_MS: '1000' } })
+  const { app, page } = await launch({ env: { NOETAKER_FAKE_CALL_GONE_MS: '1000' } })
   try {
     await callAndRecord(app, page)
     await fake(app, 'silence', 60_000)
@@ -139,8 +139,8 @@ for (const call of [
     await expect(page.getByTestId('new-note')).toHaveText(`Take notes · ${e.title}`)
     await page.getByTestId('new-note').click()
     await expect(page.getByTestId('note-state')).toHaveAttribute('data-state', 'recording')
-    const id = await page.evaluate(() => window.yogurt.nav.current().then(route => route.slice('/note/'.length)))
-    const bound = () => page.evaluate(id => window.yogurt.meetings.get(id).then(m => m?.app), id)
+    const id = await page.evaluate(() => window.noetaker.nav.current().then(route => route.slice('/note/'.length)))
+    const bound = () => page.evaluate(id => window.noetaker.meetings.get(id).then(m => m?.app), id)
     expect(await bound()).toBeNull()
     await advance(app, 10000)
     // Core Audio can report the audio helper instead of its owning app.
@@ -166,8 +166,8 @@ test('FaceTime audio/video and handed-off calls offer a card for the shared mic 
     await signals(app, { micApps, events: [], runningApps: ['com.apple.FaceTime'] })
     await (await card(app)).getByTestId('prompt-take-notes').click()
     await expect(page.getByTestId('note-state')).toHaveAttribute('data-state', 'recording')
-    const id = await page.evaluate(() => window.yogurt.nav.current().then(route => route.slice('/note/'.length)))
-    expect(await page.evaluate(id => window.yogurt.meetings.get(id).then(m => m?.app), id)).toBe('FaceTime')
+    const id = await page.evaluate(() => window.noetaker.nav.current().then(route => route.slice('/note/'.length)))
+    expect(await page.evaluate(id => window.noetaker.meetings.get(id).then(m => m?.app), id)).toBe('FaceTime')
     await signals(app, { micApps, events: [], runningApps: ['com.apple.FaceTime'] })
     await fake(app, 'silence', 60_000)
     await signals(app, { micApps: [], events: [], runningApps: ['com.apple.FaceTime'] })

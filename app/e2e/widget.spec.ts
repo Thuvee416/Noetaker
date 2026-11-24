@@ -9,10 +9,10 @@ const zoom = { bundleId: 'us.zoom.xos', name: 'zoom.us' }
 type Snap = { visible: boolean; view: { kind: string; note: { text: string } | null; crashed: boolean } | null; notice: { title: string; body: string; meetingId: string } | null; bounds: { x: number; y: number; width: number; height: number } | null; workArea: { x: number; y: number; width: number; height: number } }
 
 async function launch(settings?: object, micAck?: string) {
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
   if (settings) writeFileSync(join(userData, 'settings.json'), JSON.stringify(settings))
   // These tests control foreground/background explicitly instead of competing for native focus.
-  const app = await electron.launch({ args: [main], env: { ...process.env, YOGURT_BACKGROUND: '1', YOGURT_FAKE: '1', YOGURT_USER_DATA: userData, ...(micAck && { YOGURT_FAKE_MIC_ACK: micAck }) } })
+  const app = await electron.launch({ args: [main], env: { ...process.env, NOETAKER_BACKGROUND: '1', NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData, ...(micAck && { NOETAKER_FAKE_MIC_ACK: micAck }) } })
   // the config's actionTimeout never reaches Electron's windows: without this a click that can't land waits out the
   // whole test, and the stuck app then holds up the worker's teardown too (how "pause says Paused" failed once)
   app.context().setDefaultTimeout(15_000)
@@ -207,7 +207,7 @@ test('a failed unmute keeps the mic off and the separate call audio warning visi
     await expect(w.getByText('Mic is still off. Try again.', { exact: true })).toBeVisible()
     await expect(card).toBeEnabled()
     await expect(page.getByTestId('note-mic')).toHaveAttribute('aria-pressed', 'true')
-    await expect(w.getByTestId('widget-note')).toHaveText('Mic off. Yogurt can’t hear call audio.')
+    await expect(w.getByTestId('widget-note')).toHaveText('Mic off. Noe Taker can’t hear call audio.')
     await expect(w.getByTestId('logo')).toBeVisible()
   } finally { await app.close() }
 })
@@ -401,9 +401,9 @@ test('hints retain both unavailable recording inputs', async () => {
     const before = (await snap(app)).bounds!
     await fake(app, 'warn', 'no-system-audio')
     const preview = await windowOf(app, '#widget')
-    await expect(preview.getByTestId('widget-note')).toHaveText("Yogurt can't hear the call audio. Allow it in System Settings.")
+    await expect(preview.getByTestId('widget-note')).toHaveText("Noe Taker can't hear the call audio. Allow it in System Settings.")
     await fake(app, 'warn', 'no-mic')
-    await expect(preview.getByTestId('widget-note')).toContainText("Yogurt can't hear your microphone or the call.")
+    await expect(preview.getByTestId('widget-note')).toContainText("Noe Taker can't hear your microphone or the call.")
     // Warnings expand the recorder without changing its saved pill bounds.
     expect((await snap(app)).bounds).toEqual(before)
     await w.mouse.move(0, 0)
@@ -414,7 +414,7 @@ test('hints retain both unavailable recording inputs', async () => {
     await expect(preview.getByTestId('widget')).toHaveCount(0)
     expect((await snap(app)).visible).toBe(false)
     expect((await snap(app)).bounds).toEqual(before)
-    await expect(page.getByTestId('rec-hint')).toContainText("Yogurt can't hear your microphone or the call.")
+    await expect(page.getByTestId('rec-hint')).toContainText("Noe Taker can't hear your microphone or the call.")
   } finally { await app.close() }
 })
 
@@ -542,7 +542,7 @@ test('hover transcript shows a readable conversation and keeps your place when n
     const preview = await windowOf(app, '#widget')
     await expect(w.getByTestId('widget')).toHaveCSS('width', '340px')
     await expect(preview.getByTestId('widget-preview-loading')).toHaveCount(0)
-    const id = await page.getByTestId('note').getAttribute('data-meeting-id') || await page.evaluate(() => window.yogurt.widget.state().then(v => v!.meetingId))
+    const id = await page.getByTestId('note').getAttribute('data-meeting-id') || await page.evaluate(() => window.noetaker.widget.state().then(v => v!.meetingId))
     const send = async (start: number, count: number) => app.evaluate(({ BrowserWindow }, { id, start, count }) => {
       const target = BrowserWindow.getAllWindows().find(w => w.webContents.getURL().includes('#widget'))!
       for (let i = start; i < start + count; i++) target.webContents.send('transcript:segment', {
@@ -554,7 +554,7 @@ test('hover transcript shows a readable conversation and keeps your place when n
     const log = preview.getByTestId('widget-preview-text')
     await expect(preview.getByTestId('widget-preview-bubble')).toHaveCount(24)
     await expect(w.getByTestId('widget')).toHaveCSS('height', '390px')
-    if (process.env.YOGURT_UI_REVIEW !== 'before') {
+    if (process.env.NOETAKER_UI_REVIEW !== 'before') {
       await expect(log).toHaveCSS('overflow-y', 'scroll')
       const scrollbar = () => log.evaluate(el => ({ width: getComputedStyle(el, '::-webkit-scrollbar').width, color: getComputedStyle(el, '::-webkit-scrollbar-thumb').backgroundColor, gutter: el.getBoundingClientRect().width - el.clientWidth }))
       const resting = await scrollbar()
@@ -602,7 +602,7 @@ test('hover transcript shows a readable conversation and keeps your place when n
       await preview.screenshot({ path: testInfo.outputPath(`preview-${colorScheme}-latest.png`) })
     }
     const before = (await fake<{ presented: number }>(app, 'main')).presented
-    if (process.env.YOGURT_UI_REVIEW !== 'before') {
+    if (process.env.NOETAKER_UI_REVIEW !== 'before') {
       await expect(preview.getByTestId('widget-preview-open')).toHaveCount(0)
       await expect(preview.locator('.widget-preview-header')).toHaveCount(0)
     }
@@ -620,7 +620,7 @@ test('hover groups speaker runs and keeps live words stable through updates and 
     const preview = await windowOf(app, '#widget')
     await expect(preview.getByTestId('widget-preview')).toBeVisible()
     await expect(preview.getByTestId('widget-preview-loading')).toHaveCount(0)
-    const id = await page.evaluate(() => window.yogurt.widget.state().then(v => v!.meetingId))
+    const id = await page.evaluate(() => window.noetaker.widget.state().then(v => v!.meetingId))
     const send = (channel: string, value: object) => app.evaluate(({ BrowserWindow }, { channel, value, id }) => {
       BrowserWindow.getAllWindows().find(w => w.webContents.getURL().includes('#widget'))!.webContents.send(channel, { meetingId: id, ...value })
     }, { channel, value, id })

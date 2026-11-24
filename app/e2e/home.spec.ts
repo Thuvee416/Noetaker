@@ -9,24 +9,24 @@ import { selectUpcomingAgendaDay } from './agendaDate'
 
 const main = join(import.meta.dirname, '../out/main/index.js')
 
-async function launch(env: Record<string, string> = {}, userData = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))) {
-  const app = await electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData, ...env } })
+async function launch(env: Record<string, string> = {}, userData = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))) {
+  const app = await electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData, ...env } })
   const page = await app.firstWindow()
   await expect(page.getByTestId('home')).toBeVisible()
   return { app, page, userData }
 }
 const fake = <T>(app: ElectronApplication, fn: string, arg?: unknown): Promise<T> =>
   app.evaluate((_e, [fn, arg]) => (globalThis as unknown as Record<string, Record<string, (a?: unknown) => unknown>>).__fake__[fn as string](arg), [fn, arg] as const) as Promise<T>
-const routeOf = (page: Page) => page.evaluate(() => window.yogurt.nav.current())
-const meetingOf = (page: Page, id: string) => page.evaluate((id) => window.yogurt.meetings.get(id), id) as Promise<Meeting>
+const routeOf = (page: Page) => page.evaluate(() => window.noetaker.nav.current())
+const meetingOf = (page: Page, id: string) => page.evaluate((id) => window.noetaker.meetings.get(id), id) as Promise<Meeting>
 
 // Prepared notes remain supported by the backend, but the agenda no longer creates one on click.
 async function prepareCalendarNote(page: Page, title: string) {
   const id = await page.evaluate(async (title) => {
     const at = Date.now()
-    const event = (await window.yogurt.calendar.day(at)).events.find(event => event.title === title)
+    const event = (await window.noetaker.calendar.day(at)).events.find(event => event.title === title)
     if (!event) throw new Error(`Missing calendar fixture: ${title}`)
-    const result = await window.yogurt.meetings.prepare(event.id, at)
+    const result = await window.noetaker.meetings.prepare(event.id, at)
     if (!('id' in result)) throw new Error(`Could not prepare calendar fixture: ${result.error}`)
     return result.id
   }, title)
@@ -36,7 +36,7 @@ async function prepareCalendarNote(page: Page, title: string) {
 
 test('meeting rows show captured duration, excluding gaps, only after recording finishes', async () => {
   const { app, page, userData } = await launch()
-  const db = new DatabaseSync(join(userData, 'yogurt.db'), { timeout: 5000 })
+  const db = new DatabaseSync(join(userData, 'noetaker.db'), { timeout: 5000 })
   try {
     await fake(app, 'manyMeetings', 6)
     db.prepare("UPDATE meetings SET duration_ms = ?, ended_at = started_at + ? WHERE title = 'Budget review'").run(32 * 60_000, 2 * 24 * 60 * 60_000)
@@ -78,12 +78,12 @@ test('a prepared calendar note keeps its notes without recording; Start recordin
 
     await page.getByTestId('note-mine').click({ position: { x: 24, y: 12 } })
     await page.keyboard.type('Check the pricing page with Ann')
-    await expect.poll(async () => (await page.evaluate((id) => window.yogurt.notes.get(id), id)).mine, { timeout: 5000 }).toContain('pricing')
+    await expect.poll(async () => (await page.evaluate((id) => window.noetaker.notes.get(id), id)).mine, { timeout: 5000 }).toContain('pricing')
     await page.getByTestId('nav-home').click()
     await standup.getByTestId('event-details').click()
     await page.getByTestId('event-open').click()
     expect(await routeOf(page)).toBe(`/note/${id}`)
-    expect((await page.evaluate(() => window.yogurt.meetings.cards({ limit: 50 }))).filter((c) => c.state === 'recording')).toEqual([])
+    expect((await page.evaluate(() => window.noetaker.meetings.cards({ limit: 50 }))).filter((c) => c.state === 'recording')).toEqual([])
     await page.getByTestId('note-transcript-toggle').click()
     await page.getByTestId('note-start').click()
     await expect(page.getByTestId('note-state')).toHaveAttribute('data-state', 'recording')
@@ -91,7 +91,7 @@ test('a prepared calendar note keeps its notes without recording; Start recordin
     await expect(page.getByTestId('note-notes-tab')).toHaveAttribute('aria-selected', 'true')
     await expect(page.getByTestId('note-mine')).toBeVisible()
     await expect(page.getByTestId('note-mine')).toContainText('Check the pricing page with Ann')
-    await expect.poll(async () => (await page.evaluate((id) => window.yogurt.transcript.get(id), id)).length, { timeout: 15_000 }).toBeGreaterThan(0)
+    await expect.poll(async () => (await page.evaluate((id) => window.noetaker.transcript.get(id), id)).length, { timeout: 15_000 }).toBeGreaterThan(0)
     await page.getByTestId('note-stop').click()
 
     await page.getByTestId('nav-home').click()
@@ -147,7 +147,7 @@ test('agenda opens details on demand and the title bar records the current event
     await expect(details.getByRole('heading')).toHaveText('Earlier meeting')
     await expect(details.getByTestId('event-open')).toHaveText('Prepare note')
     await expect(details.getByTestId('event-open')).toBeVisible()
-    expect(await page.evaluate(() => window.yogurt.meetings.cards({ limit: 50 }))).toEqual([])
+    expect(await page.evaluate(() => window.noetaker.meetings.cards({ limit: 50 }))).toEqual([])
     await details.getByRole('button', { name: 'Close', exact: true }).click()
 
     const earlier = await prepareCalendarNote(page, 'Earlier meeting')
@@ -184,7 +184,7 @@ test('New note records with no event, and nothing records before the click', asy
     await page.reload()
     await expect(page.getByTestId('new-note')).toBeVisible()
     await expect(page.getByTestId('new-note')).toHaveText('Start recording')
-    const before = await page.evaluate(() => window.yogurt.meetings.cards({ limit: 50 }))
+    const before = await page.evaluate(() => window.noetaker.meetings.cards({ limit: 50 }))
     expect(before.filter((c) => c.state === 'recording')).toEqual([])
     await page.getByTestId('new-note').click()
     await expect(page.getByTestId('note-state')).toHaveAttribute('data-state', 'recording')
@@ -212,7 +212,7 @@ test('no meetings yet: plain words and one button', async () => {
 })
 
 test('Home remembers a hidden Agenda after relaunch and keeps the recording menu available', async () => {
-  const env = { YOGURT_FAKE_CALENDAR: 'notDetermined' }
+  const env = { NOETAKER_FAKE_CALENDAR: 'notDetermined' }
   const first = await launch(env)
   try {
     await expect(first.page.getByTestId('calendar-off')).toBeVisible()
@@ -239,7 +239,7 @@ test('Home remembers a hidden Agenda after relaunch and keeps the recording menu
     const connect = page.getByTestId('calendar-off').getByRole('button')
     await expect(connect).toBeVisible()
     await connect.focus()
-    const mac = await page.evaluate(() => window.yogurt.os === 'darwin')
+    const mac = await page.evaluate(() => window.noetaker.os === 'darwin')
     await expect(toggle).toHaveAttribute('aria-keyshortcuts', mac ? 'Control+Meta+A' : 'Control+Shift+A')
     await page.keyboard.press(mac ? 'Control+Meta+a' : 'Control+Shift+a')
     await expect(toggle).toBeFocused()
@@ -332,9 +332,9 @@ test('wide Home with both sidebars hidden in light and dark', async ({}, testInf
   try {
     await fake(app, 'manyMeetings', { n: 12, clean: true })
     await page.evaluate(async () => {
-      const folder = await window.yogurt.folders.create('Acme')
-      const meetings = await window.yogurt.meetings.cards({ limit: 12 })
-      await window.yogurt.folders.add(folder!.id, meetings.find(m => m.title === 'Customer call with Acme')!.id)
+      const folder = await window.noetaker.folders.create('Acme')
+      const meetings = await window.noetaker.meetings.cards({ limit: 12 })
+      await window.noetaker.folders.add(folder!.id, meetings.find(m => m.title === 'Customer call with Acme')!.id)
     })
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' })
@@ -378,7 +378,7 @@ test('wide folder and Trash pages centre their headings and empty states on the 
   const { app, page } = await launch()
   try {
     await page.setViewportSize({ width: 2560, height: 760 })
-    await page.evaluate(() => window.yogurt.folders.create('Planning'))
+    await page.evaluate(() => window.noetaker.folders.create('Planning'))
     for (const empty of ['folder-empty', 'trash-none'] as const) {
       if (empty === 'trash-none') await openFromCorner(page, 'nav-trash')
       else await page.getByTestId('sidebar-folder-open').filter({ hasText: 'Planning' }).click()
@@ -401,7 +401,7 @@ test('wide folder and Trash pages centre their headings and empty states on the 
 })
 
 test('calendar not asked yet: one button asks, then the meetings show', async () => {
-  const { app, page } = await launch({ YOGURT_FAKE_CALENDAR: 'notDetermined' })
+  const { app, page } = await launch({ NOETAKER_FAKE_CALENDAR: 'notDetermined' })
   try {
     const off = page.getByTestId('calendar-off')
     await expect(off).toBeVisible()
@@ -412,7 +412,7 @@ test('calendar not asked yet: one button asks, then the meetings show', async ()
 })
 
 test('calendar access turned off: the one button opens the Mac settings', async () => {
-  const { app, page } = await launch({ YOGURT_FAKE_CALENDAR: 'denied' })
+  const { app, page } = await launch({ NOETAKER_FAKE_CALENDAR: 'denied' })
   try {
     const off = page.getByTestId('calendar-off')
     await expect(off).toBeVisible()
@@ -446,7 +446,7 @@ test('500 past meetings: the list opens fast, grouped by day, and loads more as 
 })
 
 test('search: from any screen, as you type, arrows and Enter, Esc closes; a slow older answer never replaces a newer one', async () => {
-  const { app, page } = await launch({ YOGURT_FAKE_SEARCH_SLOW: '1' })
+  const { app, page } = await launch({ NOETAKER_FAKE_SEARCH_SLOW: '1' })
   try {
     await fake(app, 'manyMeetings', 40)
     await page.reload()
@@ -581,14 +581,14 @@ test('starting an event gone from the calendar says so plainly, and records noth
     await page.getByTestId('new-note').click()
     await expect(page.getByTestId('start-recording-message')).toHaveText('That meeting is no longer on your calendar.')
     await expect(page.getByTestId('home')).toBeVisible()
-    expect((await page.evaluate(() => window.yogurt.meetings.cards({ limit: 5 }))).length).toBe(0)
+    expect((await page.evaluate(() => window.noetaker.meetings.cards({ limit: 5 }))).length).toBe(0)
     // the list catches up with the calendar
     await expect(page.getByTestId('event')).toHaveCount(0)
   } finally { await app.close() }
 })
 
 test('a calendar that cannot be read says so, with Try again', async () => {
-  const { app, page } = await launch({ YOGURT_FAKE_CALENDAR: 'error' })
+  const { app, page } = await launch({ NOETAKER_FAKE_CALENDAR: 'error' })
   try {
     const off = page.getByTestId('calendar-error')
     await expect(off).toBeVisible()
@@ -637,12 +637,12 @@ test('unlinking a prepared calendar note keeps the edited title, people and note
     const id = await prepareCalendarNote(page, 'Team standup')
     await expect(page.getByTestId('note-state')).toHaveAttribute('data-state', 'prepared')
     await page.evaluate(async (id) => {
-      await window.yogurt.meetings.rename(id, 'Our planning agenda')
-      await window.yogurt.meetings.setAttendees(id, [{ name: 'Maya Chen', email: 'maya@example.com' }])
+      await window.noetaker.meetings.rename(id, 'Our planning agenda')
+      await window.noetaker.meetings.setAttendees(id, [{ name: 'Maya Chen', email: 'maya@example.com' }])
     }, id)
     await page.getByTestId('note-mine').click({ position: { x: 24, y: 12 } })
     await page.keyboard.type('Keep the release date and launch checklist.')
-    await expect.poll(async () => (await page.evaluate((id) => window.yogurt.notes.get(id), id)).mine).toContain('launch checklist')
+    await expect.poll(async () => (await page.evaluate((id) => window.noetaker.notes.get(id), id)).mine).toContain('launch checklist')
     await page.getByTestId('note-date').click()
     await page.getByTestId('note-date-events-toggle').click()
     await page.getByTestId('note-date-unlink').click()

@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process'
 import { createInterface } from 'node:readline'
 
-/** one running yogurt-mac mic-watch: its lines, its end, and how to end it */
+/** one running noetaker-mac mic-watch: its lines, its end, and how to end it */
 export type MicWatchProc = { onLine(f: (line: string) => void): void; onExit(f: () => void): void; send(line: string): void; stop(): void }
 
 /** waits before starting the watcher again, longer each time it ends soon after starting */
@@ -16,7 +16,7 @@ export const SLOW_POLL_MS = { idle: 20_000, recording: 5_000 }
 const FIRST_LINE_MS = 2_000
 
 /**
- * Which apps are on the mic, from one long-lived yogurt-mac mic-watch that prints a line whenever it changes.
+ * Which apps are on the mic, from one long-lived noetaker-mac mic-watch that prints a line whenever it changes.
  * Starting a helper every few seconds made coreaudiod and powerd run out of room after about an hour, and the
  * displays never woke again (#143). A watcher that keeps ending is started again with growing waits, then given up on
  * for a slow poll.
@@ -98,7 +98,7 @@ export function createMicWatch(d: { start: () => MicWatchProc; poll: () => Promi
   }
 }
 
-/** yogurt-mac mic-watch: one JSON line (what mic-apps prints) at start and on each change, until its stdin closes;
+/** noetaker-mac mic-watch: one JSON line (what mic-apps prints) at start and on each change, until its stdin closes;
  * "recording" or "idle" sent to it sets how often it reads again by itself */
 export const spawnMicWatch = (binary: () => string) => (): MicWatchProc => {
   const child = spawn(binary(), ['mic-watch'], { stdio: ['pipe', 'pipe', 'ignore'] })

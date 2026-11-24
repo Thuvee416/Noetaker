@@ -12,10 +12,10 @@ import { toasts } from './TrashToast'
 
 /**
  * The sidebar's "Finish setup": what was put off in the first run, the ones recording needs first, each with its own
- * Turn on. Put away, it stays away until something else goes missing. Rechecked whenever Yogurt comes forward.
+ * Turn on. Put away, it stays away until something else goes missing. Rechecked whenever Noe Taker comes forward.
  */
 /** the permissions this computer has (no calendar or names from calls on Windows and Linux) */
-const kinds = () => supportedKinds(window.yogurt.capabilities)
+const kinds = () => supportedKinds(window.noetaker.capabilities)
 
 export function FinishSetup() {
   const [open, setOpen] = useState(false)
@@ -30,8 +30,8 @@ export function FinishSetup() {
     if (hiding.current) return
     const revision = readRevision.current
     const read = panel.current?.open
-      ? window.yogurt.permissions.status().then(status => missing(status, kinds()))
-      : window.yogurt.onboarding.nudge()
+      ? window.noetaker.permissions.status().then(status => missing(status, kinds()))
+      : window.noetaker.onboarding.nudge()
     void read.then(next => {
       if (revision !== readRevision.current) return
       setItems(next)
@@ -49,7 +49,7 @@ export function FinishSetup() {
     hiding.current = true
     ++readRevision.current
     try {
-      await window.yogurt.onboarding.dismissNudge()
+      await window.noetaker.onboarding.dismissNudge()
       setOpen(false); setItems([])
       let restoring = false
       const id = toasts.add({ title: t('Setup checklist hidden'), timeout: 8000,
@@ -58,24 +58,24 @@ export function FinishSetup() {
           if (restoring) return
           restoring = true
           ++readRevision.current
-          try { await window.yogurt.onboarding.restoreNudge(); ++readRevision.current; reload(); toasts.close(id) }
-          catch { toasts.update(id, { title: t("Yogurt couldn't make that change. Try again."), timeout: 0 }) }
+          try { await window.noetaker.onboarding.restoreNudge(); ++readRevision.current; reload(); toasts.close(id) }
+          catch { toasts.update(id, { title: t("Noe Taker couldn't make that change. Try again."), timeout: 0 }) }
           finally { restoring = false }
         } },
       })
-    } catch { toasts.add({ title: t("Yogurt couldn't make that change. Try again.") }) }
+    } catch { toasts.add({ title: t("Noe Taker couldn't make that change. Try again.") }) }
     finally { hiding.current = false }
   }
   useEffect(() => {
     const show = () => {
       if (hiding.current) return
       const revision = readRevision.current
-      void window.yogurt.permissions.status().then((s) => {
+      void window.noetaker.permissions.status().then((s) => {
         if (revision === readRevision.current) { setItems(missing(s, kinds())); setOpen(true) }
       }, () => {})
     }
-    window.addEventListener('yogurt:finish-setup', show)
-    return () => window.removeEventListener('yogurt:finish-setup', show)
+    window.addEventListener('noetaker:finish-setup', show)
+    return () => window.removeEventListener('noetaker:finish-setup', show)
   }, [])
   useLayoutEffect(() => {
     const el = panel.current

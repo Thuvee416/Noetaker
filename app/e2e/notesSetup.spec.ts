@@ -8,14 +8,14 @@ const ready: SetupState = { phase: 'ready', fraction: 1 }
 const download: SetupState = { ...ready, notesDownloading: true, notesFraction: .27, notesTotalBytes: 5e9, notesEtaSec: 240 }
 const upgrade: SetupState = { ...ready, notesUpgradeDownloading: true, notesUpgradeFraction: .27, notesUpgradeTotalBytes: 14e9, notesUpgradeEtaSec: 240 }
 
-async function launch(root = mkdtempSync(join(tmpdir(), 'yogurt-ai-titlebar-')), notesMs = '0') {
+async function launch(root = mkdtempSync(join(tmpdir(), 'noetaker-ai-titlebar-')), notesMs = '0') {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: root, YOGURT_FAKE_NOTES_MODEL_MS: notesMs,
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: root, NOETAKER_FAKE_NOTES_MODEL_MS: notesMs,
   } })
   const page = await app.firstWindow()
   await expect(page.getByTestId('home')).toBeVisible()
   await expect.poll(() => page.evaluate(async () => {
-    const state = await window.yogurt.setup.state()
+    const state = await window.noetaker.setup.state()
     return state.phase === 'ready' && !state.notesDownloading && !state.notesUpgradePending && !state.notesUpgradeDownloading
   }), { timeout: 15_000 }).toBe(true)
   return { app, page }
@@ -31,8 +31,8 @@ async function setSetup(app: ElectronApplication, state: SetupState) {
 }
 
 async function go(page: Page, route: string) {
-  await page.evaluate(route => window.yogurt.nav.go(route), route)
-  await expect.poll(() => page.evaluate(() => window.yogurt.nav.current())).toBe(route)
+  await page.evaluate(route => window.noetaker.nav.go(route), route)
+  await expect.poll(() => page.evaluate(() => window.noetaker.nav.current())).toBe(route)
   const screen = route.startsWith('/note/') ? 'note-menu-button' : route.startsWith('/folder/') ? 'folder-page'
     : route.startsWith('/chat') ? 'chat-page' : route === '/trash' ? 'trash-empty' : route === '/settings' ? 'settings' : 'home'
   await expect(page.getByTestId(screen)).toBeVisible()
@@ -149,7 +149,7 @@ test('both AI stages live beside recording, open below, retry failures and disap
         })
       }, state)
       await page.getByTestId('notes-setup-retry').click()
-      await expect(popup).toContainText("Yogurt couldn't restart the download.")
+      await expect(popup).toContainText("Noe Taker couldn't restart the download.")
       await page.getByTestId('notes-setup-retry').click()
       await expect(trigger).toHaveAccessibleName(`${label} · 27%`)
       await setSetup(app, ready)
@@ -172,10 +172,10 @@ test('AI status stays on every workspace page and clears recording and More in n
     })
     await page.reload()
     await expect(page.getByTestId('home')).toBeVisible()
-    const [other, trashed] = (await page.evaluate(() => window.yogurt.meetings.cards({ limit: 10 }))).map(card => card.id)
-    await page.evaluate(id => window.yogurt.meetings.trash(id), trashed)
-    const folder = await page.evaluate(() => window.yogurt.folders.create('A long folder title '.repeat(10)))
-    const chat = await page.evaluate(() => window.yogurt.conversations.current([], true))
+    const [other, trashed] = (await page.evaluate(() => window.noetaker.meetings.cards({ limit: 10 }))).map(card => card.id)
+    await page.evaluate(id => window.noetaker.meetings.trash(id), trashed)
+    const folder = await page.evaluate(() => window.noetaker.folders.create('A long folder title '.repeat(10)))
+    const chat = await page.evaluate(() => window.noetaker.conversations.current([], true))
     await setSetup(app, upgrade)
     const trigger = page.getByTestId('notes-setup-open')
     for (const route of ['', '/chat', `/chat/${chat}`, '/trash', '/settings', `/folder/${folder!.id}`, `/note/${other}`]) {
@@ -189,7 +189,7 @@ test('AI status stays on every workspace page and clears recording and More in n
     await expect.poll(() => page.evaluate(() => innerWidth)).toBe(720)
     await page.emulateMedia({ reducedMotion: 'reduce' })
     for (const locale of ['en', 'de', 'ar']) {
-      await page.evaluate(locale => window.yogurt.settings.setLanguage(locale), locale)
+      await page.evaluate(locale => window.noetaker.settings.setLanguage(locale), locale)
       await expect(page.locator('html')).toHaveAttribute('lang', locale)
       for (const collapsed of [false, true]) {
         const toggle = page.locator('.workspace-sidebar-toggle')
@@ -205,11 +205,11 @@ test('AI status stays on every workspace page and clears recording and More in n
     await go(page, '')
     await page.getByTestId('new-note').click()
     await expect(page.getByTestId('note-state')).toHaveAttribute('data-state', 'recording')
-    const recording = await page.evaluate(() => window.yogurt.nav.current())
+    const recording = await page.evaluate(() => window.noetaker.nav.current())
     await expect(trigger).toBeVisible()
     await expect(page.locator('.note-footer-bar').getByTestId('notes-setup-open')).toHaveCount(0)
     for (const locale of ['en', 'de', 'ar']) {
-      await page.evaluate(locale => window.yogurt.settings.setLanguage(locale), locale)
+      await page.evaluate(locale => window.noetaker.settings.setLanguage(locale), locale)
       await expect(page.locator('html')).toHaveAttribute('lang', locale)
       for (const collapsed of [false, true]) {
         const toggle = page.locator('.workspace-sidebar-toggle')
@@ -296,7 +296,7 @@ test('skipping from the popover confirms only success, opens Settings, and dismi
     await setSetup(app, upgrade)
     await page.getByTestId('notes-setup-open').click()
     await page.getByTestId('notes-setup-skip').click()
-    await expect(page.getByRole('alert')).toHaveText("Yogurt couldn't change the notes model.")
+    await expect(page.getByRole('alert')).toHaveText("Noe Taker couldn't change the notes model.")
     await expect(toast).toHaveCount(0)
     for (const dismiss of ['settings', 'close', 'timeout']) {
       if (dismiss !== 'settings') {
@@ -321,7 +321,7 @@ test('skipping from the popover confirms only success, opens Settings, and dismi
       if (dismiss === 'settings') {
         await toast.getByRole('button', { name: 'Settings', exact: true }).click()
         await expect(page.getByTestId('settings')).toBeVisible()
-        await expect.poll(() => page.evaluate(() => window.yogurt.nav.current())).toBe('/settings/notes-model')
+        await expect.poll(() => page.evaluate(() => window.noetaker.nav.current())).toBe('/settings/notes-model')
       } else if (dismiss === 'close') {
         await toast.hover()
         await toast.getByRole('button', { name: 'Close', exact: true }).click()
@@ -383,7 +383,7 @@ test('Settings shows restore progress without a title-bar download and keeps the
       await expect(row).not.toContainText('Getting the smaller model')
       await expect(row).not.toContainText('The larger model keeps running summaries and Ask')
       if (fail) {
-        await expect(row.getByRole('alert')).toHaveText("Yogurt couldn't change the notes model.")
+        await expect(row.getByRole('alert')).toHaveText("Noe Taker couldn't change the notes model.")
         await expect(action).toHaveText('Remove')
       } else {
         await expect(row.getByRole('alert')).toHaveCount(0)
@@ -395,7 +395,7 @@ test('Settings shows restore progress without a title-bar download and keeps the
 
 test('Settings download, Skip, restart and Remove use the real setup controller', async () => {
   test.setTimeout(60_000)
-  const root = mkdtempSync(join(tmpdir(), 'yogurt-upgrade-controls-'))
+  const root = mkdtempSync(join(tmpdir(), 'noetaker-upgrade-controls-'))
   let { app, page } = await launch(root, '1600')
   try {
     await go(page, '/settings')
@@ -429,6 +429,6 @@ test('Settings download, Skip, restart and Remove use the real setup controller'
     await expect(restarted).toHaveText('Remove', { timeout: 10_000 })
     await restarted.click()
     await expect(restarted).toHaveText(/^Download \([\d.]+ GB\)$/)
-    expect(await page.evaluate(async () => (await window.yogurt.setup.state()).notesUpgradeSkipped)).toBe(true)
+    expect(await page.evaluate(async () => (await window.noetaker.setup.state()).notesUpgradeSkipped)).toBe(true)
   } finally { await app.close() }
 })

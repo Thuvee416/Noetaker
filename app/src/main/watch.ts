@@ -87,7 +87,7 @@ export class Watcher {
 
   private idle(s: Signals, now: number, justStopped = false) {
     this.rec = null
-    // the recording just ended while its call app still holds the mic (Finish in Yogurt, then Zoom closes a few seconds
+    // the recording just ended while its call app still holds the mic (Finish in Noe Taker, then Zoom closes a few seconds
     // later): that call is done, as if its card were closed. It is forgiven once the app lets go of the mic, as below.
     // A recording ending closes its call: once the app lets go of the mic, the next call is new (back-to-back meetings)
     if (justStopped) this.calls.clear()

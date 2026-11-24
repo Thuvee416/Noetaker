@@ -3,11 +3,11 @@ import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-const before = process.env.YOGURT_UI_REVIEW === 'before'
+const before = process.env.NOETAKER_UI_REVIEW === 'before'
 const main = join(import.meta.dirname, '../out/main/index.js')
 const launch = (onboarding = false) => electron.launch({ args: [main], env: {
-  ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-approved-studies-')),
-  ...(onboarding ? { YOGURT_FAKE_PERMISSIONS: 'unknown', YOGURT_FAKE_CALENDAR: 'notDetermined' } : {}),
+  ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-approved-studies-')),
+  ...(onboarding ? { NOETAKER_FAKE_PERMISSIONS: 'unknown', NOETAKER_FAKE_CALENDAR: 'notDetermined' } : {}),
 } })
 
 test('approved Soft pair reads in Ask and Chat with a static reduced-motion fallback', async ({}, info) => {
@@ -22,7 +22,7 @@ test('approved Soft pair reads in Ask and Chat with a static reduced-motion fall
       ipcMain.handle('conversations:get', () => ({ id: 'review', title: 'What did we decide?', chips: [], draftChips: [], firstChips: [], draft: '', turns, waitsForMeeting: false, waitsForModel: false }))
     }, id)
     for (const surface of ['ask', 'chat']) {
-      await page.evaluate(route => window.yogurt.nav.go(route), surface === 'ask' ? `/note/${id}` : '/chat/review')
+      await page.evaluate(route => window.noetaker.nav.go(route), surface === 'ask' ? `/note/${id}` : '/chat/review')
       if (surface === 'ask') await page.getByTestId('chat-open').click()
       const container = surface === 'ask' ? page.getByTestId('chat-panel') : page.getByTestId('chat-page')
       await expect(container).toBeVisible()
@@ -124,7 +124,7 @@ test('approved compact call card shows the Dock icon and pausing countdown in bo
     await expect(prompt.getByTestId('prompt')).toBeVisible()
     await prompt.getByTestId('prompt').hover()
     for (const theme of ['light', 'dark'] as const) {
-      await page.evaluate(theme => window.yogurt.settings.setTheme(theme), theme)
+      await page.evaluate(theme => window.noetaker.settings.setTheme(theme), theme)
       await expect(prompt.getByTestId('prompt')).toHaveCSS('background-color', theme === 'light' ? 'rgb(255, 255, 255)' : 'rgb(41, 41, 43)')
       if (!before) {
         expect(await prompt.evaluate(() => [innerWidth, innerHeight])).toEqual([381, 60])

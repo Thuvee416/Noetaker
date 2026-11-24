@@ -1,14 +1,14 @@
 // The packaged app holds only the built code: a source folder inside app.asar means the build settings weren't applied.
-// node scripts/asar-check.mjs dist/mac-arm64/Yogurt.app/Contents/Resources/app.asar (exits 1 and names them)
+// node scripts/asar-check.mjs dist/mac-arm64/Noe Taker.app/Contents/Resources/app.asar (exits 1 and names them)
 import asar from '@electron/asar'
 import { fileURLToPath } from 'node:url'
 
 const SOURCE = /^\/(src|e2e|test|dist|native|scripts|docs)(\/|$)/
 // the workspace's own packages are bundled by vite; a copy in node_modules is their TypeScript source
-const WORKSPACE = /^\/node_modules\/@yogurt(\/|$)/
+const WORKSPACE = /^\/node_modules\/@noetaker(\/|$)/
 
 /** source folders among the archive's paths (top level, and workspace packages), each once */
-export const sourceFolders = (paths) => [...new Set(paths.flatMap((p) => (SOURCE.test(p) ? [p.split('/').slice(0, 2).join('/')] : WORKSPACE.test(p) ? ['/node_modules/@yogurt'] : [])))]
+export const sourceFolders = (paths) => [...new Set(paths.flatMap((p) => (SOURCE.test(p) ? [p.split('/').slice(0, 2).join('/')] : WORKSPACE.test(p) ? ['/node_modules/@noetaker'] : [])))]
 
 // Windows lists the archive with backslashes
 export const checkAsar = (file) => sourceFolders(asar.listPackage(file, {}).map((p) => p.replaceAll('\\', '/')))

@@ -25,14 +25,14 @@ export function AddMeetingsDialog({ folder, onDone }: { folder: Folder; onDone(a
     let seq = 0
     const read = () => {
       const mine = ++seq
-      void window.yogurt.folders.meetingChoices(folder.id).then(next => {
+      void window.noetaker.folders.meetingChoices(folder.id).then(next => {
         if (mine === seq) { setRows(next); setLoadFailed(false) }
       }, () => { if (mine === seq) setLoadFailed(true) })
     }
     read()
     let timer: ReturnType<typeof setTimeout>
     const changed = () => { clearTimeout(timer); timer = setTimeout(read, 150) }
-    const offFolders = window.yogurt.folders.onChange(changed), offMeetings = window.yogurt.meetings.onChange(changed)
+    const offFolders = window.noetaker.folders.onChange(changed), offMeetings = window.noetaker.meetings.onChange(changed)
     return () => { seq++; clearTimeout(timer); offFolders(); offMeetings() }
   }, [folder.id, attempt])
 
@@ -53,7 +53,7 @@ export function AddMeetingsDialog({ folder, onDone }: { folder: Folder; onDone(a
     if (saving.current || loadFailed || !selected.length) return
     saving.current = true; setBusy(true); setSaveFailed(false)
     try {
-      if (!await window.yogurt.folders.addMany(folder.id, selected)) throw new Error('Selection unavailable')
+      if (!await window.noetaker.folders.addMany(folder.id, selected)) throw new Error('Selection unavailable')
       setAdded(true)
     } catch {
       saving.current = false; setBusy(false); setSaveFailed(true); setAttempt(n => n + 1)
@@ -82,7 +82,7 @@ export function AddMeetingsDialog({ folder, onDone }: { folder: Folder; onDone(a
             <small>{date.format(row.startedAt)}{row.inFolder && <> · {t('In this folder')}</>}</small></span>
         </label>)}
     </div></ScrollFade>
-    {saveFailed && <p className="modal-error" role="alert">{t("Yogurt couldn't make that change. Try again.")}</p>}
+    {saveFailed && <p className="modal-error" role="alert">{t("Noe Taker couldn't make that change. Try again.")}</p>}
     <div className="modal-actions">
       <button className="modal-button primary" disabled={busy || loadFailed || !selected.length} onClick={() => void save()}>
         {selected.length ? t('Add {count} meetings to folder', { count: selected.length }) : t('Add meetings')}

@@ -1,14 +1,14 @@
-# yogurt-mcp for Windows and Linux (app/native/yogurt-mcp-relay): unit tests, release build, then a smoke test
-# against a stand-in Yogurt on the pipe or socket: MCP messages both ways, the not-running message, and starting
-# Yogurt from what it recorded. The built helpers are kept as artifacts for packaging into resources/bin.
+# noetaker-mcp for Windows and Linux (app/native/noetaker-mcp-relay): unit tests, release build, then a smoke test
+# against a stand-in Noe Taker on the pipe or socket: MCP messages both ways, the not-running message, and starting
+# Noe Taker from what it recorded. The built helpers are kept as artifacts for packaging into resources/bin.
 name: MCP helper
 
 on:
   push:
     branches: [main]
-    paths: ['app/native/yogurt-mcp-relay/**', '.github/workflows/native-mcp.yml']
+    paths: ['app/native/noetaker-mcp-relay/**', '.github/workflows/native-mcp.yml']
   pull_request:
-    paths: ['app/native/yogurt-mcp-relay/**', '.github/workflows/native-mcp.yml']
+    paths: ['app/native/noetaker-mcp-relay/**', '.github/workflows/native-mcp.yml']
   workflow_dispatch:
 
 permissions:
@@ -25,7 +25,7 @@ jobs:
     timeout-minutes: 20
     defaults:
       run:
-        working-directory: app/native/yogurt-mcp-relay
+        working-directory: app/native/noetaker-mcp-relay
     env:
       CARGO_TERM_COLOR: always
     steps:
@@ -35,13 +35,13 @@ jobs:
       - run: cargo test --locked
       - run: cargo build --release --locked
       - name: Smoke test
-        run: node smoke/smoke.mjs target/release/yogurt-mcp
+        run: node smoke/smoke.mjs target/release/noetaker-mcp
       - name: Linked libraries (glibc only)
-        run: ldd target/release/yogurt-mcp && objdump -T target/release/yogurt-mcp | grep -o 'GLIBC_[0-9.]*' | sort -uV | tail -1
+        run: ldd target/release/noetaker-mcp && objdump -T target/release/noetaker-mcp | grep -o 'GLIBC_[0-9.]*' | sort -uV | tail -1
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: yogurt-mcp-linux-x86_64
-          path: app/native/yogurt-mcp-relay/target/release/yogurt-mcp
+          name: noetaker-mcp-linux-x86_64
+          path: app/native/noetaker-mcp-relay/target/release/noetaker-mcp
 
   windows:
     runs-on: windows-latest
@@ -49,7 +49,7 @@ jobs:
     defaults:
       run:
         shell: pwsh
-        working-directory: app/native/yogurt-mcp-relay
+        working-directory: app/native/noetaker-mcp-relay
     env:
       CARGO_TERM_COLOR: always
     steps:
@@ -60,11 +60,11 @@ jobs:
       - run: cargo build --release --locked
       - name: No C runtime to install
         run: |
-          $s = [Text.Encoding]::ASCII.GetString([IO.File]::ReadAllBytes("target/release/yogurt-mcp.exe"))
-          if ($s -match 'VCRUNTIME140') { throw 'yogurt-mcp.exe needs the Visual C++ runtime' }
+          $s = [Text.Encoding]::ASCII.GetString([IO.File]::ReadAllBytes("target/release/noetaker-mcp.exe"))
+          if ($s -match 'VCRUNTIME140') { throw 'noetaker-mcp.exe needs the Visual C++ runtime' }
       - name: Smoke test
-        run: node smoke/smoke.mjs target/release/yogurt-mcp.exe
+        run: node smoke/smoke.mjs target/release/noetaker-mcp.exe
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: yogurt-mcp-windows-x64
-          path: app/native/yogurt-mcp-relay/target/release/yogurt-mcp.exe
+          name: noetaker-mcp-windows-x64
+          path: app/native/noetaker-mcp-relay/target/release/noetaker-mcp.exe

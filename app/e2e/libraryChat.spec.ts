@@ -6,8 +6,8 @@ import { join } from 'node:path'
 const main = join(import.meta.dirname, '../out/main/index.js')
 
 async function launch(env: Record<string, string> = {}) {
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
-  const app = await electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData, ...env } })
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
+  const app = await electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData, ...env } })
   const page = await app.firstWindow()
   await expect(page.getByTestId('home')).toBeVisible()
   return { app, page }
@@ -16,14 +16,14 @@ const fake = <T>(app: ElectronApplication, fn: string, arg?: unknown): Promise<T
   app.evaluate((_e, [fn, arg]) => (globalThis as unknown as Record<string, Record<string, (a?: unknown) => unknown>>).__fake__[fn as string](arg), [fn, arg] as const) as Promise<T>
 
 test('asking across meetings from Chat: the answer streams in with sources that open the meeting at that line, and the chat is kept', async () => {
-  const { app, page } = await launch({ YOGURT_FAKE_LLM_MS: '80' })
+  const { app, page } = await launch({ NOETAKER_FAKE_LLM_MS: '80' })
   try {
     const [pricing] = await fake<string[]>(app, 'chatMeetings')
     await page.getByTestId('nav-chat').click()
     await expect(page.getByTestId('chat-page')).toBeVisible()
     await expect(page.getByTestId('nav-chat')).toHaveAttribute('aria-current', 'page')
     await expect(page.getByTestId('chat-empty')).toBeVisible()
-    // Chat has its own box: no Ask Yogurt bar under it
+    // Chat has its own box: no Ask Noe Taker bar under it
     await expect(page.getByTestId('assistant-open')).toHaveCount(0)
     const input = page.getByTestId('chat-page-input')
     await expect(input).toBeFocused()
@@ -46,8 +46,8 @@ test('asking across meetings from Chat: the answer streams in with sources that 
     await expect(page.getByTestId('citation-card')).toHaveCSS('min-width', '280px')
     await expect(page.getByTestId('chat-page-answer')).not.toContainText('[1]')
     // the chat is saved, named after the question, and the address is its own
-    expect((await page.evaluate(() => window.yogurt.conversations.list()))[0].title).toBe('Who said twenty dollars?')
-    const route = await page.evaluate(() => window.yogurt.nav.current())
+    expect((await page.evaluate(() => window.noetaker.conversations.list()))[0].title).toBe('Who said twenty dollars?')
+    const route = await page.evaluate(() => window.noetaker.nav.current())
     expect(route).toMatch(/^\/chat\/[\w-]+$/)
 
     await chip.click()
@@ -81,7 +81,7 @@ test('asking across meetings from Chat: the answer streams in with sources that 
 })
 
 test('asking across meetings says it is reading what it found until the answer starts', async () => {
-  const { app, page } = await launch({ YOGURT_FAKE_LLM_MS: '3000' })
+  const { app, page } = await launch({ NOETAKER_FAKE_LLM_MS: '3000' })
   try {
     await fake<string[]>(app, 'chatMeetings')
     await page.getByTestId('nav-chat').click()
@@ -96,7 +96,7 @@ test('asking across meetings says it is reading what it found until the answer s
 })
 
 test('a follow-up stays in the chat; New chat starts another; chats can be renamed and deleted', async () => {
-  const { app, page } = await launch({ YOGURT_FAKE_LLM_MS: '10' })
+  const { app, page } = await launch({ NOETAKER_FAKE_LLM_MS: '10' })
   try {
     await fake(app, 'chatMeetings')
     await page.getByTestId('nav-chat').click()
@@ -122,7 +122,7 @@ test('a follow-up stays in the chat; New chat starts another; chats can be renam
     await input.press('Enter')
     await expect(page.getByTestId('chat-page-turn')).toHaveCount(2)
     await expect(page.getByTestId('chat-page-turn').last()).toHaveAttribute('data-status', 'done', { timeout: 15_000 })
-    expect((await page.evaluate(() => window.yogurt.conversations.list())).filter(c => c.title)).toHaveLength(1)
+    expect((await page.evaluate(() => window.noetaker.conversations.list())).filter(c => c.title)).toHaveLength(1)
 
     await page.getByTestId('chat-menu').click()
     await page.getByTestId('chat-new').click()
@@ -185,7 +185,7 @@ test('a follow-up stays in the chat; New chat starts another; chats can be renam
 })
 
 test('a stop keeps what was written; ⌘J from anywhere comes to Chat', async () => {
-  const { app, page } = await launch({ YOGURT_FAKE_LLM_MS: '300' })
+  const { app, page } = await launch({ NOETAKER_FAKE_LLM_MS: '300' })
   try {
     await fake(app, 'chatMeetings')
     await page.keyboard.press('Meta+j')
@@ -204,7 +204,7 @@ test('a stop keeps what was written; ⌘J from anywhere comes to Chat', async ()
 })
 
 test('with no meetings, it says so instead of making something up', async () => {
-  const { app, page } = await launch({ YOGURT_FAKE_LLM_MS: '5' })
+  const { app, page } = await launch({ NOETAKER_FAKE_LLM_MS: '5' })
   try {
     await page.getByTestId('nav-chat').click()
     await page.getByTestId('chat-page-input').fill('What did Tarun say?')
@@ -215,7 +215,7 @@ test('with no meetings, it says so instead of making something up', async () => 
 })
 
 test('a meeting cited for several of its parts shows one mark, and an answer that found nothing shows none', async () => {
-  const { app, page } = await launch({ YOGURT_FAKE_LLM_MS: '5' })
+  const { app, page } = await launch({ NOETAKER_FAKE_LLM_MS: '5' })
   try {
     await fake(app, 'bigMeeting', 1000)
     await page.getByTestId('nav-chat').click()
@@ -257,7 +257,7 @@ test('Ask retries a failed initial lookup', async () => {
       ipcMain.removeHandler('conversations:get')
       ipcMain.handle('conversations:get', () => ({ id: 'retry-demo', title: '', draft: '', chips: [], draftChips: [], firstChips: null, turns: [], waitsForMeeting: false, waitsForModel: false }))
     })
-    await page.evaluate(() => window.yogurt.nav.go('/chat'))
+    await page.evaluate(() => window.noetaker.nav.go('/chat'))
     const failure = page.getByTestId('chat-page-load-error')
     await expect(failure).toContainText("Couldn't load this conversation.")
     await failure.getByRole('button', { name: 'Try again' }).click()

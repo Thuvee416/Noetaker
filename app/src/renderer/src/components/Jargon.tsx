@@ -10,9 +10,9 @@ export function Jargon() {
   const [terms, setTerms] = useState<string[]>([])
   const [text, setText] = useState('')
   const input = useRef<HTMLInputElement>(null)
-  useEffect(() => { void window.yogurt.settings.get().then((p) => { setTerms(p.jargon); setLoaded(true) }) }, [])
+  useEffect(() => { void window.noetaker.settings.get().then((p) => { setTerms(p.jargon); setLoaded(true) }) }, [])
   // main cleans the list the same way, so what is shown is what is saved
-  const save = (next: string[]) => { setTerms(next); void window.yogurt.settings.setJargon(next) }
+  const save = (next: string[]) => { setTerms(next); void window.noetaker.settings.setJargon(next) }
   const next = addTerm(terms, text)
   const fresh = next !== terms
   const full = terms.length >= MAX_TERMS
@@ -32,7 +32,7 @@ export function Jargon() {
       <span className="settings-permission-icon"><BookA size={17} aria-hidden="true" /></span>
       <div className="settings-row-copy">
         <label htmlFor="jargon-input" className="settings-label">{t('Custom words')}</label>
-        <p className="settings-description">{t('Yogurt uses these words to spell names and terms in your transcripts and notes.')}</p>
+        <p className="settings-description">{t('Noe Taker uses these words to spell names and terms in your transcripts and notes.')}</p>
         <div data-testid="jargon-field" className="settings-jargon-field" onMouseDown={(e) => { if (e.target === e.currentTarget) { e.preventDefault(); input.current?.focus() } }}>
           {terms.map((term) => (
             <span key={term.toLowerCase()} data-testid="jargon-chip" className="settings-jargon-chip">

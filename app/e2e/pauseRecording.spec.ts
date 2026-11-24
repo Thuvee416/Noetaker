@@ -5,7 +5,7 @@ import { join } from 'node:path'
 
 test('Pause keeps the same note and frozen captured time; Resume continues and Stop writes notes', async () => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-pause-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-pause-')),
   } })
   try {
     const page = await app.firstWindow()
@@ -13,19 +13,19 @@ test('Pause keeps the same note and frozen captured time; Resume continues and S
     await expect(page.getByTestId('home')).toBeVisible()
     await page.locator('#workspace-actions').getByRole('button', { name: 'Start recording', exact: true }).click()
     await expect(page.getByTestId('note-state')).toHaveAttribute('data-state', 'recording')
-    const id = (await page.evaluate(() => window.yogurt.nav.current())).slice('/note/'.length)
+    const id = (await page.evaluate(() => window.noetaker.nav.current())).slice('/note/'.length)
     await page.getByTestId('note-notes-tab').click()
     await page.getByRole('textbox', { name: 'My notes', exact: true }).fill('Keep the customer feedback from this meeting.')
-    await expect.poll(async () => (await page.evaluate((id) => window.yogurt.transcript.get(id), id)).length, { timeout: 20_000 }).toBeGreaterThan(0)
+    await expect.poll(async () => (await page.evaluate((id) => window.noetaker.transcript.get(id), id)).length, { timeout: 20_000 }).toBeGreaterThan(0)
     await page.getByRole('button', { name: 'Pause recording', exact: true }).click()
     await expect(page.getByRole('button', { name: 'Resume recording', exact: true })).toBeVisible()
     await expect(page.getByTestId('note-state')).toHaveAttribute('data-paused', 'true')
-    const paused = await page.evaluate(() => window.yogurt.widget.state())
+    const paused = await page.evaluate(() => window.noetaker.widget.state())
     expect(paused).toMatchObject({ meetingId: id, paused: true, kind: 'recording' })
     await page.waitForTimeout(1100)
-    expect((await page.evaluate(() => window.yogurt.widget.state()))?.elapsedMs).toBe(paused!.elapsedMs)
-    expect(await page.evaluate((id) => window.yogurt.meetings.get(id), id)).toMatchObject({ paused: true, state: 'recording' })
-    expect(await page.evaluate((id) => window.yogurt.meetings.delete(id), id)).toBe('recording')
+    expect((await page.evaluate(() => window.noetaker.widget.state()))?.elapsedMs).toBe(paused!.elapsedMs)
+    expect(await page.evaluate((id) => window.noetaker.meetings.get(id), id)).toMatchObject({ paused: true, state: 'recording' })
+    expect(await page.evaluate((id) => window.noetaker.meetings.delete(id), id)).toBe('recording')
     await page.getByTestId('nav-home').click()
     await expect(page.getByTestId('past-note')).toContainText('Paused')
     await page.getByTestId('past-note').click()
@@ -41,11 +41,11 @@ test('Pause keeps the same note and frozen captured time; Resume continues and S
     expect(b.x + b.width).toBeLessThanOrEqual(720)
     await resume.click()
     await expect(page.getByRole('button', { name: 'Pause recording', exact: true })).toBeVisible()
-    await expect.poll(async () => (await page.evaluate(() => window.yogurt.widget.state()))!.elapsedMs).toBeGreaterThan(paused!.elapsedMs)
+    await expect.poll(async () => (await page.evaluate(() => window.noetaker.widget.state()))!.elapsedMs).toBeGreaterThan(paused!.elapsedMs)
     await stop.click()
     await expect(page.getByTestId('note-state')).toHaveAttribute('data-state', /^(stopped|done)$/)
-    await expect.poll(async () => (await page.evaluate((id) => window.yogurt.notes.get(id), id)).status, { timeout: 30_000 }).toBe('done')
-    expect((await page.evaluate((id) => window.yogurt.notes.get(id), id)).mine).toContain('Keep the customer feedback')
-    expect(await page.evaluate((id) => window.yogurt.audio.tracks(id), id)).toEqual(['me', 'them'])
+    await expect.poll(async () => (await page.evaluate((id) => window.noetaker.notes.get(id), id)).status, { timeout: 30_000 }).toBe('done')
+    expect((await page.evaluate((id) => window.noetaker.notes.get(id), id)).mine).toContain('Keep the customer feedback')
+    expect(await page.evaluate((id) => window.noetaker.audio.tracks(id), id)).toEqual(['me', 'them'])
   } finally { await app.close() }
 })

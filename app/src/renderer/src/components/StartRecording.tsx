@@ -27,18 +27,18 @@ export function StartRecording({ folderId, onUploaded, onGone, emptyActions, com
   const load = useCallback(async () => {
     const mine = ++seq.current
     try {
-      const day = await window.yogurt.calendar.day(Date.now())
+      const day = await window.noetaker.calendar.day(Date.now())
       if (mine === seq.current) { setEvents(day.status === 'granted' ? day.events : []); setNow(Date.now()) }
     } catch { if (mine === seq.current) setEvents([]) }
   }, [])
   useEffect(() => {
-    if (!window.yogurt.capabilities.calendar) return
+    if (!window.noetaker.capabilities.calendar) return
     setEvents([])
     void load()
     const refresh = () => { setNow(Date.now()); void load() }
     const timer = setInterval(refresh, 60_000)
-    const off = window.yogurt.calendar.onChange(() => { setEvents([]); refresh() })
-    const offMeetings = window.yogurt.meetings.onChange(refresh)
+    const off = window.noetaker.calendar.onChange(() => { setEvents([]); refresh() })
+    const offMeetings = window.noetaker.meetings.onChange(refresh)
     window.addEventListener('focus', refresh)
     return () => { seq.current++; off(); offMeetings(); clearInterval(timer); window.removeEventListener('focus', refresh) }
   }, [load, today])
@@ -52,21 +52,21 @@ export function StartRecording({ folderId, onUploaded, onGone, emptyActions, com
   useLayoutEffect(() => {
     setActions(document.getElementById('workspace-actions'))
     let active = true, updated = false
-    const off = window.yogurt.widget.onState((view) => { updated = true; setRecording(lastRecording = view?.kind === 'recording') })
-    void window.yogurt.widget.state().then((view) => { if (active && !updated) setRecording(lastRecording = view?.kind === 'recording') })
+    const off = window.noetaker.widget.onState((view) => { updated = true; setRecording(lastRecording = view?.kind === 'recording') })
+    void window.noetaker.widget.state().then((view) => { if (active && !updated) setRecording(lastRecording = view?.kind === 'recording') })
     return () => { active = false; off() }
   }, [])
   const start = async (eventId: string | null) => {
     if (starting || recording !== false) return
     setStarting(true); setOpen(false); toasts.close('start-recording-message')
     try {
-      const result = await window.yogurt.meetings.start(eventId, folderId)
+      const result = await window.noetaker.meetings.start(eventId, folderId)
       if ('error' in result) {
         if (result.error === 'gone') { setEvents([]); void load(); onGone?.() }
-        toasts.add({ id: 'start-recording-message', data: { testId: 'start-recording-message' }, title: result.error === 'gone' ? t('That meeting is no longer on your calendar.') : t("Yogurt couldn't start the notes. Try again in a moment.") })
+        toasts.add({ id: 'start-recording-message', data: { testId: 'start-recording-message' }, title: result.error === 'gone' ? t('That meeting is no longer on your calendar.') : t("Noe Taker couldn't start the notes. Try again in a moment.") })
       }
     } catch {
-      toasts.add({ id: 'start-recording-message', data: { testId: 'start-recording-message' }, title: t("Yogurt couldn't start the notes. Try again in a moment.") })
+      toasts.add({ id: 'start-recording-message', data: { testId: 'start-recording-message' }, title: t("Noe Taker couldn't start the notes. Try again in a moment.") })
     } finally { setStarting(false) }
   }
   const choices = recordingChoices(events, now)

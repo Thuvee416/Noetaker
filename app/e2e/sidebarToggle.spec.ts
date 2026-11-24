@@ -4,10 +4,10 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 for (const theme of ['light', 'dark'] as const) test(`sidebar pane morph keeps its frame fixed in ${theme}`, async ({}, info) => {
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-pane-'))
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-pane-'))
   writeFileSync(join(userData, 'settings.json'), JSON.stringify({ theme }))
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData,
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData,
   } })
   try {
     const page = await app.firstWindow()

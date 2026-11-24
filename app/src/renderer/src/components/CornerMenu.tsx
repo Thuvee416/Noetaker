@@ -10,9 +10,9 @@ import { dirOf, language, t } from '../../../shared/i18n'
 import { keys } from '../keys'
 import { cornerLinks, cornerRows, knownRelease, newerRelease, restartState } from './cornerMenuModel'
 
-const seenKey = 'yogurt.corner-menu.opened-release'
+const seenKey = 'noetaker.corner-menu.opened-release'
 // Older builds saved the ready version here when the menu was opened.
-const downloadedKey = 'yogurt.corner-menu.noticed-update'
+const downloadedKey = 'noetaker.corner-menu.noticed-update'
 function readVersion(key: string) {
   try { return localStorage.getItem(key) } catch { return null }
 }
@@ -52,8 +52,8 @@ export function CornerMenu({ visible, section, recording, go, shortcuts }: { vis
       setUpdate({ status: next, downloaded: waiting })
       if (next.state !== 'ready') setFailed(false)
     }
-    const off = window.yogurt.updates.onStatus(update)
-    void window.yogurt.updates.status().then(next => { if (!updated) update(next) }).catch(() => {})
+    const off = window.noetaker.updates.onStatus(update)
+    void window.noetaker.updates.status().then(next => { if (!updated) update(next) }).catch(() => {})
     const sync = (event: StorageEvent) => {
       if (event.key === seenKey || event.key === null) setSeen(readVersion(seenKey))
     }
@@ -64,7 +64,7 @@ export function CornerMenu({ visible, section, recording, go, shortcuts }: { vis
   const release = knownRelease(status)
   const unread = newerRelease(release, seen)
   const rememberRelease = async () => {
-    const opened = release ?? knownRelease(await window.yogurt.updates.status().catch(() => undefined))
+    const opened = release ?? knownRelease(await window.noetaker.updates.status().catch(() => undefined))
     if (!opened || !newerRelease(opened, seen) || !newerRelease(opened, readVersion(seenKey))) return
     setSeen(opened)
     saveVersion(seenKey, opened)
@@ -76,7 +76,7 @@ export function CornerMenu({ visible, section, recording, go, shortcuts }: { vis
     if (restart !== 'ready' || restarting.current) return
     restarting.current = true; setPending(true); setFailed(false)
     try {
-      if (await window.yogurt.updates.restart()) setOpen(false)
+      if (await window.noetaker.updates.restart()) setOpen(false)
       else setFailed(true)
     } catch { setFailed(true) }
     finally { restarting.current = false; setPending(false) }
@@ -92,7 +92,7 @@ export function CornerMenu({ visible, section, recording, go, shortcuts }: { vis
     else go('/' + next)
   }
   const labels = {
-    news: t("What's new"), github: t('Star us on GitHub'), discord: t('Join Discord'),
+    news: t("What's new"), github: t('Star us on GitHub'), discussions: t('Discussions'),
     shortcuts: t('Keyboard shortcuts'), feedback: t('Send feedback'), settings: t('Settings'), trash: t('Trash'),
   }
   const glyphs = { news: Megaphone, shortcuts: Keyboard, feedback: MessageCircle, settings: Settings, trash: Trash2 }
@@ -116,13 +116,13 @@ export function CornerMenu({ visible, section, recording, go, shortcuts }: { vis
         </Tooltip.Root>
         <Menu.Portal>
           <Menu.Positioner side="top" align="start" sideOffset={8} collisionPadding={8} positionMethod="fixed" className="corner-position">
-            <Menu.Popup aria-label={t('Yogurt menu')} data-testid="corner-menu" data-motion="instant" className="menu-entry corner-menu"
+            <Menu.Popup aria-label={t('Noe Taker menu')} data-testid="corner-menu" data-motion="instant" className="menu-entry corner-menu"
               data-suppress-hover={entering || undefined} onPointerMove={event => {
                 if (entering && (event.movementX || event.movementY)) setEntering(false)
               }}
               finalFocus={destination.current ? false : undefined}>
               {cornerRows.map(id => {
-                const Icon = id === 'github' || id === 'discord' ? null : glyphs[id]
+                const Icon = id === 'github' || id === 'discussions' ? null : glyphs[id]
                 const icon = Icon ? <Icon size={15} aria-hidden="true" /> : <span className={'corner-mark ' + id} aria-hidden="true" />
                 if (id === 'settings' || id === 'trash' || id === 'shortcuts') {
                   return <Menu.Item key={id} label={labels[id]} data-testid={id === 'settings' ? 'settings-open' : id === 'trash' ? 'nav-trash' : 'corner-shortcuts'}
@@ -141,7 +141,7 @@ export function CornerMenu({ visible, section, recording, go, shortcuts }: { vis
                   {recording && <span className="corner-detail">{t('You can restart after recording')}</span>}</span>
                 {rowDot}
               </Menu.Item>}
-              {restart === 'ready' && failed && <p className="corner-detail" role="alert">{t("Yogurt couldn't restart. Try again.")}</p>}
+              {restart === 'ready' && failed && <p className="corner-detail" role="alert">{t("Noe Taker couldn't restart. Try again.")}</p>}
             </Menu.Popup>
           </Menu.Positioner>
         </Menu.Portal>

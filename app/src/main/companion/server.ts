@@ -1,6 +1,6 @@
 // The TCP side of the companion: each connection is either a pairing attempt (its first frame is a JSON pairHello,
 // accepted only while pairing is open) or a Noise KK session from the paired phone (its first frame is Noise
-// message 1; the phone is the initiator, prologue "yogurt-v1"). Anything else, an unknown key, a frame that doesn't
+// message 1; the phone is the initiator, prologue "noetaker-v1"). Anything else, an unknown key, a frame that doesn't
 // decrypt or a handshake that stalls closes the socket before any request is handled.
 import { createServer, type Server, type Socket } from 'node:net'
 import { frame, FrameReader, parseJson } from './frames'
@@ -29,7 +29,7 @@ export type Limits = {
 }
 export const LIMITS: Limits = { handshakeMs: 10_000, firstFrameMs: 3000, stepMs: 3000, perAddress: 2, idleMs: 2 * 60 * 1000, connections: 4, queued: 64, replays: 10_000, rekey: { bytes: 2 ** 30, ms: 60 * 60 * 1000 } }
 
-const PROLOGUE = new TextEncoder().encode('yogurt-v1')
+const PROLOGUE = new TextEncoder().encode('noetaker-v1')
 /** requests that may take long run beside the queue, so pings and pulls still get through */
 const BESIDE = new Set(['ask', 'audio'])
 const MAX_BESIDE = 4

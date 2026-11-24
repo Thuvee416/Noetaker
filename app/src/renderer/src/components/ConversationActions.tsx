@@ -44,8 +44,8 @@ export function ConversationDialog({ id, title, kind, container, onClose, onDele
     if (busy || kind === 'rename' && !draft.trim()) return
     setBusy(true); setError(false)
     try {
-      if (kind === 'delete') await window.yogurt.conversations.delete(id)
-      else await window.yogurt.conversations.rename(id, draft.trim())
+      if (kind === 'delete') await window.noetaker.conversations.delete(id)
+      else await window.noetaker.conversations.rename(id, draft.trim())
       onClose()
       if (kind === 'delete') onDeleted()
     } catch { setError(true) }

@@ -18,10 +18,10 @@ export const deviceLost = (message: string): boolean => /ErrorDeviceLost|VK_ERRO
 
 /**
  * Linux (#32): Electron's own allocator traps (SIGILL, code 132) on one allocation over 2 GiB, and llama.cpp makes one
- * when the model runs on the processor (its repacked weights, a big context). libyogurt-bigalloc.so (native/bigalloc)
+ * when the model runs on the processor (its repacked weights, a big context). libnoetaker-bigalloc.so (native/bigalloc)
  * sends those to mmap instead. Only the notes engine gets it, and only when it was shipped.
  */
-export const SHIM = 'libyogurt-bigalloc.so'
+export const SHIM = 'libnoetaker-bigalloc.so'
 export const engineShim = (platform: string, candidates: string[], exists: (p: string) => boolean): string | undefined =>
   // LD_PRELOAD splits on spaces and colons, so a path with one would never load
   platform === 'linux' ? candidates.find((p) => !/[\s:]/.test(p) && exists(p)) : undefined
@@ -131,9 +131,9 @@ export class UtilityEngine implements Engine {
       ...process.env,
       ...(preload ? { LD_PRELOAD: [preload, process.env.LD_PRELOAD].filter(Boolean).join(':') } : {}),
       // off wins: without the card is without it, whichever build
-      ...(this.cpuOnly ? { YOGURT_ENGINE_GPU: 'off' } : vulkan ? { YOGURT_ENGINE_GPU: 'vulkan' } : {}),
+      ...(this.cpuOnly ? { NOETAKER_ENGINE_GPU: 'off' } : vulkan ? { NOETAKER_ENGINE_GPU: 'vulkan' } : {}),
     } : undefined
-    const proc = utilityProcess.fork(this.workerPath, [], { serviceName: 'Yogurt Notes', ...(env ? { env } : {}) })
+    const proc = utilityProcess.fork(this.workerPath, [], { serviceName: 'Noe Taker Notes', ...(env ? { env } : {}) })
     this.loaded = false
     proc.on('message', (e: EngineEvent) => {
       const p = this.pending.get(e.id)

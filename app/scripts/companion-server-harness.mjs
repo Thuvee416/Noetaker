@@ -1,10 +1,10 @@
-// The desktop's real companion server (src/main/companion) with a throwaway profile, for YogurtKit's interop tests:
+// The desktop's real companion server (src/main/companion) with a throwaway profile, for NoetakerKit's interop tests:
 // a temp userData folder, an in-memory store seeded with made-up meetings, a stub Ask, no Bonjour, localhost only.
 //   node app/scripts/companion-server-harness.mjs
 // Opens pairing and prints {"port", "code", "desktopId", "meetings": {name: id}} as one JSON line. Then each JSON line
 // on stdin is a question answered on stdout: {"cmd":"meeting","id"} → {"meeting": {title, trashedAt}},
 // {"cmd":"notes","id"} → {"notes": mine}, {"cmd":"add","title"} → {"added": id}. An import prints {"imported": id, bytes}.
-// Exits when stdin closes. Never touches the real Yogurt profile. Not shipped; test use only.
+// Exits when stdin closes. Never touches the real Noe Taker profile. Not shipped; test use only.
 import { build } from 'esbuild'
 import { mkdtempSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'

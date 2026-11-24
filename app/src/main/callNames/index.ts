@@ -11,7 +11,7 @@ import { readCall, summarize, type AxWindow, type CallKind } from './parse'
  * Nothing is guessed, and nothing leaves the computer.
  */
 
-/** what yogurt-mac call-watch prints each time it reads: the call windows, or why it could not */
+/** what noetaker-mac call-watch prints each time it reads: the call windows, or why it could not */
 /** macWindows: how many normal windows of the app the Mac itself shows, beside the ones accessibility lists (#138) */
 /** hidden: no call window accessibility can see, but the Mac still has the one that was the call (another desktop, a full
  * screen Space): the call is not over */
@@ -130,7 +130,7 @@ export function hookCallNames(p: {
     }
     const kind = kindFor(l.app, l.windows, s.app)
     if (!kind) {
-      const why = `${l.app} is not a call app Yogurt reads`
+      const why = `${l.app} is not a call app Noe Taker reads`
       if (!s.errors.has(why)) { s.errors.add(why); log(`call names: ${why}`) }
       return
     }

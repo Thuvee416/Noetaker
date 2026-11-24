@@ -7,7 +7,7 @@ import { join } from 'node:path'
 
 async function launch(env: Record<string, string> = {}) {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_BACKGROUND: '1', YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-commands-')), ...env,
+    ...process.env, NOETAKER_BACKGROUND: '1', NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-commands-')), ...env,
   } })
   const page = await app.firstWindow()
   await expect(page.getByTestId('home')).toBeVisible()
@@ -16,7 +16,7 @@ async function launch(env: Record<string, string> = {}) {
 
 for (const theme of ['light', 'dark'] as const) {
   test(`palette captures in ${theme}`, async ({}, testInfo) => {
-    const { app, page } = await launch({ YOGURT_SYSTEM_LANGUAGES: 'en' })
+    const { app, page } = await launch({ NOETAKER_SYSTEM_LANGUAGES: 'en' })
     try {
       const meetingIds = await app.evaluate(() => {
         const fake = (globalThis as unknown as { __fake__: { chatMeetings(): Promise<string[]>; manyMeetings(opts: { n: number; clean: boolean }): void } }).__fake__
@@ -24,9 +24,9 @@ for (const theme of ['light', 'dark'] as const) {
         return fake.chatMeetings()
       })
       await page.evaluate(async ({ meetingIds, theme }) => {
-        const folder = await window.yogurt.folders.create('Product', { color: 'teal', icon: 'folder' })
-        await window.yogurt.folders.addMany(folder!.id, meetingIds)
-        await window.yogurt.settings.setTheme(theme)
+        const folder = await window.noetaker.folders.create('Product', { color: 'teal', icon: 'folder' })
+        await window.noetaker.folders.addMany(folder!.id, meetingIds)
+        await window.noetaker.settings.setTheme(theme)
       }, { meetingIds, theme })
       await page.reload()
       await expect(page.getByTestId('past-note').first()).toBeVisible()
@@ -84,7 +84,7 @@ for (const theme of ['light', 'dark'] as const) {
 }
 
 test('@everywhere search returns focus with the same ring the opener had', async () => {
-  const { app, page } = await launch({ YOGURT_BACKGROUND: process.env.YOGURT_BACKGROUND ?? '1' })
+  const { app, page } = await launch({ NOETAKER_BACKGROUND: process.env.NOETAKER_BACKGROUND ?? '1' })
   try {
     const opener = page.getByTestId('nav-home'), search = page.getByTestId('search')
     await opener.click()
@@ -111,7 +111,7 @@ test('@everywhere search returns focus with the same ring the opener had', async
     await page.keyboard.press('Enter')
     await expect(page.getByTestId('settings')).toBeVisible()
     await expect(search).toHaveCount(0)
-    if (await page.evaluate(() => window.yogurt.capabilities.calendarLink)) {
+    if (await page.evaluate(() => window.noetaker.capabilities.calendarLink)) {
       await expect(page.getByTestId('calendar-link-add')).toHaveAttribute('aria-expanded', 'true')
       await expect(page.getByTestId('calendar-link-input')).not.toBeFocused()
     }
@@ -254,19 +254,19 @@ test('page shortcuts are taught in the palette, work there, and respect modal ed
     await page.keyboard.press('Escape')
     await expect(page.getByTestId('shortcuts-dialog')).toHaveCount(0)
     const id = await app.evaluate(() => (globalThis as unknown as { __fake__: { bigMeeting(n: number): string } }).__fake__.bigMeeting(0))
-    await page.evaluate(id => window.yogurt.nav.go(`/note/${id}`), id)
+    await page.evaluate(id => window.noetaker.nav.go(`/note/${id}`), id)
     await page.getByTestId('note-notes-tab').click()
     await page.getByTestId('note-mine').fill('Keep this draft when switching pages.')
     await page.keyboard.press('Meta+2')
     await expect(page.getByTestId('chat-page')).toBeVisible()
-    await expect.poll(() => page.evaluate(id => window.yogurt.notes.get(id).then(n => n.mine), id)).toBe('Keep this draft when switching pages.')
+    await expect.poll(() => page.evaluate(id => window.noetaker.notes.get(id).then(n => n.mine), id)).toBe('Keep this draft when switching pages.')
   } finally { await app.close() }
 })
 
 test('the command palette opens pages and folders and changes appearance and settings', async () => {
   const { app, page } = await launch()
   try {
-    const folder = await page.evaluate(() => window.yogurt.folders.create('Standup'))
+    const folder = await page.evaluate(() => window.noetaker.folders.create('Standup'))
     const command = async (query: string, id: string) => {
       await page.keyboard.press('Meta+k')
       await page.getByTestId('search-input').fill(query)
@@ -276,13 +276,13 @@ test('the command palette opens pages and folders and changes appearance and set
     await command('settings', 'settings')
     await expect(page.getByTestId('settings')).toBeVisible()
     await command('dark', 'theme-dark')
-    expect((await page.evaluate(() => window.yogurt.settings.get())).theme).toBe('dark')
+    expect((await page.evaluate(() => window.noetaker.settings.get())).theme).toBe('dark')
     await expect(page.getByTestId('settings-theme')).toHaveValue('dark')
     await command('light', 'theme-light')
     await expect(page.getByTestId('settings-theme')).toHaveValue('light')
-    const before = await page.evaluate(() => window.yogurt.settings.get())
+    const before = await page.evaluate(() => window.noetaker.settings.get())
     await command('login', 'login')
-    expect((await page.evaluate(() => window.yogurt.settings.get())).openAtLogin).toBe(!before.openAtLogin)
+    expect((await page.evaluate(() => window.noetaker.settings.get())).openAtLogin).toBe(!before.openAtLogin)
     await command('Standup', `folder-${folder!.id}`)
     await expect(page.getByTestId('folder-title')).toHaveText('Standup')
     await command('chat', 'chat')
@@ -297,7 +297,7 @@ test('the command palette opens pages and folders and changes appearance and set
 test('appearance commands mark the saved choice, allow a no-op and switch between all three modes', async () => {
   const { app, page } = await launch()
   try {
-    await page.evaluate(() => window.yogurt.settings.setTheme('system'))
+    await page.evaluate(() => window.noetaker.settings.setTheme('system'))
     for (const [current, next, query] of [
       ['system', 'dark', 'Dark theme'],
       ['dark', 'light', 'Light theme'],
@@ -313,12 +313,12 @@ test('appearance commands mark the saved choice, allow a no-op and switch betwee
       await expect(saved).toHaveAttribute('aria-selected', 'true')
       await page.keyboard.press('Enter')
       await expect(page.getByTestId('search')).toHaveCount(0)
-      expect((await page.evaluate(() => window.yogurt.settings.get())).theme).toBe(current)
+      expect((await page.evaluate(() => window.noetaker.settings.get())).theme).toBe(current)
       await page.keyboard.press('Meta+k')
       await page.getByTestId('search-input').fill(query)
       await page.keyboard.press('Enter')
       await expect(page.getByTestId('search')).toHaveCount(0)
-      expect((await page.evaluate(() => window.yogurt.settings.get())).theme).toBe(next)
+      expect((await page.evaluate(() => window.noetaker.settings.get())).theme).toBe(next)
     }
   } finally { await app.close() }
 })
@@ -327,8 +327,8 @@ test('command ranking controls visible order, selection and Enter alongside matc
   const { app, page } = await launch()
   try {
     const id = await app.evaluate(() => (globalThis as unknown as { __fake__: { bigMeeting(n: number): string } }).__fake__.bigMeeting(0))
-    await page.evaluate(id => window.yogurt.meetings.rename(id, 'Dark light settings trash theme mode budget review'), id)
-    const folder = await page.evaluate(() => window.yogurt.folders.create('Dark planning'))
+    await page.evaluate(id => window.noetaker.meetings.rename(id, 'Dark light settings trash theme mode budget review'), id)
+    const folder = await page.evaluate(() => window.noetaker.folders.create('Dark planning'))
     await page.reload()
     await expect(page.getByTestId('home')).toBeVisible()
     await page.keyboard.press('Meta+k')
@@ -364,7 +364,7 @@ test('command ranking controls visible order, selection and Enter alongside matc
     await expect(input).toHaveAttribute('aria-activedescendant', `search-${id}`)
     await page.keyboard.press('Enter')
     await expect(page.getByTestId('search')).toHaveCount(0)
-    expect(await page.evaluate(() => window.yogurt.nav.current())).toBe(`/note/${id}`)
+    expect(await page.evaluate(() => window.noetaker.nav.current())).toBe(`/note/${id}`)
     await page.keyboard.press('Meta+k')
     await input.fill('set')
     await expect(page.getByTestId('command-settings')).toHaveAttribute('aria-selected', 'true')
@@ -374,40 +374,40 @@ test('command ranking controls visible order, selection and Enter alongside matc
 })
 
 test('Enter during a pending search follows command ranking', async () => {
-  const { app, page } = await launch({ YOGURT_FAKE_SEARCH_SLOW: '1' })
+  const { app, page } = await launch({ NOETAKER_FAKE_SEARCH_SLOW: '1' })
   try {
     const id = await app.evaluate(() => (globalThis as unknown as { __fake__: { bigMeeting(n: number): string } }).__fake__.bigMeeting(0))
-    await page.evaluate(id => window.yogurt.meetings.rename(id, 'Dark mode planning'), id)
-    await page.evaluate(() => window.yogurt.settings.setTheme('light'))
+    await page.evaluate(id => window.noetaker.meetings.rename(id, 'Dark mode planning'), id)
+    await page.evaluate(() => window.noetaker.settings.setTheme('light'))
     await page.keyboard.press('Meta+k')
     await expect(page.getByTestId('search-input')).toBeFocused()
     await expect(page.getByTestId('command-theme-dark')).toHaveCount(0)
     await page.getByTestId('search-input').fill('dark')
     await page.keyboard.press('Enter')
     await expect(page.getByTestId('search')).toHaveCount(0)
-    expect((await page.evaluate(() => window.yogurt.settings.get())).theme).toBe('dark')
+    expect((await page.evaluate(() => window.noetaker.settings.get())).theme).toBe('dark')
     await expect(page.getByTestId('home')).toBeVisible()
     await page.keyboard.press('Meta+k')
     await page.getByTestId('search-input').fill('mode')
     await page.keyboard.press('Enter')
     await expect(page.getByTestId('search')).toHaveCount(0)
-    expect(await page.evaluate(() => window.yogurt.nav.current())).toBe(`/note/${id}`)
+    expect(await page.evaluate(() => window.noetaker.nav.current())).toBe(`/note/${id}`)
   } finally { await app.close() }
 })
 
 test('Ask is pinned and sends the question into a new conversation, including folder scope', async () => {
   const { app, page } = await launch()
   try {
-    const folder = await page.evaluate(() => window.yogurt.folders.create('Project'))
+    const folder = await page.evaluate(() => window.noetaker.folders.create('Project'))
     for (const scoped of [false, true]) {
-      await page.evaluate(route => window.yogurt.nav.go(route), scoped ? `/folder/${folder!.id}` : '')
+      await page.evaluate(route => window.noetaker.nav.go(route), scoped ? `/folder/${folder!.id}` : '')
       await expect(page.getByTestId(scoped ? 'folder-title' : 'home')).toBeVisible()
       await page.keyboard.press('Meta+k')
       const query = 'What did we decide about the launch?'
       await page.getByTestId('search-input').fill(query)
       const ask = page.getByTestId('search-ask')
       await expect(page.getByRole('listbox').getByRole('option').first()).toHaveAttribute('id', 'search-ask')
-      await expect(ask).toContainText('Ask Yogurt')
+      await expect(ask).toContainText('Ask Noe Taker')
       await expect(ask.locator('.command-label')).toHaveText(query)
       await expect(ask).toHaveAttribute('aria-selected', 'true')
       if (scoped) await ask.click()
@@ -415,7 +415,7 @@ test('Ask is pinned and sends the question into a new conversation, including fo
       await expect(page.getByTestId('search')).toHaveCount(0)
       await expect(page.getByTestId('chat-page')).toBeVisible()
       await expect(page.getByTestId('chat-page-question')).toHaveText(query)
-      const conversation = await page.evaluate(async () => window.yogurt.conversations.get((await window.yogurt.nav.current()).slice(6)))
+      const conversation = await page.evaluate(async () => window.noetaker.conversations.get((await window.noetaker.nav.current()).slice(6)))
       expect(conversation!.turns).toHaveLength(1)
       expect(conversation!.chips.map(c => ({ kind: c.kind, id: c.id }))).toEqual(scoped ? [{ kind: 'folder', id: folder!.id }] : [])
     }
@@ -484,8 +484,8 @@ test('people filters recognize exact identities and require a choice for partial
       return [fake.bigMeeting(0), fake.bigMeeting(0), fake.bigMeeting(0)]
     })
     await page.evaluate(async ids => {
-      for (const id of ids.slice(0, 2)) await window.yogurt.meetings.setAttendees(id, [{ name: 'Riley Example', email: 'riley@example.test' }])
-      await window.yogurt.meetings.rename(ids[2], 'Riley Example')
+      for (const id of ids.slice(0, 2)) await window.noetaker.meetings.setAttendees(id, [{ name: 'Riley Example', email: 'riley@example.test' }])
+      await window.noetaker.meetings.rename(ids[2], 'Riley Example')
     }, ids)
     await page.keyboard.press('Meta+k')
     const input = page.getByTestId('search-input')
@@ -520,7 +520,7 @@ test('people filters recognize exact identities and require a choice for partial
 })
 
 test('closing the palette cancels a pending Enter while search is still answering', async () => {
-  const { app, page } = await launch({ YOGURT_FAKE_SEARCH_SLOW: '1' })
+  const { app, page } = await launch({ NOETAKER_FAKE_SEARCH_SLOW: '1' })
   try {
     await app.evaluate(() => (globalThis as unknown as { __fake__: { manyMeetings(n: number): void } }).__fake__.manyMeetings(1))
     await page.reload()
@@ -542,7 +542,7 @@ test('bracket history works in both directions, branches correctly, and keeps a 
     await app.evaluate(() => (globalThis as unknown as { __fake__: { manyMeetings(n: number): void } }).__fake__.manyMeetings(1))
     await page.reload()
     await page.getByTestId('past-note').click()
-    const id = (await page.evaluate(() => window.yogurt.nav.current())).slice(6)
+    const id = (await page.evaluate(() => window.noetaker.nav.current())).slice(6)
     await page.getByTestId('note-notes-tab').click()
     await page.getByTestId('note-mine').fill('Keep this draft through navigation.')
     await page.keyboard.press('Meta+[')
@@ -551,7 +551,7 @@ test('bracket history works in both directions, branches correctly, and keeps a 
     await expect(page.getByTestId('note')).toBeVisible()
     await page.getByTestId('note-notes-tab').click()
     await expect(page.getByTestId('note-mine')).toContainText('Keep this draft through navigation.')
-    expect((await page.evaluate(id => window.yogurt.notes.get(id), id)).mine).toContain('Keep this draft through navigation.')
+    expect((await page.evaluate(id => window.noetaker.notes.get(id), id)).mine).toContain('Keep this draft through navigation.')
     await page.keyboard.press('Meta+,')
     await expect(page.getByTestId('settings')).toBeVisible()
     await page.keyboard.press('Meta+[')
@@ -584,7 +584,7 @@ test('bracket history works in both directions, branches correctly, and keeps a 
 })
 
 test('typing keeps the input anchored and replaces meeting and command results together', async () => {
-  const { app, page } = await launch({ YOGURT_FAKE_SEARCH_SLOW: '1' })
+  const { app, page } = await launch({ NOETAKER_FAKE_SEARCH_SLOW: '1' })
   try {
     await app.evaluate(() => (globalThis as unknown as { __fake__: { manyMeetings(n: number): void } }).__fake__.manyMeetings(8))
     await page.reload()
@@ -762,7 +762,7 @@ test("a mouse's back and forward buttons move through pages like ⌘[ and ⌘]",
 })
 
 test('the palette recovers from a rejected read', async () => {
-  const { app, page } = await launch({ YOGURT_BACKGROUND: process.env.YOGURT_BACKGROUND ?? '1' })
+  const { app, page } = await launch({ NOETAKER_BACKGROUND: process.env.NOETAKER_BACKGROUND ?? '1' })
   try {
     const setAvailable = (available: boolean) => app.evaluate(({ ipcMain }, available) => {
       ipcMain.removeHandler('search:query')

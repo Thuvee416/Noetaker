@@ -139,7 +139,7 @@ function MeetingPlayer({ id, tracks, openTranscript, ref, onTime, onPlaying, onB
   return (
     <div data-testid="player" className="transcript-player text-xs text-muted">
       {shown.map((tr) => (
-        <audio key={tr} data-testid={`player-audio-${tr}`} data-track={tr} preload="metadata" src={`yogurt-audio://${id}/${tr}`}
+        <audio key={tr} data-testid={`player-audio-${tr}`} data-track={tr} preload="metadata" src={`noetaker-audio://${id}/${tr}`}
           ref={(a) => { if (a) { els.current[tr] = a; owned.current.add(a) } else delete els.current[tr] }}
           onLoadedMetadata={e => {
             const track = e.currentTarget
@@ -194,7 +194,7 @@ export function DeleteRecording({ id, onCancel, onDeleted }: { id: string; onCan
   const yes = async () => {
     if (busy) return
     setBusy(true); setFailed(undefined)
-    const result = await window.yogurt.audio.delete(id).catch(() => 'failed' as const)
+    const result = await window.noetaker.audio.delete(id).catch(() => 'failed' as const)
     setBusy(false)
     if (result === 'deleted') void recordingDeletedToast()
     if (result === 'deleted' || result === 'missing') onDeleted()
@@ -203,7 +203,7 @@ export function DeleteRecording({ id, onCancel, onDeleted }: { id: string; onCan
   return <Modal testId="recording-delete-confirm" role="alertdialog" title={t('Delete audio?')}
     description={t('The audio is deleted for good. Your transcript and notes stay.')} busy={busy} onCancel={onCancel}>
     {failed && <InlineError testId="recording-delete-failed" className="inline-error-in-dialog"><span>{failed === 'not-transcribed' ? t('Keep the audio until the transcript is saved.')
-      : failed === 'recording' ? t('Stop the recording first, then try again.') : t("Yogurt couldn't delete the audio.")}</span></InlineError>}
+      : failed === 'recording' ? t('Stop the recording first, then try again.') : t("Noe Taker couldn't delete the audio.")}</span></InlineError>}
     <div className="modal-actions">
       <button data-testid="recording-delete-yes" className="modal-button danger" disabled={busy} onClick={() => void yes()}>{t('Delete audio')}</button>
       <ModalClose data-testid="recording-delete-cancel" data-dialog-cancel className="workspace-button" disabled={busy}>{t('Cancel')}</ModalClose>

@@ -6,9 +6,9 @@ import { DatabaseSync } from 'node:sqlite'
 
 const names = ['Ada Chen', 'Ben Ortiz', 'Cy Patel', 'Dee Morgan', 'Eli Ross', 'Fay Kim', 'Gia Lee']
 for (const theme of ['light', 'dark'] as const) test(`speaker colours agree across the note and recent preview in ${theme}`, async ({}, info) => {
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-speaker-colors-'))
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-speaker-colors-'))
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_BACKGROUND: '1', YOGURT_USER_DATA: userData,
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_BACKGROUND: '1', NOETAKER_USER_DATA: userData,
   } })
   let db: DatabaseSync | undefined
   try {
@@ -19,8 +19,8 @@ for (const theme of ['light', 'dark'] as const) test(`speaker colours agree acro
     await win.evaluate(w => w.setContentSize(1200, 850))
     await page.locator('#workspace-actions').getByRole('button', { name: 'Start recording', exact: true }).click()
     await expect(page.getByTestId('note-state')).toHaveAttribute('data-state', 'recording')
-    const id = await page.evaluate(async () => (await window.yogurt.nav.current()).slice('/note/'.length))
-    db = new DatabaseSync(join(userData, 'yogurt.db'), { timeout: 5000 })
+    const id = await page.evaluate(async () => (await window.noetaker.nav.current()).slice('/note/'.length))
+    db = new DatabaseSync(join(userData, 'noetaker.db'), { timeout: 5000 })
     const insert = db.prepare('INSERT INTO segments(meeting_id,track,start_ms,end_ms,text,speaker) VALUES(?,?,?,?,?,?)')
     // These first appearances are outside the preview's initial 80-line slice.
     for (let i = 0; i < names.length; i++) insert.run(id, 'them', 100000 + i * 3000, 101000 + i * 3000, 'Earlier discussion.', names[i])
@@ -54,13 +54,13 @@ for (const theme of ['light', 'dark'] as const) test(`speaker colours agree acro
     await expect(preview.locator('.widget-preview-speaker').filter({ hasText: names[0] })).toHaveAttribute('data-color', '0')
     // An earlier unidentified line gaining a name must not shift existing colours.
     insert.run(id, 'them', 90000, 91000, 'A late attribution.', 'Hal Moss')
-    const saved = await page.evaluate(id => window.yogurt.transcript.get(id, { hidden: true }), id)
+    const saved = await page.evaluate(id => window.noetaker.transcript.get(id, { hidden: true }), id)
     expect(saved.find(s => s.speaker === 'Hal Moss')?.speakerColor).toBe(0)
     expect(saved.find(s => s.speaker === names[0])?.speakerColor).toBe(0)
     expect(saved.find(s => s.speaker === names[6])?.speakerColor).toBe(6)
     // Capture ordinary turn lengths, separately from the seven-slot / 80-line regression above.
     db.prepare('DELETE FROM segments WHERE meeting_id = ?').run(id)
-    await page.evaluate(id => window.yogurt.meetings.rename(id, 'Trial review'), id)
+    await page.evaluate(id => window.noetaker.meetings.rename(id, 'Trial review'), id)
     const exchange = [
       [names[0], 'The trial team got through setup without needing our help.'],
       [names[1], "That's encouraging."],

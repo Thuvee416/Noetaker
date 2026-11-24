@@ -5,14 +5,14 @@ import { join } from 'node:path'
 import { selectNoteVersion } from './noteVersion'
 
 for (const theme of ['light', 'dark'] as const) test(`a render failure preserves edits, logs diagnostics, reloads and quits without a false save warning in ${theme}`, async () => {
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-renderer-guard-'))
-  const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData } })
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-renderer-guard-'))
+  const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData } })
   let closed = false
   app.on('close', () => { closed = true })
   try {
     const page = await app.firstWindow()
     await expect(page.getByTestId('home')).toBeVisible()
-    await page.evaluate(theme => window.yogurt.settings.setTheme(theme), theme)
+    await page.evaluate(theme => window.noetaker.settings.setTheme(theme), theme)
     await app.evaluate(() => (globalThis as unknown as { __fake__: { manyMeetings(o: { n: number; clean: boolean }): void } }).__fake__.manyMeetings({ n: 1, clean: true }))
     await page.reload()
     await page.getByTestId('past-note').click()
@@ -20,7 +20,7 @@ for (const theme of ['light', 'dark'] as const) test(`a render failure preserves
     const draft = 'Private draft sentinel for recovery'
     await page.getByTestId('note-mine').fill(draft)
     // No debounce wait: the error unmounts the editor while its latest edit is pending.
-    await page.evaluate(() => window.dispatchEvent(new Event('yogurt:renderer-fail')))
+    await page.evaluate(() => window.dispatchEvent(new Event('noetaker:renderer-fail')))
     await expect(page.getByTestId('renderer-recovery')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Reload', exact: true })).toBeFocused()
     expect(await page.getByTestId('renderer-recovery').evaluate(el => getComputedStyle(el).backgroundColor)).not.toBe('rgba(0, 0, 0, 0)')
@@ -42,7 +42,7 @@ for (const theme of ['light', 'dark'] as const) test(`a render failure preserves
     await expect.poll(() => logged().join('\n')).toContain('Cannot read properties of undefined')
     await expect.poll(() => logged().join('\n')).toContain('message omitted for privacy')
     expect(logged().join('\n')).not.toContain('private payload')
-    await page.evaluate(() => window.dispatchEvent(new Event('yogurt:renderer-fail')))
+    await page.evaluate(() => window.dispatchEvent(new Event('noetaker:renderer-fail')))
     await expect(page.getByTestId('renderer-recovery')).toBeVisible()
     await app.evaluate(({ dialog }) => {
       // A false flush timeout keeps the app open, making the close assertion fail.

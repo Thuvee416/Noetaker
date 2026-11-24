@@ -5,9 +5,9 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 for (const theme of ['light', 'dark'] as const) test(`note panels fade in alone without moving or losing edits in ${theme}`, async ({}, info) => {
-  const before = process.env.YOGURT_UI_REVIEW === 'before'
+  const before = process.env.NOETAKER_UI_REVIEW === 'before'
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_BACKGROUND: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-note-fade-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_BACKGROUND: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-note-fade-')),
   } })
   try {
     const page = await app.firstWindow()
@@ -15,7 +15,7 @@ for (const theme of ['light', 'dark'] as const) test(`note panels fade in alone 
     const win = await app.browserWindow(page)
     await win.evaluate(w => w.setContentSize(1200, 850))
     const id = await app.evaluate(async () => (await (globalThis as unknown as { __fake__: { chatMeetings(): Promise<string[]> } }).__fake__.chatMeetings())[0])
-    await page.evaluate(id => window.yogurt.nav.go(`/note/${id}`), id)
+    await page.evaluate(id => window.noetaker.nav.go(`/note/${id}`), id)
     await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' })
     const transcript = page.getByTestId('note-transcript-toggle'), mine = page.getByTestId('note-notes-tab'), summary = page.getByTestId('note-summary-tab')
     await mine.click()
@@ -85,7 +85,7 @@ for (const theme of ['light', 'dark'] as const) test(`note panels fade in alone 
     await mine.click()
     await expect(editor).toHaveText(words)
     if (!before) await expect.poll(() => page.locator('.note-panels').evaluate(root => root.getAnimations({ subtree: true }).filter(a => a instanceof CSSAnimation && a.animationName.startsWith('note-panel-')).length)).toBe(0)
-    expect((await page.evaluate(id => window.yogurt.notes.get(id), id)).mine).toBe(words)
+    expect((await page.evaluate(id => window.noetaker.notes.get(id), id)).mine).toBe(words)
     await page.getByTestId('chat-open').click()
     await page.getByTestId('chat-input').fill('Keep this question while switching tabs')
     await transcript.click()

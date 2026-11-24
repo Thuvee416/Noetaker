@@ -7,8 +7,8 @@ import type { CompanionStatus } from '../src/shared/companion'
 
 vi.mock('react', async original => ({ ...await original<typeof import('react')>(), useState: vi.fn() }))
 const NOW = Date.UTC(2026, 10, 20, 12)
-// the section shows only while the iPhone companion is turned on (YOGURT_PHONE=1)
-beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(NOW); vi.stubGlobal('window', { yogurt: { phone: true } }) })
+// the section shows only while the iPhone companion is turned on (NOETAKER_PHONE=1)
+beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(NOW); vi.stubGlobal('window', { noetaker: { phone: true } }) })
 afterEach(() => { vi.useRealTimers(); vi.restoreAllMocks(); vi.unstubAllGlobals(); setLanguage('en') })
 
 const idle: CompanionStatus = { paired: null, pairing: null, pairingClosed: null, error: null, connected: false, syncing: false }
@@ -34,7 +34,7 @@ it('not paired: explains it and offers Pair a phone, with the Wi-Fi note', async
 it('pairing: the six digits large in two groups, what to do with them, a countdown and Cancel', async () => {
   const html = await render({ ...idle, pairing: { code: '482913', expiresAt: NOW + 102_000, attemptsLeft: 5 } })
   expect(html).toMatch(/data-testid="phone-code"[^>]*>.*482.*913/)
-  expect(html).toContain('Open Yogurt on your iPhone and type this code')
+  expect(html).toContain('Open Noe Taker on your iPhone and type this code')
   expect(html).toContain('Code works for 1:42')
   expect(html).toContain('data-testid="phone-cancel"')
   expect(html).toContain(WIFI)
@@ -45,19 +45,19 @@ it('closed pairing and failures say why, and offer to start again', async () => 
   for (const [s, text] of [
     [{ ...idle, pairingClosed: 'tooMany' }, 'Too many wrong codes. Start pairing again.'],
     [{ ...idle, pairingClosed: 'expired' }, 'The code ran out. Start pairing again.'],
-    [{ ...idle, error: 'listen' }, "Yogurt couldn't start pairing. Try again."],
+    [{ ...idle, error: 'listen' }, "Noe Taker couldn't start pairing. Try again."],
   ] as const) {
     const html = await render(s as CompanionStatus)
     expect(html).toContain(text)
     expect(html).toContain('data-testid="phone-pair"')
   }
   // a start that failed without a reason from the companion
-  expect(await render(idle, true)).toContain("Yogurt couldn't start pairing. Try again.")
+  expect(await render(idle, true)).toContain("Noe Taker couldn't start pairing. Try again.")
 })
 
 it('a keychain that will not open says so and offers no pairing', async () => {
   const html = await render({ ...idle, error: 'keychain' })
-  expect(html).toContain("Yogurt couldn't reach this computer's secure storage, so it can't pair right now.")
+  expect(html).toContain("Noe Taker couldn't reach this computer's secure storage, so it can't pair right now.")
   expect(html).not.toContain('data-testid="phone-pair"')
 })
 
@@ -77,19 +77,19 @@ it('paired: the phone, Connected or when it was last seen, and Unpair with an in
   expect(await render({ ...idle, paired: { name: 'Test iPhone', lastSeen: NOW }, error: 'listen' })).toContain('data-testid="phone-notice"')
 })
 
-const MAC_NETWORK = "Your iPhone can't see this computer. Allow Local Network for Yogurt in System Settings → Privacy & Security."
-const PC_NETWORK = "Your iPhone can't see this computer. Allow Yogurt through your firewall on private networks."
+const MAC_NETWORK = "Your iPhone can't see this computer. Allow Local Network for Noe Taker in System Settings → Privacy & Security."
+const PC_NETWORK = "Your iPhone can't see this computer. Allow Noe Taker through your firewall on private networks."
 
 it('an advert the network refused says how to let the iPhone see this computer, while pairing and once paired', async () => {
-  vi.stubGlobal('window', { yogurt: { phone: true, platform: 'darwin' } })
+  vi.stubGlobal('window', { noetaker: { phone: true, platform: 'darwin' } })
   try {
     const pairing = await render({ ...idle, error: 'network', pairing: { code: '482913', expiresAt: NOW + 102_000, attemptsLeft: 5 } })
     expect(pairing).toContain(MAC_NETWORK)
     expect(pairing).toContain('data-testid="phone-code"')
     expect(await render({ ...idle, error: 'network', paired: { name: 'Test iPhone', lastSeen: NOW } })).toContain(MAC_NETWORK)
-    vi.stubGlobal('window', { yogurt: { phone: true, platform: 'win32' } })
+    vi.stubGlobal('window', { noetaker: { phone: true, platform: 'win32' } })
     expect(await render({ ...idle, error: 'network', paired: { name: 'Test iPhone', lastSeen: NOW } })).toContain(PC_NETWORK)
-  } finally { vi.stubGlobal('window', { yogurt: { phone: true } }) }
+  } finally { vi.stubGlobal('window', { noetaker: { phone: true } }) }
 })
 
 it('shows nothing when the companion is not running', async () => {
@@ -99,7 +99,7 @@ it('shows nothing when the companion is not running', async () => {
 it('translates the Phone section in every interface language', () => {
   for (const { id } of LOCALES) {
     setLanguage(id)
-    for (const key of ['Phone', 'Pair a phone', 'Open Yogurt on your iPhone and type this code', WIFI, 'Unpair your iPhone? It keeps its copy until you pair again.', MAC_NETWORK, PC_NETWORK]) {
+    for (const key of ['Phone', 'Pair a phone', 'Open Noe Taker on your iPhone and type this code', WIFI, 'Unpair your iPhone? It keeps its copy until you pair again.', MAC_NETWORK, PC_NETWORK]) {
       expect(t(key).trim()).not.toBe('')
       if (id !== 'en') expect(t(key)).not.toBe(key)
     }

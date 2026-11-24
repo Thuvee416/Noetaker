@@ -27,8 +27,8 @@ export function Workspace({ route, meeting, folders, go, back, forward, search, 
   const [recording, setRecording] = useState<WidgetView | null>(null)
   useEffect(() => {
     let active = true, updated = false
-    const off = window.yogurt.widget.onState((view) => { updated = true; setRecording(view) })
-    void window.yogurt.widget.state().then((view) => { if (active && !updated) setRecording(view) })
+    const off = window.noetaker.widget.onState((view) => { updated = true; setRecording(view) })
+    void window.noetaker.widget.state().then((view) => { if (active && !updated) setRecording(view) })
     return () => { active = false; off() }
   }, [])
   const peek = useSidebarPeek(collapsed, route)
@@ -46,9 +46,9 @@ export function Workspace({ route, meeting, folders, go, back, forward, search, 
       const target = askDestination(route)
       if (target.kind === 'focus') document.getElementById('library-question')?.focus({ preventScroll: true })
       else if (target.kind === 'panel') document.getElementById('meeting-ask')?.click()
-      else void window.yogurt.conversations.current(target.chips).then(id => go(`/chat/${id}`)).catch(error => {
+      else void window.noetaker.conversations.current(target.chips).then(id => go(`/chat/${id}`)).catch(error => {
         console.error('Opening Ask failed', error)
-        toasts.add({ title: t("Yogurt couldn't make that change. Try again.") })
+        toasts.add({ title: t("Noe Taker couldn't make that change. Try again.") })
       })
     }
     const key = (e: KeyboardEvent) => {
@@ -56,8 +56,8 @@ export function Workspace({ route, meeting, folders, go, back, forward, search, 
       e.preventDefault()
       if (!e.repeat && !e.isComposing) ask()
     }
-    const fromMenu = () => { void window.yogurt.nav.takeAsk().then(pending => { if (pending) ask() }) }
-    const off = window.yogurt.nav.onAsk(fromMenu)
+    const fromMenu = () => { void window.noetaker.nav.takeAsk().then(pending => { if (pending) ask() }) }
+    const off = window.noetaker.nav.onAsk(fromMenu)
     fromMenu()
     window.addEventListener('keydown', key)
     return () => { off(); window.removeEventListener('keydown', key) }

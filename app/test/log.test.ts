@@ -10,7 +10,7 @@ it('a log line has the time, the level and the error with its stack', () => {
 })
 
 it('the log file never grows past its cap', () => {
-  const file = join(mkdtempSync(join(tmpdir(), 'yogurt-log-')), 'main.log')
+  const file = join(mkdtempSync(join(tmpdir(), 'noetaker-log-')), 'main.log')
   writeFileSync(file, 'x'.repeat(900))
   writeLog(file, 'y'.repeat(200) + '\n', 1000)
   expect(statSync(file).size).toBeLessThanOrEqual(1000)
@@ -19,7 +19,7 @@ it('the log file never grows past its cap', () => {
 
 // #156: the morning's reason for leaving the graphics card was gone from main.log by the afternoon
 it('past its cap the whole file is kept as main.old.log, and only the one before that goes', () => {
-  const file = join(mkdtempSync(join(tmpdir(), 'yogurt-log-')), 'main.log')
+  const file = join(mkdtempSync(join(tmpdir(), 'noetaker-log-')), 'main.log')
   expect(oldLogFile(file)).toBe(file.replace(/main\.log$/, 'main.old.log'))
   writeFileSync(file, 'morning\n' + 'x'.repeat(990))
   writeLog(file, 'afternoon\n', 1000)

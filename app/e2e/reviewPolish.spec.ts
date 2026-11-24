@@ -5,11 +5,11 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 async function launch(permissions = false, env: Record<string, string> = {}) {
-  const dir = mkdtempSync(join(tmpdir(), 'yogurt-polish-'))
+  const dir = mkdtempSync(join(tmpdir(), 'noetaker-polish-'))
   writeFileSync(join(dir, 'settings.json'), JSON.stringify({ welcomed: true, introSeen: true }))
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: dir,
-    ...(permissions ? { YOGURT_FAKE_PERMISSIONS: 'unknown' } : {}),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: dir,
+    ...(permissions ? { NOETAKER_FAKE_PERMISSIONS: 'unknown' } : {}),
     ...env,
   } })
   const page = await app.firstWindow()
@@ -67,7 +67,7 @@ test('setup lives in the sidebar, opens an accessible checklist, and keeps permi
 })
 
 test('denying both recording inputs keeps the microphone first, then fixes call audio without claiming either is recording', async () => {
-  const { app, page } = await launch(true, { YOGURT_FAKE_ANSWER: 'deny' })
+  const { app, page } = await launch(true, { NOETAKER_FAKE_ANSWER: 'deny' })
   try {
     await page.getByTestId('new-note').or(page.getByTestId('past-empty').getByRole('button')).first().click()
     await expect(page.getByTestId('rec-hint')).toContainText("can't hear your microphone or the call")
@@ -95,7 +95,7 @@ test('Ask shows progress through the first-token gap, then an attached copy acti
     await fake(app, 'go', `/note/${id}`)
     await page.getByTestId('chat-open').click()
     await expect(page.getByTestId('chat-suggestion').first()).toBeEnabled()
-    const view = await page.evaluate(async id => window.yogurt.conversations.get(await window.yogurt.conversations.current([{ kind: 'meeting', id }])), id)
+    const view = await page.evaluate(async id => window.noetaker.conversations.get(await window.noetaker.conversations.current([{ kind: 'meeting', id }])), id)
     const send = (answer: string, status: string) => app.evaluate(({ BrowserWindow }, v) => {
       for (const w of BrowserWindow.getAllWindows()) w.webContents.send('conversations:changed', v)
     }, { ...view, turns: [{ id: 99, question: 'What was decided?', answer, status, sources: [], createdAt: Date.now() }], waitsForMeeting: false, waitsForModel: false })

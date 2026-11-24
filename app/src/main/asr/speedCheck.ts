@@ -98,10 +98,10 @@ export function speedStore(file: string): Pick<SpeedDeps, 'load' | 'save'> & { f
 }
 
 /**
- * Fake mode: YOGURT_FAKE_RTF gives every model that time ("2"), or some of them ("whisper-small-q5_1=0.9,whisper-tiny-q5_1=0.2",
+ * Fake mode: NOETAKER_FAKE_RTF gives every model that time ("2"), or some of them ("whisper-small-q5_1=0.9,whisper-tiny-q5_1=0.2",
  * the rest 0.1); "slow" never finishes in time.
  */
-export function fakeMeasure(env = process.env.YOGURT_FAKE_RTF ?? ''): SpeedDeps['measure'] {
+export function fakeMeasure(env = process.env.NOETAKER_FAKE_RTF ?? ''): SpeedDeps['measure'] {
   return async (path) => {
     const parse = (v: string) => (v === 'slow' ? null : Number(v))
     if (env && !env.includes('=')) return { rtf: parse(env) }

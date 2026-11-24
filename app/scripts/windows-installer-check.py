@@ -1,5 +1,5 @@
 # CI (Windows): click through the real installer like a person would, then update over it silently like the app does.
-#   python scripts/windows-installer-check.py dist/Yogurt-windows-x64.exe <screenshots folder>
+#   python scripts/windows-installer-check.py dist/noetaker-windows-x64.exe <screenshots folder>
 # 1. custom install folder and models folder, chosen on the pages; 2. a silent update over it (no pages, nothing moved);
 # 3. the installed app (fake mode, nothing downloaded) looks for its models in the chosen folder;
 # 4. a fresh install with the defaults; 5. models already there: the models page is skipped.
@@ -12,10 +12,10 @@ from pywinauto import Desktop
 INSTALLER = Path(sys.argv[1]).resolve()
 SHOTS = Path(sys.argv[2]).resolve()
 SHOTS.mkdir(parents=True, exist_ok=True)
-APP_DIR = Path(r'C:\YogurtTest\app')
-MODELS = Path(r'C:\YogurtModels')
-PROFILE = Path(os.environ['APPDATA']) / 'Yogurt'
-DEFAULT_APP_DIR = Path(os.environ['LOCALAPPDATA']) / 'Programs' / 'Yogurt'
+APP_DIR = Path(r'C:\Noe TakerTest\app')
+MODELS = Path(r'C:\Noe TakerModels')
+PROFILE = Path(os.environ['APPDATA']) / 'Noe Taker'
+DEFAULT_APP_DIR = Path(os.environ['LOCALAPPDATA']) / 'Programs' / 'Noe Taker'
 UNINSTALL = r'Software\Microsoft\Windows\CurrentVersion\Uninstall'
 
 results: list[tuple[str, bool]] = []
@@ -45,7 +45,7 @@ def screenshot(name: str, win=None) -> None:
 
 
 def setup_windows() -> list:
-    return [w for w in Desktop(backend='win32').windows(class_name='#32770', visible_only=True) if 'Yogurt' in w.window_text()]
+    return [w for w in Desktop(backend='win32').windows(class_name='#32770', visible_only=True) if 'Noe Taker' in w.window_text()]
 
 
 def page_text(win) -> str:
@@ -96,7 +96,7 @@ def uninstall_entries(root) -> list[dict]:
                 name = winreg.QueryValueEx(sub, 'DisplayName')[0]
             except OSError:
                 continue
-            if str(name).startswith('Yogurt'):
+            if str(name).startswith('Noe Taker'):
                 # electron-builder leaves InstallLocation out: the uninstaller's path says where it is
                 try: un = winreg.QueryValueEx(sub, 'UninstallString')[0]
                 except OSError: un = ''
@@ -124,8 +124,8 @@ def run_app_and_read_models_dir() -> str | None:
     """The installed app in fake mode (nothing downloaded): its log says where it looks for the models."""
     log = PROFILE / 'logs' / 'main.log'
     before = log.read_text(encoding='utf-8', errors='replace') if log.exists() else ''
-    exe = next(p for p in (APP_DIR / 'Yogurt.exe', DEFAULT_APP_DIR / 'Yogurt.exe') if p.exists())
-    env = {**os.environ, 'YOGURT_FAKE': '1'}
+    exe = next(p for p in (APP_DIR / 'noetaker.exe', DEFAULT_APP_DIR / 'noetaker.exe') if p.exists())
+    env = {**os.environ, 'NOETAKER_FAKE': '1'}
     proc = subprocess.Popen([str(exe)], env=env)
     try:
         def found():
@@ -136,7 +136,7 @@ def run_app_and_read_models_dir() -> str | None:
     finally:
         time.sleep(3)
         screenshot('app-running')
-        subprocess.run(['taskkill', '/IM', 'Yogurt.exe', '/F', '/T'], capture_output=True)
+        subprocess.run(['taskkill', '/IM', 'noetaker.exe', '/F', '/T'], capture_output=True)
         proc.wait(30)
         time.sleep(2)
 
@@ -171,7 +171,7 @@ def click_through(label: str, app_dir: Path | None, models_dir: Path | None, exp
         click_next(win)
     else:
         check(f'{label}: no models page when models are already downloaded', 'AI models' not in text, text[:200])
-    # installing, then the last page: Yogurt is not started from it here (the checks start it themselves)
+    # installing, then the last page: Noe Taker is not started from it here (the checks start it themselves)
     wait('the installer to finish', lambda: 'Finish' in page_text(win) or 'Completing' in page_text(win), 600)
     screenshot(f'{label}-finish', win)
     for c in win.descendants(class_name='Button'):
@@ -201,8 +201,8 @@ def main() -> int:
 
     # 1. custom folders, clicked through
     click_through('custom', APP_DIR, MODELS)
-    check('custom: the app is in the chosen install folder', (APP_DIR / 'Yogurt.exe').exists(), APP_DIR)
-    check('custom: nothing in the default install folder', not (DEFAULT_APP_DIR / 'Yogurt.exe').exists())
+    check('custom: the app is in the chosen install folder', (APP_DIR / 'noetaker.exe').exists(), APP_DIR)
+    check('custom: nothing in the default install folder', not (DEFAULT_APP_DIR / 'noetaker.exe').exists())
     check('custom: models-dir.txt holds the chosen models folder', read_models_txt() == str(MODELS), read_models_txt())
     check('custom: the models folder was made', MODELS.is_dir())
     hkcu, hklm = uninstall_entries(winreg.HKEY_CURRENT_USER), uninstall_entries(winreg.HKEY_LOCAL_MACHINE)
@@ -212,7 +212,7 @@ def main() -> int:
 
     # 2. a silent update over it, the way the app installs one (--updated /S)
     saved = (PROFILE / 'models-dir.txt').read_bytes()
-    (APP_DIR / 'Yogurt.exe').unlink()
+    (APP_DIR / 'noetaker.exe').unlink()
     seen: list[str] = []
     proc = subprocess.Popen([str(INSTALLER), '--updated', '/S'])
     while proc.poll() is None:
@@ -221,8 +221,8 @@ def main() -> int:
     check('update: exits cleanly', proc.returncode == 0, proc.returncode)
     check('update: shows no pages', not seen, sorted(set(seen)))
     check('update: models-dir.txt is unchanged', (PROFILE / 'models-dir.txt').read_bytes() == saved)
-    check('update: the app lands in the chosen install folder again', wait('Yogurt.exe back', lambda: (APP_DIR / 'Yogurt.exe').exists(), 60))
-    check('update: still nothing in the default install folder', not (DEFAULT_APP_DIR / 'Yogurt.exe').exists())
+    check('update: the app lands in the chosen install folder again', wait('noetaker.exe back', lambda: (APP_DIR / 'noetaker.exe').exists(), 60))
+    check('update: still nothing in the default install folder', not (DEFAULT_APP_DIR / 'noetaker.exe').exists())
 
     # 3. the installed app looks for its models in the chosen folder
     found = run_app_and_read_models_dir()
@@ -232,7 +232,7 @@ def main() -> int:
     uninstall(APP_DIR)
     shutil.rmtree(PROFILE, ignore_errors=True)
     click_through('defaults', None, None)
-    check('defaults: the app is in the default install folder', (DEFAULT_APP_DIR / 'Yogurt.exe').exists(), DEFAULT_APP_DIR)
+    check('defaults: the app is in the default install folder', (DEFAULT_APP_DIR / 'noetaker.exe').exists(), DEFAULT_APP_DIR)
     check('defaults: no models-dir.txt (the profile folder is used)', read_models_txt() is None, read_models_txt())
     found = run_app_and_read_models_dir()
     check('defaults app: looks for its models in the profile', found and Path(found) == PROFILE / 'models', found)

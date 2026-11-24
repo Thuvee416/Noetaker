@@ -8,10 +8,10 @@ import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-const stage = process.env.YOGURT_INTERFACE_STAGE
+const stage = process.env.NOETAKER_INTERFACE_STAGE
 const after = stage === 'after'
-const output = process.env.YOGURT_INTERFACE_IMAGES
-const noon = Date.parse((process.env.YOGURT_INTERFACE_DAY ?? '2026-11-19') + 'T12:00:00Z')
+const output = process.env.NOETAKER_INTERFACE_IMAGES
+const noon = Date.parse((process.env.NOETAKER_INTERFACE_DAY ?? '2026-11-19') + 'T12:00:00Z')
 type Theme = 'light' | 'dark'
 type Session = { app: ElectronApplication; page: Page; profile: string; theme: Theme }
 type Options = { env?: Record<string, string>; settings?: Record<string, unknown>; offlineFeed?: boolean }
@@ -96,7 +96,7 @@ async function capture(app: ElectronApplication, page: Page, id: string, theme: 
 
 function scene(id: string, name: string, drive: (session: Session) => Promise<void | (() => Promise<void>)>, options: Options = {}) {
   for (const theme of ['light', 'dark'] as const) test(`${id} ${name} in ${theme}`, async () => {
-    const profile = mkdtempSync(join(tmpdir(), 'yogurt-interface-'))
+    const profile = mkdtempSync(join(tmpdir(), 'noetaker-interface-'))
     const settings: Record<string, unknown> = { theme, myName: 'Meeting host', ...options.settings }
     const server = options.offlineFeed ? createServer((_req, res) => { res.writeHead(503); res.end() }) : null
     let app: ElectronApplication | undefined
@@ -110,7 +110,7 @@ function scene(id: string, name: string, drive: (session: Session) => Promise<vo
       }
       writeFileSync(join(profile, 'settings.json'), JSON.stringify(settings))
       app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-        ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: profile, YOGURT_SYSTEM_LANGUAGES: 'en-US', ...options.env,
+        ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: profile, NOETAKER_SYSTEM_LANGUAGES: 'en-US', ...options.env,
       } })
       const page = await app.firstWindow()
       // Keep the normal main-window frame, including when testing the app's Zoom In behavior.
@@ -139,7 +139,7 @@ function scene(id: string, name: string, drive: (session: Session) => Promise<vo
 
 async function seed({ page, profile }: Session) {
   await expect(page.getByTestId('home')).toBeVisible()
-  const db = new DatabaseSync(join(profile, 'yogurt.db'), { timeout: 5000 })
+  const db = new DatabaseSync(join(profile, 'noetaker.db'), { timeout: 5000 })
   try {
     const insert = db.prepare("INSERT INTO meetings (id,title,started_at,ended_at,attendees,state) VALUES (?,?,?,?,?,'done')")
     const notes = db.prepare('INSERT INTO notes (meeting_id,enhanced) VALUES (?,?)')
@@ -299,7 +299,7 @@ scene('01', 'AI access after a rejected save', async ({ app, page, profile, them
   await toggle.click()
   await rejected
   await expect(toggle).toHaveAttribute('aria-checked', after ? 'true' : 'false')
-  expect((await page.evaluate(() => window.yogurt.mcp.status())).enabled).toBe(true)
+  expect((await page.evaluate(() => window.noetaker.mcp.status())).enabled).toBe(true)
   const warning = page.getByTestId('ai-apps-retry-error')
   if (after) {
     await actionToast(warning, "Couldn't save your changes")
@@ -326,7 +326,7 @@ for (const [id, control, channel, toast] of [
     const warning = s.page.getByTestId(toast)
     if (after) await actionToast(warning, "Couldn't save your changes")
     await captureSwitch(s.app, s.page, id, s.theme, toggle, on, warning)
-  }, id === '01-updates' ? { env: { YOGURT_FAKE_UPDATE: '9.9.9' } } : {})
+  }, id === '01-updates' ? { env: { NOETAKER_FAKE_UPDATE: '9.9.9' } } : {})
 }
 
 scene('02', 'an unavailable linked calendar', async ({ app, page }) => {
@@ -368,10 +368,10 @@ for (const [id, view] of [['04', 'meetings'], ['04-folder', 'folder'], ['04-tras
     await expect(page.getByTestId('home')).toBeVisible()
     if (view === 'folder') {
       await page.evaluate(async () => {
-        const folder = await window.yogurt.folders.create('Planning')
-        window.yogurt.nav.go('/folder/' + folder!.id)
+        const folder = await window.noetaker.folders.create('Planning')
+        window.noetaker.nav.go('/folder/' + folder!.id)
       })
-    } else if (view === 'trash') await page.evaluate(() => window.yogurt.nav.go('/trash'))
+    } else if (view === 'trash') await page.evaluate(() => window.noetaker.nav.go('/trash'))
     const emptyId = { meetings: 'past-empty', folder: 'folder-empty', trash: 'trash-none' }[view]
     const empty = page.getByTestId(emptyId)
     // Measure the healthy empty surface in the same window before rejecting the next read.
@@ -401,11 +401,11 @@ for (const [id, channel, testId, before] of [
     await expect(s.page.getByTestId('home')).toBeVisible()
     if (id === '04-note' || id === '04-transcript') await note(s)
     if (id === '04-folders') {
-      await s.page.evaluate(async () => window.yogurt.nav.go('/folder/' + (await window.yogurt.folders.create('Planning'))!.id))
+      await s.page.evaluate(async () => window.noetaker.nav.go('/folder/' + (await window.noetaker.folders.create('Planning'))!.id))
       await expect(s.page.getByTestId('folder-empty')).toBeVisible()
     }
     const saved = id === '04-transcript' ? await s.page.evaluate(async () =>
-      window.yogurt.transcript.get((await window.yogurt.nav.current()).slice('/note/'.length), { hidden: true })) : undefined
+      window.noetaker.transcript.get((await window.noetaker.nav.current()).slice('/note/'.length), { hidden: true })) : undefined
     const rejected = await rejectRead(s.app, channel)
     if (id === '04-transcript') await s.page.getByTestId('note-transcript-toggle').click()
     else await s.page.reload()
@@ -426,7 +426,7 @@ for (const [id, channel, testId, before] of [
 
 scene('note-stop', 'recording stopped with unsaved end time', async s => {
   await note(s)
-  const current = await s.page.evaluate(async () => window.yogurt.meetings.get((await window.yogurt.nav.current()).slice('/note/'.length)))
+  const current = await s.page.evaluate(async () => window.noetaker.meetings.get((await window.noetaker.nav.current()).slice('/note/'.length)))
   if (!current) throw new Error('Missing meeting')
   await s.app.evaluate(({ ipcMain }, meeting) => {
     ipcMain.removeHandler('meetings:get')
@@ -443,14 +443,14 @@ for (const [id, view] of [['04-retained','meetings'], ['04-folder-retained','fol
   scene(id, 'a failed refresh of ' + view + ' with saved meetings', async s => {
     await seed(s)
     if (view !== 'meetings') await s.page.evaluate(async view => {
-      const meeting = (await window.yogurt.meetings.cards({ limit: 1 }))[0].id
+      const meeting = (await window.noetaker.meetings.cards({ limit: 1 }))[0].id
       if (view === 'trash') {
-        await window.yogurt.meetings.trash(meeting)
-        window.yogurt.nav.go('/trash')
+        await window.noetaker.meetings.trash(meeting)
+        window.noetaker.nav.go('/trash')
       } else {
-        const folder = (await window.yogurt.folders.create('Planning'))!
-        await window.yogurt.folders.add(folder.id, meeting)
-        window.yogurt.nav.go('/folder/' + folder.id)
+        const folder = (await window.noetaker.folders.create('Planning'))!
+        await window.noetaker.folders.add(folder.id, meeting)
+        window.noetaker.nav.go('/folder/' + folder.id)
       }
     }, view)
     const rows = s.page.getByTestId(view === 'trash' ? 'trash-row' : 'past-note')
@@ -467,7 +467,7 @@ for (const [id, view] of [['04-retained','meetings'], ['04-folder-retained','fol
 for (const [id, transcript] of [['04-note-retained',false], ['04-transcript-retained',true]] as const) {
   scene(id, 'failed refresh with the note open', async s => {
     await note(s)
-    const meeting = (await s.page.evaluate(() => window.yogurt.nav.current())).slice('/note/'.length)
+    const meeting = (await s.page.evaluate(() => window.noetaker.nav.current())).slice('/note/'.length)
     const content = transcript ? s.page.getByText('We will review the budget on Friday.', { exact: true }) : s.page.getByTestId('note-enhanced-editor')
     if (transcript) await s.page.getByTestId('note-transcript-toggle').click()
     await expect(content).toBeVisible()
@@ -572,7 +572,7 @@ scene('08', 'first-run permission choices at high zoom', async s => {
     await expect(s.page.getByTestId('step-allow')).toBeInViewport()
     await expect(s.page.getByTestId('step-later')).toBeInViewport()
   }
-}, { env: { YOGURT_FAKE_PERMISSIONS: 'unknown', YOGURT_FAKE_CALENDAR: 'notDetermined' } })
+}, { env: { NOETAKER_FAKE_PERMISSIONS: 'unknown', NOETAKER_FAKE_CALENDAR: 'notDetermined' } })
 
 scene('09', 'German warning before replacing edits', async s => {
   await note(s)
@@ -598,7 +598,7 @@ scene('10', 'opening Ask when its conversation cannot load', async ({ app, page 
     ipcMain.removeHandler('conversations:current')
     ipcMain.handle('conversations:current', () => { throw new Error('Conversation read failed') })
   })
-  await page.evaluate(() => window.yogurt.nav.go('/chat'))
+  await page.evaluate(() => window.noetaker.nav.go('/chat'))
   if (after) {
     await aligned(page.getByTestId('chat-page-load-error'))
     await secondaryButton(page.getByTestId('chat-page-load-error'))
@@ -616,15 +616,15 @@ scene('10-panel', 'opening Ask inside a note when its lookup fails', async s => 
     await secondaryButton(s.page.getByTestId('chat-open-error'))
     await expect(s.page.getByTestId('chat-thread-loading')).toHaveCount(0)
   }
-  else await expect(s.page.getByTestId('chat-panel').getByText("Yogurt couldn't answer that.")).toBeVisible()
+  else await expect(s.page.getByTestId('chat-panel').getByText("Noe Taker couldn't answer that.")).toBeVisible()
 })
 
 scene('10-history', 'opening Recent when conversation history fails', async s => {
   await expect(s.page.getByTestId('home')).toBeVisible()
   // Opening Ask home fetches the current conversation and broadcasts a successful list refresh.
-  const id = await s.page.evaluate(() => window.yogurt.conversations.current([]))
+  const id = await s.page.evaluate(() => window.noetaker.conversations.current([]))
   const read = await rejectRead(s.app, 'conversations:list')
-  await s.page.evaluate(id => window.yogurt.nav.go('/chat/' + id), id)
+  await s.page.evaluate(id => window.noetaker.nav.go('/chat/' + id), id)
   await read()
   await s.page.getByTestId('chat-recent').click()
   await expect(s.page.getByTestId('chat-recent-list')).toBeVisible()
@@ -633,9 +633,9 @@ scene('10-history', 'opening Recent when conversation history fails', async s =>
 
 scene('10-thread', 'reading an existing conversation', async s => {
   await expect(s.page.getByTestId('home')).toBeVisible()
-  const id = await s.page.evaluate(() => window.yogurt.conversations.current([]))
+  const id = await s.page.evaluate(() => window.noetaker.conversations.current([]))
   const read = await rejectRead(s.app, 'conversations:get')
-  await s.page.evaluate(id => window.yogurt.nav.go('/chat/' + id), id)
+  await s.page.evaluate(id => window.noetaker.nav.go('/chat/' + id), id)
   await read()
   await expect(s.page.getByTestId('chat-page')).toBeVisible()
   if (after) {
@@ -646,8 +646,8 @@ scene('10-thread', 'reading an existing conversation', async s => {
 
 scene('calendar-event', 'a linked event is no longer available', async s => {
   await note(s)
-  const id = (await s.page.evaluate(() => window.yogurt.nav.current())).slice('/note/'.length)
-  const db = new DatabaseSync(join(s.profile, 'yogurt.db'), { timeout: 5000 })
+  const id = (await s.page.evaluate(() => window.noetaker.nav.current())).slice('/note/'.length)
+  const db = new DatabaseSync(join(s.profile, 'noetaker.db'), { timeout: 5000 })
   try { db.prepare('UPDATE meetings SET event_id=? WHERE id=?').run('unavailable-event', id) }
   finally { db.close() }
   await s.page.reload()
@@ -660,13 +660,13 @@ scene('calendar-event', 'a linked event is no longer available', async s => {
 
 scene('10-answer', 'retrying a failed answer', async s => {
   await expect(s.page.getByTestId('home')).toBeVisible()
-  const chat = await s.page.evaluate(async () => window.yogurt.conversations.get(await window.yogurt.conversations.current([])))
+  const chat = await s.page.evaluate(async () => window.noetaker.conversations.get(await window.noetaker.conversations.current([])))
   if (!chat) throw new Error('Missing conversation fixture')
   await s.app.evaluate(({ ipcMain }, chat) => {
     ipcMain.removeHandler('conversations:get')
     ipcMain.handle('conversations:get', () => ({ ...chat, turns: [{ id: 1, question: 'What did we decide?', answer: '', status: 'failed', sources: [] }] }))
   }, chat)
-  await s.page.evaluate(id => window.yogurt.nav.go('/chat/' + id), chat.id)
+  await s.page.evaluate(id => window.noetaker.nav.go('/chat/' + id), chat.id)
   const turn = s.page.getByTestId('chat-page-turn')
   await expect(turn).toHaveAttribute('data-status', 'failed')
   if (after) await secondaryButton(turn)
@@ -676,7 +676,7 @@ scene('10-answer', 'retrying a failed answer', async s => {
 scene('12', 'Reduce Motion in Ask and the call prompt', async ({ app, page, theme }) => {
   await expect(page.getByTestId('home')).toBeVisible()
   await page.emulateMedia({ reducedMotion: 'reduce' })
-  await page.evaluate(() => window.yogurt.nav.go('/chat'))
+  await page.evaluate(() => window.noetaker.nav.go('/chat'))
   await page.getByTestId('chat-page-input').fill('What did we decide?')
   const send = page.getByTestId('chat-page-send')
   await send.hover()
@@ -706,11 +706,11 @@ scene('12', 'Reduce Motion in Ask and the call prompt', async ({ app, page, them
 
 scene('13', 'unreadable recording in its transcript', async s => {
   await seed(s)
-  const id = await s.page.evaluate(async () => (await window.yogurt.meetings.cards({ limit: 1 }))[0].id)
+  const id = await s.page.evaluate(async () => (await window.noetaker.meetings.cards({ limit: 1 }))[0].id)
   const dir = join(s.profile, 'meetings', id)
   mkdirSync(dir, { recursive: true })
   for (const track of ['me','them']) writeFileSync(join(dir, track + '.wav'), Buffer.alloc(4000, 7))
-  await s.page.evaluate(id => window.yogurt.nav.go('/note/' + id), id)
+  await s.page.evaluate(id => window.noetaker.nav.go('/note/' + id), id)
   await s.page.getByTestId('note-transcript-toggle').click()
   await expect(s.page.getByTestId('player-note')).toHaveText("This recording can't be played.")
   if (after) {
@@ -727,16 +727,16 @@ scene('13', 'unreadable recording in its transcript', async s => {
 for (const mode of ['partial', 'absent'] as const) {
   scene('13-' + mode, 'playback with ' + mode + ' audio', async s => {
     await seed(s)
-    const id = await s.page.evaluate(async () => (await window.yogurt.meetings.cards({ limit: 1 }))[0].id)
+    const id = await s.page.evaluate(async () => (await window.noetaker.meetings.cards({ limit: 1 }))[0].id)
     if (mode === 'partial') {
       const dir = join(s.profile, 'meetings', id)
       mkdirSync(dir, { recursive: true })
       copyFileSync(join(import.meta.dirname, 'fixtures/meeting-me.wav'), join(dir, 'me.wav'))
       writeFileSync(join(dir, 'them.wav'), Buffer.alloc(4000, 7))
     }
-    const tracks = await s.page.evaluate(id => window.yogurt.audio.tracks(id), id)
+    const tracks = await s.page.evaluate(id => window.noetaker.audio.tracks(id), id)
     expect(tracks.length).toBe(mode === 'partial' ? 2 : 0)
-    await s.page.evaluate(id => window.yogurt.nav.go('/note/' + id), id)
+    await s.page.evaluate(id => window.noetaker.nav.go('/note/' + id), id)
     await s.page.getByTestId('note-transcript-toggle').click()
     await expect(s.page.getByTestId('transcript')).toHaveAttribute('data-loaded', 'true')
     if (mode === 'absent') await expect(s.page.getByTestId('player')).toHaveCount(0)
@@ -750,11 +750,11 @@ for (const mode of ['partial', 'absent'] as const) {
 
 scene('13-delete', 'when deleting the recording fails', async s => {
   await seed(s)
-  const id = await s.page.evaluate(async () => (await window.yogurt.meetings.cards({ limit: 1 }))[0].id)
+  const id = await s.page.evaluate(async () => (await window.noetaker.meetings.cards({ limit: 1 }))[0].id)
   const dir = join(s.profile, 'meetings', id)
   mkdirSync(dir, { recursive: true })
   copyFileSync(join(import.meta.dirname, 'fixtures/meeting-me.wav'), join(dir, 'me.wav'))
-  await s.page.evaluate(id => window.yogurt.nav.go('/note/' + id), id)
+  await s.page.evaluate(id => window.noetaker.nav.go('/note/' + id), id)
   await s.page.getByTestId('note-transcript-toggle').click()
   await s.page.getByTestId('recording-menu').click()
   await s.page.getByTestId('recording-delete').click()
@@ -836,8 +836,8 @@ for (const [id, rowId] of [
 ] as const) {
   scene(id, 'existing recovery action for ' + id, async s => {
     await note(s)
-    const noteId = (await s.page.evaluate(() => window.yogurt.nav.current())).slice('/note/'.length)
-    const db = new DatabaseSync(join(s.profile, 'yogurt.db'), { timeout: 5000 })
+    const noteId = (await s.page.evaluate(() => window.noetaker.nav.current())).slice('/note/'.length)
+    const db = new DatabaseSync(join(s.profile, 'noetaker.db'), { timeout: 5000 })
     try {
       if (id === 'upload-read') {
         db.prepare("UPDATE meetings SET source='audio-file', transcription_state='error', transcription_pending=0 WHERE id=?").run(noteId)
@@ -852,7 +852,7 @@ for (const [id, rowId] of [
         if (id === 'note-save') {
           await selectNoteVersion(s.page, 'mine')
           await s.page.getByTestId('note-mine').fill('Review the revised schedule.')
-        } else await s.page.evaluate(id => window.yogurt.notes.writeAgain(id), noteId)
+        } else await s.page.evaluate(id => window.noetaker.notes.writeAgain(id), noteId)
       }
       const row = s.page.getByTestId(rowId)
       const name = id === 'upload-read' ? 'Upload a file' : 'Try again'
@@ -869,12 +869,12 @@ for (const [id, rowId] of [
       await expect(s.page.getByTestId('note-save-status')).toHaveAttribute('data-state', 'saved')
       await expect(s.page.getByTestId('note-mine')).toHaveText('Review the revised schedule.')
     }
-  }, { env: { YOGURT_FAKE_LLM_MS: '2' } })
+  }, { env: { NOETAKER_FAKE_LLM_MS: '2' } })
 }
 
 scene('18', 'suggested folder hit areas', async s => {
   await seed(s)
-  await s.page.evaluate(() => window.yogurt.folders.create('Customer'))
+  await s.page.evaluate(() => window.noetaker.folders.create('Customer'))
   const chip = s.page.getByTestId('past-note').filter({ hasText: 'Customer review' }).getByTestId('folder-suggestion')
   await expect(chip).toBeVisible()
   for (const action of ['cancel', 'confirm']) {
@@ -888,11 +888,11 @@ scene('18', 'suggested folder hit areas', async s => {
 scene('19', 'section and subsection in a note', async s => {
   await seed(s)
   const id = await s.page.evaluate(async () => {
-    const id = (await window.yogurt.meetings.cards({ limit: 1 }))[0].id
-    await window.yogurt.notes.setEnhanced(id, '## Project plan\nThe team will review the drawings on Friday.\n### Next steps\nThe team will confirm the dates.', 1)
+    const id = (await window.noetaker.meetings.cards({ limit: 1 }))[0].id
+    await window.noetaker.notes.setEnhanced(id, '## Project plan\nThe team will review the drawings on Friday.\n### Next steps\nThe team will confirm the dates.', 1)
     return id
   })
-  await s.page.evaluate(id => window.yogurt.nav.go('/note/' + id), id)
+  await s.page.evaluate(id => window.noetaker.nav.go('/note/' + id), id)
   const editor = s.page.getByTestId('note-enhanced-editor')
   await expect(editor.locator('h2')).toHaveCSS('font-size', after ? '16px' : '15px')
   await expect(editor.locator('h3')).toHaveCSS('font-size', after ? '15px' : '15.5px')

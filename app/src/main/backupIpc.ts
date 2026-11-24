@@ -10,11 +10,11 @@ const today = (d = new Date()) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-$
 
 /**
  * Backup in Settings. The window only says export or import; the file always comes from the Mac's own save or open
- * panel (tests name it with YOGURT_BACKUP_PATH), and Show in Finder shows only the file just written.
+ * panel (tests name it with NOETAKER_BACKUP_PATH), and Show in Finder shows only the file just written.
  */
 export function hookBackup(d: { db: DatabaseSync; meetingsDir: string; window: () => BrowserWindow | undefined; recording: () => boolean; getRecordingPill(): boolean; setRecordingPill(on: boolean): void; changed: () => void; beforeExport: () => string | undefined }) {
   let last: string | undefined
-  const fakePath = () => (isFake() ? process.env.YOGURT_BACKUP_PATH : undefined)
+  const fakePath = () => (isFake() ? process.env.NOETAKER_BACKUP_PATH : undefined)
   ipcMain.handle('backup:status', () => ({ recording: d.recording() }))
   ipcMain.handle('backup:export', async () => {
     try {
@@ -22,7 +22,7 @@ export function hookBackup(d: { db: DatabaseSync; meetingsDir: string; window: (
       if (unsaved) return { ok: false, error: 'unsaved', meetingId: unsaved }
       let path = fakePath()
       if (!path) {
-        const opts = { title: t('Export backup'), defaultPath: join(app.getPath('documents'), `Yogurt backup ${today()}.zip`), filters: [{ name: 'Zip', extensions: ['zip'] }] }
+        const opts = { title: t('Export backup'), defaultPath: join(app.getPath('documents'), `Noe Taker backup ${today()}.zip`), filters: [{ name: 'Zip', extensions: ['zip'] }] }
         const win = d.window()
         const r = win ? await dialog.showSaveDialog(win, opts) : await dialog.showSaveDialog(opts)
         if (r.canceled || !r.filePath) return { ok: false, error: 'cancelled' }

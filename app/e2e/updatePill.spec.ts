@@ -3,10 +3,10 @@ import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-async function launch(root = mkdtempSync(join(tmpdir(), 'yogurt-update-')), version = '9.9.9') {
+async function launch(root = mkdtempSync(join(tmpdir(), 'noetaker-update-')), version = '9.9.9') {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: root,
-    YOGURT_FAKE_UPDATE: version,
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: root,
+    NOETAKER_FAKE_UPDATE: version,
   } })
   const page = await app.firstWindow()
   await expect(page.getByTestId('home')).toBeVisible()
@@ -19,7 +19,7 @@ test('The corner button opens the approved menu by keyboard and offers a ready u
   const { app, page } = await launch()
   try {
     const button = page.getByRole('button', { name: 'Help and settings' })
-    const menu = page.getByRole('menu', { name: 'Yogurt menu' })
+    const menu = page.getByRole('menu', { name: 'Noe Taker menu' })
     const badge = page.getByTestId('corner-notice-dot')
     await expect(button).toHaveAccessibleDescription('Update ready')
     await expect(badge).toBeVisible()
@@ -37,7 +37,7 @@ test('The corner button opens the approved menu by keyboard and offers a ready u
       await button.focus()
       await page.keyboard.press(key)
       await expect(menu.getByRole('menuitem')).toHaveText([
-        /What's new/, 'Star us on GitHub', 'Join Discord', /Keyboard shortcuts/,
+        /What's new/, 'Star us on GitHub', 'Discussions', /Keyboard shortcuts/,
         'Send feedback', /Settings/, /Trash/, 'Restart to update · 9.9.9',
       ])
       await expect(badge).toBeVisible()
@@ -107,7 +107,7 @@ test('a row moving beneath the pointer stays neutral and the keyboard can highli
 test('unseen updates are badged during recording and ending recording only enables Restart', async () => {
   const { app, page } = await launch()
   try {
-    await page.evaluate(() => window.yogurt.meetings.start(null))
+    await page.evaluate(() => window.noetaker.meetings.start(null))
     await expect(page.getByTestId('note-state')).toHaveAttribute('data-state', 'recording')
     const button = page.getByTestId('corner-menu-button')
     await expect(button.getByTestId('corner-notice-dot')).toBeVisible()
@@ -136,7 +136,7 @@ for (const failure of ['false', 'reject'] as const) test(`keeps the update ready
       ipcMain.handle('updates:restart', () => { if (failure === 'reject') throw new Error('unavailable'); return false })
     }, failure)
     await page.getByTestId('corner-menu-button').click(); await page.getByTestId('update-restart').click()
-    await expect(page.getByTestId('corner-menu').getByRole('alert')).toHaveText("Yogurt couldn't restart. Try again.")
+    await expect(page.getByTestId('corner-menu').getByRole('alert')).toHaveText("Noe Taker couldn't restart. Try again.")
     await expect(page.getByTestId('corner-notice-dot')).toBeVisible()
     await expect(page.getByTestId('update-restart')).toBeEnabled()
     expect(await restarts(app)).toBe(0)
@@ -172,15 +172,15 @@ test('keeps update and AI download controls visible available in their respectiv
     await page.keyboard.press('Escape')
     await app.evaluate(() => (globalThis as any).__fake__.manyMeetings({ n: 1, clean: true }))
     await page.evaluate(async () => {
-      const [card] = await window.yogurt.meetings.cards({ limit: 1 })
-      await window.yogurt.meetings.trash(card.id)
-      await window.yogurt.meetings.start(null)
-      await window.yogurt.nav.go('/trash')
+      const [card] = await window.noetaker.meetings.cards({ limit: 1 })
+      await window.noetaker.meetings.trash(card.id)
+      await window.noetaker.meetings.start(null)
+      await window.noetaker.nav.go('/trash')
     })
     await expect(page.getByTestId('trash-empty')).toBeVisible()
     await expect(page.getByTestId('recording-return')).toBeVisible()
     for (const locale of ['en', 'de', 'ar']) {
-      await page.evaluate(locale => window.yogurt.settings.setLanguage(locale), locale)
+      await page.evaluate(locale => window.noetaker.settings.setLanguage(locale), locale)
       await expect(page.locator('html')).toHaveAttribute('lang', locale)
       for (const collapsed of [false, true]) {
         const toggle = page.locator('.workspace-sidebar-toggle')
@@ -215,12 +215,12 @@ test('Later survives a renderer reload but Settings still offers Restart', async
     await expect(page.getByTestId('corner-menu')).toBeVisible()
     await page.getByTestId('update-restart').press('Escape')
     await expect(page.getByTestId('corner-menu')).toHaveCount(0)
-    await page.evaluate(() => window.yogurt.updates.later())
+    await page.evaluate(() => window.noetaker.updates.later())
     await expect(page.getByTestId('corner-notice-dot')).toBeVisible()
     expect(await restarts(app)).toBe(0)
     await page.reload(); await expect(page.getByTestId('home')).toBeVisible()
     await expect(page.getByTestId('corner-notice-dot')).toBeVisible()
-    await page.evaluate(() => window.yogurt.nav.go('/settings'))
+    await page.evaluate(() => window.noetaker.nav.go('/settings'))
     await expect(page.getByTestId('updates-restart')).toBeVisible()
     await expect(page.getByTestId('updates-state')).toHaveAttribute('data-state', 'ready')
     await expect(page.getByTestId('updates-toggle')).toHaveAttribute('aria-checked', 'true')
@@ -253,9 +253,9 @@ test('opening What\'s new marks that release read independently of the persisten
     await expect(page.getByTestId('corner-menu')).toBeVisible()
     await page.getByTestId('update-restart').press('Escape')
     await expect(page.getByTestId('corner-menu')).toHaveCount(0)
-    await page.evaluate(() => window.yogurt.updates.later())
+    await page.evaluate(() => window.noetaker.updates.later())
     await expect(page.getByTestId('corner-notice-dot')).toBeVisible()
-    const state = await page.evaluate(() => window.yogurt.updates.status())
+    const state = await page.evaluate(() => window.noetaker.updates.status())
     expect(state).toMatchObject({ next: '999.0.0', dismissed: true })
     await button.click()
     await page.getByTestId('update-restart').click()
@@ -280,7 +280,7 @@ test('opening What\'s new marks that release read independently of the persisten
 })
 
 test('restarting the app offers the same ready version again', async () => {
-  const root = mkdtempSync(join(tmpdir(), 'yogurt-update-session-'))
+  const root = mkdtempSync(join(tmpdir(), 'noetaker-update-session-'))
   const first = await launch(root)
   try {
     await expect(first.page.getByTestId('corner-notice-dot')).toBeVisible()
@@ -290,7 +290,7 @@ test('restarting the app offers the same ready version again', async () => {
   } finally { await first.app.close() }
   const second = await launch(root)
   try {
-    expect((await second.page.evaluate(() => window.yogurt.updates.status())).state).toBe('ready')
+    expect((await second.page.evaluate(() => window.noetaker.updates.status())).state).toBe('ready')
     await expect(second.page.getByTestId('corner-notice-dot')).toBeVisible()
     await second.page.getByTestId('corner-menu-button').click()
     await expect(second.page.getByTestId('update-restart')).toHaveText('Restart to update · 9.9.9')

@@ -4,13 +4,13 @@ import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-const before = process.env.YOGURT_UI_REVIEW === 'before'
+const before = process.env.NOETAKER_UI_REVIEW === 'before'
 for (const theme of ['light', 'dark'] as const) for (const width of [1200, 720]) {
   test(`quiet empty states below their headers at ${width} in ${theme}`, async ({}, info) => {
-    const userData = mkdtempSync(join(tmpdir(), 'yogurt-empty-'))
+    const userData = mkdtempSync(join(tmpdir(), 'noetaker-empty-'))
     writeFileSync(join(userData, 'settings.json'), JSON.stringify({ theme }))
     const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-      ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData,
+      ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData,
     } })
     try {
       const page = await app.firstWindow()
@@ -59,9 +59,9 @@ for (const theme of ['light', 'dark'] as const) for (const width of [1200, 720])
       await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' })
       // Prepared calendar notes have no transcript or recording timer to race the capture.
       await page.evaluate(async () => {
-        const day = Date.now(), event = (await window.yogurt.calendar.day(day)).events[0]
+        const day = Date.now(), event = (await window.noetaker.calendar.day(day)).events[0]
         if (!event) throw new Error('Missing fake calendar event')
-        const result = await window.yogurt.meetings.prepare(event.id, day)
+        const result = await window.noetaker.meetings.prepare(event.id, day)
         if (!('id' in result)) throw new Error(result.error)
       })
       await page.getByTestId('note-transcript-toggle').click()

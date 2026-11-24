@@ -3,7 +3,7 @@ import { FRAME, type Canceller } from './aec'
 
 /**
  * WebRTC's echo canceller (AEC3, the one Chrome, PulseAudio and PipeWire use), built for WebAssembly
- * (@ennuicastr/webrtcaec3.js, BSD; pinned in package.json, checked by the lockfile's hash). It runs inside Yogurt the
+ * (@ennuicastr/webrtcaec3.js, BSD; pinned in package.json, checked by the lockfile's hash). It runs inside Noe Taker the
  * same way on Mac, Windows and Linux, on the 16 kHz audio going to whisper: about 2% of one core.
  * Loaded once (a few tens of ms); until then, or if it can't load, the mic goes to whisper as it is.
  */

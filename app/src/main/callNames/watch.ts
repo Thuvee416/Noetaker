@@ -3,7 +3,7 @@ import os from 'node:os'
 import { createInterface } from 'node:readline'
 import { WATCH_EVERY_MS, type Watch, type WatchLine } from './index'
 
-/** Watches running now, so quitting can end them (they end by themselves when Yogurt's end of stdin closes) */
+/** Watches running now, so quitting can end them (they end by themselves when Noe Taker's end of stdin closes) */
 const running = new Set<ChildProcess>()
 export const killAllWatches = () => { for (const c of running) c.kill('SIGKILL'); running.clear() }
 
@@ -11,7 +11,7 @@ export const killAllWatches = () => { for (const c of running) c.kill('SIGKILL')
 export const watchArgs = (ids: string[], pids: number[] = []): string[] =>
   ['call-watch', String(WATCH_EVERY_MS), ...pids.flatMap((pid) => ['--pid', String(pid)]), ...ids]
 
-/** yogurt-mac call-watch (or yogurt-system on Linux): one JSON line per reading of the call app, until its stdin is closed */
+/** noetaker-mac call-watch (or noetaker-system on Linux): one JSON line per reading of the call app, until its stdin is closed */
 export const helperWatch = (binary: () => string): Watch => (ids, onLine, pids) => {
   const child = spawn(binary(), watchArgs(ids, pids), { stdio: ['pipe', 'pipe', 'pipe'] })
   running.add(child)

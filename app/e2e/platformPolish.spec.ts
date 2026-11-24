@@ -3,16 +3,16 @@ import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-// @everywhere: Windows and Linux polish (shortcuts with Ctrl, the tray menu). The Mac CI tries them through YOGURT_FAKE_PLATFORM.
+// @everywhere: Windows and Linux polish (shortcuts with Ctrl, the tray menu). The Mac CI tries them through NOETAKER_FAKE_PLATFORM.
 const main = join(import.meta.dirname, '../out/main/index.js')
 const launch = (env: Record<string, string> = {}) =>
-  electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-e2e-')), ...env } })
+  electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-e2e-')), ...env } })
 const fake = (app: ElectronApplication, name: string, ...args: unknown[]) =>
   app.evaluate((_e, [n, a]) => (globalThis as unknown as { __fake__: Record<string, (...x: unknown[]) => unknown> }).__fake__[n as string](...(a as unknown[])), [name, args] as const)
 
 for (const platform of ['win32', 'linux']) {
   test(`@everywhere on ${platform}: shortcuts use Ctrl, in the labels and on the keyboard`, async () => {
-    const app = await launch({ YOGURT_FAKE_PLATFORM: platform })
+    const app = await launch({ NOETAKER_FAKE_PLATFORM: platform })
     try {
       const page = await app.firstWindow()
       await expect(page.getByTestId('home')).toBeVisible({ timeout: 15_000 })
@@ -38,12 +38,12 @@ for (const platform of ['win32', 'linux']) {
     } finally { await app.close() }
   })
 
-  test(`@everywhere on ${platform}: the tray menu opens Yogurt, records and quits, with Ctrl for Settings, and pauses no music`, async () => {
-    const app = await launch({ YOGURT_FAKE_PLATFORM: platform })
+  test(`@everywhere on ${platform}: the tray menu opens Noe Taker, records and quits, with Ctrl for Settings, and pauses no music`, async () => {
+    const app = await launch({ NOETAKER_FAKE_PLATFORM: platform })
     try {
       const page = await app.firstWindow()
       await expect(page.getByTestId('home')).toBeVisible({ timeout: 15_000 })
-      expect(await fake(app, 'tray')).toEqual(expect.arrayContaining(['New recording', 'Open Yogurt', 'Settings…', 'Quit Yogurt']))
+      expect(await fake(app, 'tray')).toEqual(expect.arrayContaining(['New recording', 'Open Noe Taker', 'Settings…', 'Quit Noe Taker']))
       expect(await fake(app, 'trayAccelerators')).toEqual({ 'Settings…': 'Ctrl+,' })
       await fake(app, 'trayClick', 'new')
       await expect.poll(() => fake(app, 'tray')).toContain('Stop recording')

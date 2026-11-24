@@ -5,7 +5,7 @@ import { join } from 'node:path'
 
 test('a pending seek keeps its requested position when an older media clock update arrives', async () => {
   const app = await electron.launch({ args: [join(import.meta.dirname, '../out/main/index.js')], env: {
-    ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: mkdtempSync(join(tmpdir(), 'yogurt-player-clock-')),
+    ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: mkdtempSync(join(tmpdir(), 'noetaker-player-clock-')),
   } })
   try {
     const page = await app.firstWindow()

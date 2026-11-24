@@ -64,7 +64,7 @@ export function LevelBars({ height, className = '', testId, paused = false, stil
       clearTimeout(deadline)
       deadline = setTimeout(sync, Math.max(0, Math.ceil(anchor.at + SPEECH_PACKET_TIMEOUT - clock())))
     }
-    const off = window.yogurt.widget.onLevel(({ speech }) => {
+    const off = window.noetaker.widget.onLevel(({ speech }) => {
       const previous = recent.current
       recent.current = speech
       if (paused || document.visibilityState !== 'visible') return

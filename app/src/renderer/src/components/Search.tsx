@@ -51,15 +51,15 @@ export function Search({ folder, folders, onOpen, onNavigate, onSettingsChange, 
   const request = { q, scope, peopleKey, people: selectedPeople, date: parsed.date, suggestions: personQuery.suggestions.slice(0, 5) }
   const [results, setResults] = useState<typeof request & { list: SearchResult[] }>()
   const [active, setActive] = useState<number | null>(null)
-  const [prefs, setPrefs] = useState<Awaited<ReturnType<typeof window.yogurt.settings.get>>>()
+  const [prefs, setPrefs] = useState<Awaited<ReturnType<typeof window.noetaker.settings.get>>>()
   const [error, setError] = useState(false)
   const [running, setRunning] = useState(false)
-  useEffect(() => { void window.yogurt.settings.get().then(setPrefs) }, [])
+  useEffect(() => { void window.noetaker.settings.get().then(setPrefs) }, [])
   useEffect(() => {
     let live = true
-    const load = () => void window.yogurt.search.people().then(p => { if (live) setPeople(p) }).catch(() => { if (live) setError(true) })
+    const load = () => void window.noetaker.search.people().then(p => { if (live) setPeople(p) }).catch(() => { if (live) setError(true) })
     load()
-    const off = window.yogurt.meetings.onChange(load)
+    const off = window.noetaker.meetings.onChange(load)
     return () => { live = false; off() }
   }, [])
   const [queryFailed, setQueryFailed] = useState(false)
@@ -80,7 +80,7 @@ export function Search({ folder, folders, onOpen, onNavigate, onSettingsChange, 
     const run = (sequence: number) => {
       // Enter or Retry can supersede this read before the debounce fires.
       if (sequence !== seq.current) return
-      void window.yogurt.search.query(q, scope?.id, selectedPeople).then(list => {
+      void window.noetaker.search.query(q, scope?.id, selectedPeople).then(list => {
         if (sequence !== seq.current) return
         setQueryFailed(false); setResults({ ...request, list }); setActive(null)
       }, () => { if (sequence === seq.current) setQueryFailed(true) })
@@ -113,17 +113,17 @@ export function Search({ folder, folders, onOpen, onNavigate, onSettingsChange, 
     { id: 'shortcuts', label: t('Keyboard shortcuts'), group: t('Go to'), Icon: Keyboard, run: onShortcuts, shortcut: keys('⌘/') },
     { id: 'sidebar', label: sidebarCollapsed ? t('Show Sidebar') : t('Hide Sidebar'), group: t('Go to'), synonyms: [t('View')], Icon: PanelLeft, run: onToggleSidebar, shortcut: keys('⌃⌘S') },
     ...(folders ?? []).map((f) => ({ id: `folder-${f.id}`, label: f.name, group: t('Go to'), synonyms: [t('Folders')], Icon: FolderIcon, folder: f, run: () => navigate(`/folder/${f.id}`) })),
-    { id: 'theme-light', synonyms: ['theme', 'appearance', 'mode', 'light'], label: t('Light theme'), group: t('Appearance'), Icon: Sun, run: () => settingsAction(() => window.yogurt.settings.setTheme('light')) },
-    { id: 'theme-dark', synonyms: ['theme', 'appearance', 'mode', 'dark'], label: t('Dark theme'), group: t('Appearance'), Icon: Moon, run: () => settingsAction(() => window.yogurt.settings.setTheme('dark')) },
-    { id: 'theme-system', synonyms: ['theme', 'appearance', 'mode', 'system'], label: osWords({ mac: t('Match my Mac'), windows: t('Match Windows'), linux: t('Match my system') }), group: t('Appearance'), Icon: Monitor, run: () => settingsAction(() => window.yogurt.settings.setTheme('system')) },
+    { id: 'theme-light', synonyms: ['theme', 'appearance', 'mode', 'light'], label: t('Light theme'), group: t('Appearance'), Icon: Sun, run: () => settingsAction(() => window.noetaker.settings.setTheme('light')) },
+    { id: 'theme-dark', synonyms: ['theme', 'appearance', 'mode', 'dark'], label: t('Dark theme'), group: t('Appearance'), Icon: Moon, run: () => settingsAction(() => window.noetaker.settings.setTheme('dark')) },
+    { id: 'theme-system', synonyms: ['theme', 'appearance', 'mode', 'system'], label: osWords({ mac: t('Match my Mac'), windows: t('Match Windows'), linux: t('Match my system') }), group: t('Appearance'), Icon: Monitor, run: () => settingsAction(() => window.noetaker.settings.setTheme('system')) },
     ...(prefs ? [
-      { id: 'login', label: prefs.openAtLogin ? t('Turn off open at login') : t('Open Yogurt at login'), group: t('Settings'), Icon: LogIn, run: () => settingsAction(() => window.yogurt.settings.setOpenAtLogin(!prefs.openAtLogin)) },
-      { id: 'auto-stop', label: prefs.stopWhenCallEnds ? t('Keep recording when the call ends') : t('Stop recording when the call ends'), group: t('Settings'), Icon: AudioLines, run: () => settingsAction(() => window.yogurt.settings.setStopWhenCallEnds(!prefs.stopWhenCallEnds)) },
+      { id: 'login', label: prefs.openAtLogin ? t('Turn off open at login') : t('Open Noe Taker at login'), group: t('Settings'), Icon: LogIn, run: () => settingsAction(() => window.noetaker.settings.setOpenAtLogin(!prefs.openAtLogin)) },
+      { id: 'auto-stop', label: prefs.stopWhenCallEnds ? t('Keep recording when the call ends') : t('Stop recording when the call ends'), group: t('Settings'), Icon: AudioLines, run: () => settingsAction(() => window.noetaker.settings.setStopWhenCallEnds(!prefs.stopWhenCallEnds)) },
     ] : []),
   ].filter((c) => !c.id.startsWith('theme-') || !!prefs)
   const defaultSelection = useRef<string | undefined>(undefined)
   const rank = (search: typeof request, list: SearchResult[]) => {
-    const date = window.yogurt.capabilities.calendar && searchDateCommand(search.date, search.q)
+    const date = window.noetaker.capabilities.calendar && searchDateCommand(search.date, search.q)
     const commands = date ? [{ ...date, Icon: CalendarDays, run: () => onNavigate('', date.at) }, ...allCommands] : allCommands
     return searchPalette(commands, list, search.q, search.q, search.suggestions, defaultSelection.current, !!search.date || search.people.length > 0)
   }
@@ -166,10 +166,10 @@ export function Search({ folder, folders, onOpen, onNavigate, onSettingsChange, 
     if (running || !query.trim()) return
     setRunning(true); setError(false)
     try {
-      const id = await window.yogurt.conversations.current(scope ? [{ kind: 'folder', id: scope.id }] : [], true)
-      const sent = await window.yogurt.conversations.ask(id, query)
+      const id = await window.noetaker.conversations.current(scope ? [{ kind: 'folder', id: scope.id }] : [], true)
+      const sent = await window.noetaker.conversations.ask(id, query)
       if (!sent) throw new Error('Question was not saved')
-      if (typeof sent !== 'string') await window.yogurt.conversations.draft(id, query)
+      if (typeof sent !== 'string') await window.noetaker.conversations.draft(id, query)
       onNavigate(`/chat/${typeof sent === 'string' ? sent : id}`); setOpen(false)
     } catch { setError(true); setRunning(false) }
   }
@@ -202,7 +202,7 @@ export function Search({ folder, folders, onOpen, onNavigate, onSettingsChange, 
     // Enter before the debounce finishes must act on the new query.
     if (isSearchQuestion(q)) { void ask(q.trim()); return }
     const mine = ++seq.current
-    void window.yogurt.search.query(q, scope?.id, selectedPeople).then(list => {
+    void window.noetaker.search.query(q, scope?.id, selectedPeople).then(list => {
       if (mine !== seq.current) return
       setQueryFailed(false); setResults({ ...request, list }); setActive(null)
       const next = rank(request, list)
@@ -267,7 +267,7 @@ export function Search({ folder, folders, onOpen, onNavigate, onSettingsChange, 
               <li id="search-ask" data-testid="search-ask" role="option" aria-selected={activeIndex === i} aria-disabled={running}
                 onMouseMove={(e) => hover(e, i)} onClick={() => void ask(row.query)} className="search-row command-row search-ask">
                 <MessageCircle size={16} aria-hidden="true" />
-                <span className="shrink-0">{t('Ask Yogurt')}</span><span aria-hidden="true">·</span><span className="command-label">{row.query}</span>
+                <span className="shrink-0">{t('Ask Noe Taker')}</span><span aria-hidden="true">·</span><span className="command-label">{row.query}</span>
                 {returnKey}
               </li>
             </Fragment>
@@ -327,7 +327,7 @@ export function Search({ folder, folders, onOpen, onNavigate, onSettingsChange, 
         {selected?.kind === 'meeting' && selected.meeting.preview && <div id="search-preview" data-testid="search-preview" className="search-preview">
           <p>{selected.meeting.preview}</p>
         </div>}
-        {error && <p role="alert" className="px-5 pb-3 text-xs text-danger">{t("Yogurt couldn't make that change. Try again.")}</p>}
+        {error && <p role="alert" className="px-5 pb-3 text-xs text-danger">{t("Noe Taker couldn't make that change. Try again.")}</p>}
         <div className="search-footer">
           {enterAsks
             ? <button className="search-ask-hint" data-testid="search-primary-hint" onClick={() => void ask(q.trim())}><kbd>↵</kbd>{t('Ask')}</button>

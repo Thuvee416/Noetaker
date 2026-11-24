@@ -48,7 +48,7 @@ export function peopleChipSummary(people: Person[], me: string) {
 /** One settings read per surface, shared by all of its compact attendee labels. */
 export function useMyName() {
   const [me, setMe] = useState('')
-  useEffect(() => { void window.yogurt.settings.get().then((s) => setMe(s.myName || s.macName)) }, [])
+  useEffect(() => { void window.noetaker.settings.get().then((s) => setMe(s.myName || s.macName)) }, [])
   return me
 }
 
@@ -86,13 +86,13 @@ function Card({ m, me, motionProps, chip, onClose }: { m: Meeting; me: string; m
     let sequence = 0
     const load = () => {
       const current = ++sequence
-      void window.yogurt.search.people().then(p => { if (current === sequence) setKnown(p) }, () => {})
-      void window.yogurt.calendar.day(m.eventStartedAt ?? m.startedAt).then(day => {
+      void window.noetaker.search.people().then(p => { if (current === sequence) setKnown(p) }, () => {})
+      void window.noetaker.calendar.day(m.eventStartedAt ?? m.startedAt).then(day => {
         if (current === sequence) setEvents(day.status === 'granted' ? day.events : [])
       }, () => { if (current === sequence) setEvents([]) })
     }
     load()
-    const offPeople = window.yogurt.meetings.onChange(load), offCalendar = window.yogurt.calendar.onChange(load)
+    const offPeople = window.noetaker.meetings.onChange(load), offCalendar = window.noetaker.calendar.onChange(load)
     return () => { sequence++; offPeople(); offCalendar() }
   }, [m.id, m.startedAt, m.eventStartedAt, m.eventId])
   const input = useRef<HTMLInputElement>(null)
@@ -101,8 +101,8 @@ function Card({ m, me, motionProps, chip, onClose }: { m: Meeting; me: string; m
   useEffect(() => { card.current?.querySelector('[role="option"][aria-selected="true"]')?.scrollIntoView({ block: 'nearest' }) }, [active])
   useEffect(() => { if (adding) input.current?.focus({ preventScroll: true }) }, [adding])
   const save = async (people: Person[]) => {
-    try { await window.yogurt.meetings.setAttendees(m.id, people); return true }
-    catch { toasts.add({ title: t("Yogurt couldn't make that change. Try again.") }); return false }
+    try { await window.noetaker.meetings.setAttendees(m.id, people); return true }
+    catch { toasts.add({ title: t("Noe Taker couldn't make that change. Try again.") }); return false }
   }
   const add = async (p = parsePerson(text)) => {
     if (!p) return
@@ -125,7 +125,7 @@ function Card({ m, me, motionProps, chip, onClose }: { m: Meeting; me: string; m
         {groups.map(group => <section key={group.domain} aria-label={group.label || t('Other people')}>
           <h4 className="company-heading" title={group.domain || undefined}>{group.label || t('Other people')}</h4>
           <ul>{group.people.map(({ p, i, mine }) => <Row key={p.email || i} name={personName(p.name)} email={p.email} mine={mine}
-            onRename={mine ? undefined : name => window.yogurt.meetings.renameAttendee(m.id, i, name, p)}
+            onRename={mine ? undefined : name => window.noetaker.meetings.renameAttendee(m.id, i, name, p)}
             onRemove={mine ? undefined : () => void save(m.attendees.filter((_, j) => j !== i))} />)}</ul>
         </section>)}
       </div>
@@ -175,7 +175,7 @@ function Row({ name, email, mine, onRemove, onRename }: { name: string; email?: 
     try {
       if (!await onRename?.(draft)) throw new Error('Attendee no longer available')
       stopEditing()
-    } catch { toasts.add({ title: t("Yogurt couldn't make that change. Try again.") }) }
+    } catch { toasts.add({ title: t("Noe Taker couldn't make that change. Try again.") }) }
     finally { setSaving(false) }
   }
   return (

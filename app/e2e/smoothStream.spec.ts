@@ -8,8 +8,8 @@ const zoom = { bundleId: 'us.zoom.xos', name: 'zoom.us' }
 const FULL_ANSWER = 'The launch plan, in short:\nThe site goes live on Tuesday.\nThe email goes out on Wednesday morning.'
 
 async function launch(env: Record<string, string> = {}) {
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
-  const app = await electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData, ...env } })
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
+  const app = await electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData, ...env } })
   const page = await app.firstWindow()
   await expect(page.getByTestId('home')).toBeVisible()
   return { app, page }
@@ -40,7 +40,7 @@ const caret = (box: ReturnType<Page['getByTestId']>) => box.evaluate((el) => {
 })
 
 test('a fast model is never held back: the answer is all there the moment it is done', async () => {
-  const { app, page } = await launch({ YOGURT_FAKE_LLM_MS: '2' })
+  const { app, page } = await launch({ NOETAKER_FAKE_LLM_MS: '2' })
   try {
     const id = await fake<string>(app, 'bigMeeting', 30)
     await fake(app, 'go', `/note/${id}`)
@@ -55,7 +55,7 @@ test('a fast model is never held back: the answer is all there the moment it is 
 })
 
 test('while an answer is written it only ever shows the start of the answer; a stop shows everything received at once', async () => {
-  const { app, page } = await launch({ YOGURT_FAKE_LLM_MS: '120' })
+  const { app, page } = await launch({ NOETAKER_FAKE_LLM_MS: '120' })
   try {
     const id = await fake<string>(app, 'bigMeeting', 30)
     await fake(app, 'go', `/note/${id}`)
@@ -83,7 +83,7 @@ test('while an answer is written it only ever shows the start of the answer; a s
 })
 
 test('with reduced motion an answer shows each piece as it arrives, with no dot pulsing', async () => {
-  const { app, page } = await launch({ YOGURT_FAKE_LLM_MS: '120' })
+  const { app, page } = await launch({ NOETAKER_FAKE_LLM_MS: '120' })
   try {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     const id = await fake<string>(app, 'bigMeeting', 30)
@@ -106,14 +106,14 @@ test('with reduced motion an answer shows each piece as it arrives, with no dot 
 })
 
 test('the summary unrolls while it is written and ends with exactly the saved notes', async () => {
-  const { app, page } = await launch({ YOGURT_FAKE_LLM_MS: '30' })
+  const { app, page } = await launch({ NOETAKER_FAKE_LLM_MS: '30' })
   try {
     await fake(app, 'signals', { micApps: [], events: [] })
     await fake(app, 'signals', { micApps: [zoom], events: [] })
     await (await windowOf(app, '#prompt')).getByTestId('prompt-take-notes').click()
     await expect(page.getByTestId('note-state')).toHaveAttribute('data-state', 'recording')
-    const id = (await page.evaluate(() => window.yogurt.nav.current())).slice('/note/'.length)
-    await expect.poll(async () => (await page.evaluate((id) => window.yogurt.transcript.get(id), id)).length, { timeout: 30_000 }).toBeGreaterThanOrEqual(2)
+    const id = (await page.evaluate(() => window.noetaker.nav.current())).slice('/note/'.length)
+    await expect.poll(async () => (await page.evaluate((id) => window.noetaker.transcript.get(id), id)).length, { timeout: 30_000 }).toBeGreaterThanOrEqual(2)
     await page.getByTestId('note-stop').click()
     const enhanced = page.getByTestId('note-enhanced')
     await expect(enhanced).toHaveAttribute('data-status', 'writing', { timeout: 30_000 })

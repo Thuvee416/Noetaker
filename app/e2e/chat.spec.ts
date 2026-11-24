@@ -8,8 +8,8 @@ const main = join(import.meta.dirname, '../out/main/index.js')
 const zoom = { bundleId: 'us.zoom.xos', name: 'zoom.us' }
 
 async function launch(env: Record<string, string> = {}) {
-  const userData = mkdtempSync(join(tmpdir(), 'yogurt-e2e-'))
-  const app = await electron.launch({ args: [main], env: { ...process.env, YOGURT_FAKE: '1', YOGURT_USER_DATA: userData, ...env } })
+  const userData = mkdtempSync(join(tmpdir(), 'noetaker-e2e-'))
+  const app = await electron.launch({ args: [main], env: { ...process.env, NOETAKER_FAKE: '1', NOETAKER_USER_DATA: userData, ...env } })
   const page = await app.firstWindow()
   await expect(page.getByTestId('home')).toBeVisible()
   return { app, page }
@@ -26,11 +26,11 @@ const windowOf = async (app: ElectronApplication, hash: string): Promise<Page> =
 }
 
 test('recording on a small Mac leaves Ask readable and explains when typing resumes', async () => {
-  const { app, page } = await launch({ YOGURT_FAKE_PLATFORM: 'darwin', YOGURT_FAKE_SMALL_MAC: '1' })
+  const { app, page } = await launch({ NOETAKER_FAKE_PLATFORM: 'darwin', NOETAKER_FAKE_SMALL_MAC: '1' })
   try {
     await page.getByTestId('new-note').click()
     await expect(page.getByTestId('note-state')).toHaveAttribute('data-state', 'recording')
-    const id = await page.evaluate(async () => (await window.yogurt.nav.current()).slice('/note/'.length))
+    const id = await page.evaluate(async () => (await window.noetaker.nav.current()).slice('/note/'.length))
     await page.keyboard.press('Meta+j')
     const noteInput = page.getByTestId('chat-input')
     await expect(noteInput).toBeFocused()
@@ -51,7 +51,7 @@ test('recording on a small Mac leaves Ask readable and explains when typing resu
     await expect(homeInput).not.toBeEditable()
     await homeInput.press('Enter')
     await expect(page.getByTestId('chat-page-turn')).toHaveCount(0)
-    await page.evaluate(id => window.yogurt.meetings.stop(id), id)
+    await page.evaluate(id => window.noetaker.meetings.stop(id), id)
     await expect(homeInput).toBeEditable()
     await expect(homeInput).toHaveValue('What did we decide?')
     await expect(page.getByTestId('chat-page-send')).toBeEnabled()
@@ -136,7 +136,7 @@ test('a narrow chat is modal, contains keyboard focus, and keeps its draft when 
 })
 
 test('asking about a finished meeting streams the answer in, word by word, and it is still there after a reload', async () => {
-  const { app, page } = await launch({ YOGURT_FAKE_LLM_MS: '80' })
+  const { app, page } = await launch({ NOETAKER_FAKE_LLM_MS: '80' })
   try {
     const id = await fake<string>(app, 'bigMeeting', 30)
     await fake(app, 'go', `/note/${id}`)
@@ -195,13 +195,13 @@ test('asking about a finished meeting streams the answer in, word by word, and i
     await expect(page.getByTestId('chat-turn')).toHaveCount(0)
     await expect(page.locator('[data-testid=chat-suggestion]:visible')).toHaveCount(3)
     await expect(page.getByTestId('chat-input')).toBeFocused()
-    expect((await page.evaluate((id) => window.yogurt.chat.get(id), id)).turns).toEqual([])
+    expect((await page.evaluate((id) => window.noetaker.chat.get(id), id)).turns).toEqual([])
   } finally { await app.close() }
 })
 
 test('opening Ask on a meeting reads it in ahead, and a question says what it is doing until the answer starts', async () => {
   // a first word well after the 4s step tick, so a slow machine still sees each step
-  const { app, page } = await launch({ YOGURT_FAKE_LLM_MS: '8000' })
+  const { app, page } = await launch({ NOETAKER_FAKE_LLM_MS: '8000' })
   try {
     const id = await fake<string>(app, 'bigMeeting', 12)
     await fake(app, 'go', `/note/${id}`)
@@ -228,7 +228,7 @@ test('opening Ask on a meeting reads it in ahead, and a question says what it is
 })
 
 test('during a recording it answers from the transcript so far, and a stop keeps what was written', async () => {
-  const { app, page } = await launch({ YOGURT_FAKE_LLM_MS: '250' })
+  const { app, page } = await launch({ NOETAKER_FAKE_LLM_MS: '250' })
   try {
     await fake(app, 'signals', { micApps: [], events: [] })
     await fake(app, 'signals', { micApps: [zoom], events: [] })
@@ -254,7 +254,7 @@ test('during a recording it answers from the transcript so far, and a stop keeps
 })
 
 test('the suggestions can be reached and picked with the keyboard', async () => {
-  const { app, page } = await launch({ YOGURT_FAKE_LLM_MS: '20' })
+  const { app, page } = await launch({ NOETAKER_FAKE_LLM_MS: '20' })
   try {
     const id = await fake<string>(app, 'bigMeeting', 10)
     await fake(app, 'go', `/note/${id}`)
@@ -277,7 +277,7 @@ test('the suggestions can be reached and picked with the keyboard', async () => 
 })
 
 test('the composer has no follow-up shortcut and keeps its input and send action in place while asking and stopping', async () => {
-  const { app, page } = await launch({ YOGURT_FAKE_LLM_MS: '250' })
+  const { app, page } = await launch({ NOETAKER_FAKE_LLM_MS: '250' })
   try {
     const id = await fake<string>(app, 'bigMeeting', 10)
     await fake(app, 'go', `/note/${id}`)
@@ -347,7 +347,7 @@ test('an unacknowledged question cannot be sent twice, and a rejected request ke
     await input.click()
     await expect(page.getByTestId('transcript-panel')).toBeVisible()
     await expect(input).toHaveValue('Who owns the release notes?')
-    const current = await page.evaluate(async id => window.yogurt.conversations.get(await window.yogurt.conversations.current([{ kind: 'meeting', id }])), id)
+    const current = await page.evaluate(async id => window.noetaker.conversations.get(await window.noetaker.conversations.current([{ kind: 'meeting', id }])), id)
     await app.evaluate(({ ipcMain, BrowserWindow }, current) => {
       ipcMain.removeHandler('conversations:ask')
       ipcMain.handle('conversations:ask', (_event, id: string, question: string) => {
@@ -452,7 +452,7 @@ for (const width of [1100, 720]) test(`Command-J toggles Ask from any focus at $
     await expect(page.getByTestId('home')).toBeVisible()
     await page.keyboard.press('Meta+j')
     await expect(page.getByTestId('chat-page-input')).toBeEditable()
-    await expect.poll(() => page.evaluate(() => window.yogurt.nav.current())).toMatch(/^\/chat\/.+/)
+    await expect.poll(() => page.evaluate(() => window.noetaker.nav.current())).toMatch(/^\/chat\/.+/)
 
     await revealSidebar(page)
     await page.getByTestId('nav-chat').click()
@@ -467,7 +467,7 @@ for (const width of [1100, 720]) test(`Command-J toggles Ask from any focus at $
       await page.keyboard.press('Meta+j')
       await expect(field).toHaveValue('Keep this draft')
       expect(await field.evaluate((el: HTMLTextAreaElement) => [el.selectionStart, el.selectionEnd])).toEqual([5, 9])
-      expect(await page.evaluate(() => window.yogurt.nav.current())).toBe('/chat')
+      expect(await page.evaluate(() => window.noetaker.nav.current())).toBe('/chat')
     }
   } finally { await app.close() }
 })
