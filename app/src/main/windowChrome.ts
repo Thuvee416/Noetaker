@@ -5,7 +5,7 @@ const TITLE_BAR_HEIGHT = 52
 
 /** Windows and Linux: the system's window buttons, drawn in the colours of the bar under them (styles.css --chrome and --ink) */
 export const titleBarOverlay = (dark: boolean) =>
-  ({ ...(dark ? { color: '#242425', symbolColor: '#E7E6EB' } : { color: '#F3F3F3', symbolColor: '#29292C' }), height: TITLE_BAR_HEIGHT })
+  ({ ...(dark ? { color: '#0A0A0A', symbolColor: '#F4F4F5' } : { color: '#0A0A0A', symbolColor: '#F4F4F5' }), height: TITLE_BAR_HEIGHT })
 
 /**
  * The main window's frame. A Mac: inset traffic lights over native glass, as always.
@@ -14,7 +14,7 @@ export const titleBarOverlay = (dark: boolean) =>
 export function windowChrome(os: string, dark: boolean): BrowserWindowConstructorOptions {
   if (os === 'darwin') {
     // Match the theme until first paint, then restore the native glass behind the chrome.
-    return { titleBarStyle: 'hiddenInset', trafficLightPosition: { x: 18, y: 20 }, backgroundColor: dark ? '#1B1B1D' : '#FFFFFF', vibrancy: 'under-window', visualEffectState: 'active' }
+    return { titleBarStyle: 'hiddenInset', trafficLightPosition: { x: 18, y: 20 }, backgroundColor: dark ? '#000000' : '#000000', vibrancy: 'under-window', visualEffectState: 'active' }
   }
   const overlay = titleBarOverlay(dark)
   return { titleBarStyle: 'hidden', titleBarOverlay: overlay, autoHideMenuBar: true, backgroundColor: overlay.color }

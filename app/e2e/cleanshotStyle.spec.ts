@@ -19,7 +19,7 @@ test('the primary action stays accented in both themes and compact confirmation 
       await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().find((w) => !w.webContents.getURL().includes('#'))!.setSize(720, 520))
       const primary = page.getByTestId('new-note')
       await expect(primary).toBeVisible()
-      expect(await primary.evaluate((el) => getComputedStyle(el).color)).toBe('rgb(255, 255, 255)')
+      expect(await primary.evaluate((el) => getComputedStyle(el).color)).toBe('rgb(5, 5, 5)')
       expect(await primary.evaluate((el) => getComputedStyle(el).backgroundColor)).not.toBe('rgba(0, 0, 0, 0)')
       await expect(page.getByTestId('past-note').first()).toBeVisible()
       // the one confirmation left: Delete forever, in the Trash

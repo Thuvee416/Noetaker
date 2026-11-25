@@ -284,14 +284,14 @@ test('Ask anchors context growth and retains picker results between searches', a
     for (const colorScheme of ['light', 'dark'] as const) {
       await page.emulateMedia({ colorScheme })
       const dark = colorScheme === 'dark'
-      const ink = dark ? 'rgb(231, 230, 235)' : 'rgb(41, 41, 44)'
-      const muted = dark ? 'rgb(167, 164, 173)' : 'rgb(96, 96, 102)'
+      const ink = 'rgb(244, 244, 245)'
+      const muted = 'rgb(161, 161, 170)'
       await input.hover()
-      await expect(group).toHaveCSS('background-color', dark ? 'rgb(59, 59, 62)' : 'rgb(228, 228, 231)')
+      await expect(group).toHaveCSS('background-color', 'rgb(26, 26, 26)')
       await expect(scope).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
       await expect(clear).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
       await expect(scope).toHaveCSS('color', ink)
-      await expect(scope.locator('[data-icon="FileText"]')).toHaveCSS('color', dark ? 'rgb(183, 128, 255)' : 'rgb(111, 0, 255)')
+      await expect(scope.locator('[data-icon="FileText"]')).toHaveCSS('color', 'rgb(122, 162, 255)')
       await expect(scope.locator('[data-icon="ChevronDown"]')).toHaveCSS('color', muted)
       await expect(clear).toHaveCSS('color', muted)
       await clear.hover()

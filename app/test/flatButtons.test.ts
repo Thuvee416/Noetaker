@@ -25,11 +25,11 @@ it('keeps a flat face on bordered controls, including selected, paused and proce
 
 it('uses one saturated fill and white ink for controls while standalone accents follow the theme', () => {
   const values = (token: string) => [...styles.matchAll(new RegExp('(?:^|[;{\\s])' + token + ':\\s*([^;]+);', 'g'))].map(match => match[1])
-  expect(values('--primary')).toEqual(['#6F00FF'])
-  expect(values('--primary-ink')).toEqual(['#FFFFFF'])
-  expect(values('--accent')).toEqual(['#6F00FF', '#B780FF'])
-  // The recording pill is dark in both themes, so its accent never follows the light theme's deep purple.
-  expect(values('--pill-accent')).toEqual(['#B780FF'])
+  expect(values('--primary')).toEqual(['#7AA2FF'])
+  expect(values('--primary-ink')).toEqual(['#050505'])
+  expect(values('--accent')).toEqual(['#7AA2FF', '#7AA2FF'])
+  // The recording pill is dark in both themes and uses the same brand accent.
+  expect(values('--pill-accent')).toEqual(['#7AA2FF'])
 })
 
 it('retains the recording primary gradient, pressed depth and divider', () => {

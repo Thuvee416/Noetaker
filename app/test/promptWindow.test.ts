@@ -37,7 +37,7 @@ beforeEach(async () => {
 afterEach(() => { prompts.hide(); vi.unstubAllEnvs() })
 it('gives both prompts the same compact frame and top-right placement', () => {
   prompts.offer({key:'call',app:'Zoom',title:'Design review'} as any)
-  expect(state.windows[0].options).toMatchObject({width:381,height:60,x:803,y:12,focusable:false,backgroundColor:'#FFFFFF'})
+  expect(state.windows[0].options).toMatchObject({width:381,height:60,x:803,y:12,focusable:false,backgroundColor:'#111111'})
   prompts.askStop({id:'meeting',title:'Design review'} as any)
   expect(state.windows[1].options).toMatchObject({width:381,height:60,x:803,y:12,focusable:true})
 })
@@ -58,9 +58,9 @@ it('uses the current app appearance and updates the native background without le
   state.dark = true
   prompts.offer({key:'call',app:'Zoom',title:''} as any)
   const win = state.windows[0]
-  expect(win.options.backgroundColor).toBe('#29292B')
+  expect(win.options.backgroundColor).toBe('#111111')
   state.dark = false; state.theme.forEach(fn=>fn())
-  expect(win.setBackgroundColor).toHaveBeenCalledWith('#FFFFFF')
+  expect(win.setBackgroundColor).toHaveBeenCalledWith('#111111')
   prompts.hide()
   expect(state.theme.size).toBe(0)
 })
