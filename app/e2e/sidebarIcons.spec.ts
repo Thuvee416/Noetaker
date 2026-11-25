@@ -53,10 +53,10 @@ for (const theme of ['light', 'dark'] as const) test(`sidebar icon scope and mot
     for (const id of ['nav-home', 'nav-chat']) await hover(id)
     const corner = page.getByTestId('corner-menu-button')
     const mark = corner.locator('svg path')
-    const muted = theme === 'dark' ? 'rgb(167, 164, 173)' : 'rgb(96, 96, 102)'
-    const ink = theme === 'dark' ? 'rgb(231, 230, 235)' : 'rgb(41, 41, 44)'
+    const muted = 'rgb(161, 161, 170)'
+    const ink = 'rgb(244, 244, 245)'
     await expect(mark).toHaveCSS('fill', muted)
-    await expect(corner.getByTestId('corner-notice-dot')).toHaveCSS('background-color', theme === 'dark' ? 'rgb(183, 128, 255)' : 'rgb(111, 0, 255)')
+    await expect(corner.getByTestId('corner-notice-dot')).toHaveCSS('background-color', 'rgb(122, 162, 255)')
     await corner.hover()
     await expect(mark).toHaveCSS('fill', ink)
     await expect(page.getByRole('tooltip')).toHaveText('Help and settings')

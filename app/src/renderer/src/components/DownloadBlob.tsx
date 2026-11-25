@@ -2,7 +2,7 @@ import { useEffect, useId, useLayoutEffect, useRef } from 'react';
 import { createMotion, setReal, shapeAt, stepMotion, SET_SECONDS } from '../../../shared/downloadBlob';
 import { MARK } from '../../../shared/logo';
 import { useReducedMotion } from '../motion';
-/** Dock icon art: only the purple mass is filtered; the white mark stays crisp. */
+/** Dock icon art: only the accent mass is filtered; the white mark stays crisp. */
 export function DownloadBlob({ fraction, paused = false, onShown }: {
     fraction: number;
     paused?: boolean;

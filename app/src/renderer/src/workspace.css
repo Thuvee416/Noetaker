@@ -1,8 +1,8 @@
 /* Only chrome reveals the Mac's blurred backdrop; text and reading surfaces stay opaque. */
-.workspace { position:relative;isolation:isolate;display:flex;height:100%;overflow:hidden;--sidebar-inset:10px;--nav-inset:11px;--workspace-footer-height:52px;--chrome-glass:color-mix(in srgb,var(--chrome) 85%,transparent);--sidebar-field:#FAFAFB;--sidebar-field-edge:#E8E8EB;--sidebar-selected:color-mix(in srgb,var(--accent) 7%,var(--chrome));--reading-surface:linear-gradient(to bottom,transparent 52px,var(--bg) 52px);background:var(--chrome-glass); }
+.workspace { position:relative;isolation:isolate;display:flex;height:100%;overflow:hidden;--sidebar-inset:10px;--nav-inset:11px;--workspace-footer-height:52px;--chrome-glass:color-mix(in srgb,var(--chrome) 85%,transparent);--sidebar-field:#111111;--sidebar-field-edge:#27272A;--sidebar-selected:color-mix(in srgb,var(--accent) 7%,var(--chrome));--reading-surface:linear-gradient(to bottom,transparent 52px,var(--bg) 52px);background:var(--chrome-glass); }
 @media (prefers-reduced-transparency:reduce),(prefers-contrast:more) { .workspace { --chrome-glass:var(--chrome); } }
 /* 85% glass keeps a trace of the desktop without a light page behind the window washing the sidebar out; search is a filled field with a quiet edge. */
-@media (prefers-color-scheme:dark) { .workspace { --sidebar-field:#2F2F31;--sidebar-field-edge:#363638;--sidebar-selected:color-mix(in srgb,var(--accent) 13%,var(--chrome)); } }
+@media (prefers-color-scheme:dark) { .workspace { --sidebar-field:#111111;--sidebar-field-edge:#27272A;--sidebar-selected:color-mix(in srgb,var(--accent) 13%,var(--chrome)); } }
 /* The Mac title bar is one opaque surface in the sidebar's colour, edge to edge, ruled off from the page; native glass remains below it. */
 :root:not([data-chrome=overlay]) .workspace { background:linear-gradient(var(--chrome) 0 52px,transparent 52px),var(--chrome-glass); }
 /* One stationary drag region; later no-drag controls cut holes in it for native clicks. */
@@ -378,10 +378,9 @@
 @media(prefers-reduced-motion:reduce) { .chat-starter,.workspace-button,.workspace-recording-link,.workspace-assistant-launch,.workspace[data-sidebar-motion=true].sidebar-collapsed .workspace-sidebar,.workspace[data-sidebar-motion=true] .workspace-toolbar { transition:none; } }
 
 /* Folder glyphs and speaker names share these theme-aware inks. */
-[data-folder-color] { color-scheme:light dark;--folder-ink:var(--written);--folder-tint:var(--control); }
+[data-folder-color] { color-scheme:dark;--folder-ink:var(--written);--folder-tint:var(--control); }
 .widget [data-folder-color] { color-scheme:dark; }
-.widget [data-folder-color=violet] { --folder-ink:var(--pill-accent); }
-[data-folder-color=violet] { --folder-ink:var(--accent); }
+[data-folder-color=violet] { --folder-ink:light-dark(#6F00FF,#C4B5FD); }
 [data-folder-color=blue] { --folder-ink:light-dark(#2868BA,#87B5F4); }
 [data-folder-color=teal] { --folder-ink:light-dark(#157D80,#72CECE); }
 [data-folder-color=green] { --folder-ink:light-dark(#388044,#92C88A); }
@@ -509,7 +508,7 @@
 .ask-send:active:not(:disabled) { transform:scale(.94); }
 .ask-send:disabled { background:transparent;border-color:var(--line); }
 .ask-send:disabled::after,.ask-send:disabled .orb-material,.ask-box[data-busy=true] .orb-material { display:none; }
-/* while answering, Send becomes a quiet grey Stop: purple stays the colour of sending, so typing ahead never looks ready to send */
+/* while answering, Send becomes a quiet grey Stop: the accent stays the colour of sending, so typing ahead never looks ready to send */
 .ask-stop { background:var(--control);color:var(--ink); }
 .ask-stop:hover:not(:disabled) { background:var(--control-hover);color:var(--ink); }
 .ask-stop:active:not(:disabled) { background:var(--control-pressed); }
@@ -666,7 +665,8 @@
 
 .workspace-corner { display:flex;align-items:center;min-height:var(--workspace-footer-height);border-top:1px solid var(--line);margin-top:9px;margin-inline:calc(-1 * var(--sidebar-inset));padding-inline:calc(var(--sidebar-inset) + var(--nav-inset) - 6px); }
 .workspace-icon.corner-trigger { position:relative;width:28px;height:28px;flex:none;display:grid;place-items:center; }
-.corner-brand { display:block;translate:0 .5px; }
+/* The ribbon's ink starts inset in the view box; shift it so that ink lines up with the nav icons. */
+.corner-brand { display:block;translate:-3px .5px; }
 .corner-mark { display:inline-block;flex:none;width:15px;height:15px;background:currentColor;color:var(--muted); }
 .corner-mark.github { mask:url('./assets/github-black.svg') center / contain no-repeat; }
 .corner-mark.discussions { mask:url('./assets/discussions.svg') center / contain no-repeat; }

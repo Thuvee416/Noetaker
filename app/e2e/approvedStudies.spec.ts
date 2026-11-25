@@ -125,7 +125,7 @@ test('approved compact call card shows the Dock icon and pausing countdown in bo
     await prompt.getByTestId('prompt').hover()
     for (const theme of ['light', 'dark'] as const) {
       await page.evaluate(theme => window.noetaker.settings.setTheme(theme), theme)
-      await expect(prompt.getByTestId('prompt')).toHaveCSS('background-color', theme === 'light' ? 'rgb(255, 255, 255)' : 'rgb(41, 41, 43)')
+      await expect(prompt.getByTestId('prompt')).toHaveCSS('background-color', 'rgb(17, 17, 17)')
       if (!before) {
         expect(await prompt.evaluate(() => [innerWidth, innerHeight])).toEqual([381, 60])
         await expect(prompt.locator('.call-prompt-icon')).toBeVisible()

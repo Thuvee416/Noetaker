@@ -25,7 +25,7 @@ test('@everywhere the search palette follows appearance and transparency prefere
       await media({ 'prefers-color-scheme': theme })
       await expect(palette).toHaveCSS('backdrop-filter', /^blur\(22px\) saturate\((?:1\.065|106\.5%)\)$/)
       const [red, , , alpha] = await palette.evaluate(backgroundPixel)
-      expect(Math.abs(red - (theme === 'light' ? 255 : 41))).toBeLessThanOrEqual(1)
+      expect(Math.abs(red - 17)).toBeLessThanOrEqual(1)
       expect(Math.abs(alpha - 255 * tint)).toBeLessThanOrEqual(1)
     }
     for (const [name, value] of [['prefers-reduced-transparency', 'reduce'], ['prefers-contrast', 'more'], ['forced-colors', 'active']]) {

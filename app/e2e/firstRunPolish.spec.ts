@@ -19,7 +19,7 @@ test('download progress keeps its geometry as percentages and phases change', as
     for (const colorScheme of ['light', 'dark'] as const) {
       await page.emulateMedia({ colorScheme })
       if (!before) {
-        const accent = colorScheme === 'dark' ? 'rgb(183, 128, 255)' : 'rgb(111, 0, 255)'
+        const accent = 'rgb(122, 162, 255)'
         await expect(page.getByTestId('wordmark').locator('path').first()).toHaveCSS('fill', accent)
         await expect(page.getByTestId('download-blob').locator('.icon-art stop[offset=".45"]').first()).toHaveCSS('stop-color', accent)
       }
@@ -183,7 +183,7 @@ test('permission help starts collapsed and uses the same secondary action in onb
       await expect(help).not.toHaveAttribute('open', '')
       for (const colorScheme of ['light', 'dark'] as const) {
         await page.emulateMedia({ colorScheme })
-        await expect(page.locator('.ob-switch-on')).toHaveCSS('background-color', 'rgb(111, 0, 255)')
+        await expect(page.locator('.ob-switch-on')).toHaveCSS('background-color', 'rgb(122, 162, 255)')
         await expect(page.getByTestId('settings-guide-relaunch')).not.toBeVisible()
         if (surface === 'settings') expect(await help.evaluate(el => {
           const r = el.getBoundingClientRect()

@@ -14,7 +14,7 @@ const ACTIONS: readonly string[] = ['take-notes', 'close', 'stop', 'keep-going']
 function createCard(kind: PromptView['kind'], os = 'darwin'): BrowserWindow {
   const { workArea } = screen.getPrimaryDisplay()
   const width = 381, height = 60
-  const background = () => nativeTheme.shouldUseDarkColors ? '#29292B' : '#FFFFFF'
+  const background = () => nativeTheme.shouldUseDarkColors ? '#111111' : '#111111'
   // A Mac: the Take notes card is a non-activating panel like the widget, so clicking it (its X included) never makes
   // Noe Taker the active app and brings its window forward. The stop card takes keyboard focus, so it stays a plain window.
   const type = floatingType(os, kind === 'start' ? 'panel' : undefined)

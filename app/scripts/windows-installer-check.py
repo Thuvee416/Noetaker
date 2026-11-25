@@ -12,10 +12,12 @@ from pywinauto import Desktop
 INSTALLER = Path(sys.argv[1]).resolve()
 SHOTS = Path(sys.argv[2]).resolve()
 SHOTS.mkdir(parents=True, exist_ok=True)
-APP_DIR = Path(r'C:\Noe TakerTest\app')
+# electron-builder adds a "noetaker" subfolder unless that name is already in the path (assistedInstaller.nsh).
+APP_DIR = Path(r'C:\noetakerTest\app')
 MODELS = Path(r'C:\Noe TakerModels')
 PROFILE = Path(os.environ['APPDATA']) / 'Noe Taker'
-DEFAULT_APP_DIR = Path(os.environ['LOCALAPPDATA']) / 'Programs' / 'Noe Taker'
+# The default folder is the executable name. "Noe Taker" has a space, so electron-builder does not use it here.
+DEFAULT_APP_DIR = Path(os.environ['LOCALAPPDATA']) / 'Programs' / 'noetaker'
 UNINSTALL = r'Software\Microsoft\Windows\CurrentVersion\Uninstall'
 
 results: list[tuple[str, bool]] = []

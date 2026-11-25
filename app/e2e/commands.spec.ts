@@ -35,7 +35,7 @@ for (const theme of ['light', 'dark'] as const) {
       const palette = page.getByTestId('search'), input = palette.getByRole('combobox')
       await input.fill('appearance')
       await expect(palette.getByTestId(`command-theme-${theme}`)).toHaveAttribute('aria-current', 'true')
-      await expect(input).toHaveCSS('color', theme === 'dark' ? 'rgb(231, 230, 235)' : 'rgb(41, 41, 44)')
+      await expect(input).toHaveCSS('color', 'rgb(244, 244, 245)')
       await input.fill('')
       const results = palette.getByRole('listbox'), options = results.getByRole('option')
       const emptyInputWidth = await input.evaluate(el => el.clientWidth)

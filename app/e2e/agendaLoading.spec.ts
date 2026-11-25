@@ -139,16 +139,16 @@ test('the compact calendar keeps its original type and geometry with distinct se
     const week = page.locator('.agenda-week')
     for (const colorScheme of ['light', 'dark'] as const) {
       await page.emulateMedia({ colorScheme, reducedMotion: 'reduce' })
-      const accent = colorScheme === 'light' ? 'rgb(111, 0, 255)' : 'rgb(183, 128, 255)'
-      const fill = 'rgb(111, 0, 255)', white = 'rgb(255, 255, 255)'
+      const accent = 'rgb(122, 162, 255)'
+      const fill = 'rgb(122, 162, 255)', white = 'rgb(5, 5, 5)'
       for (const id of ['new-note', 'recording-choices']) {
         const control = page.getByTestId(id)
         await expect(control).toHaveCSS('background-color', fill)
         await expect(control).toHaveCSS('color', white)
         await expect(control.locator('svg')).toHaveCSS('stroke', white)
       }
-      const selectedFill = colorScheme === 'dark' ? 'rgb(59, 59, 62)' : 'rgb(228, 228, 231)'
-      const ink = colorScheme === 'dark' ? 'rgb(231, 230, 235)' : 'rgb(41, 41, 44)'
+      const selectedFill = 'rgb(26, 26, 26)'
+      const ink = 'rgb(244, 244, 245)'
       const today = week.locator('[aria-current=date]')
       await today.click()
       await expect(today.locator('b')).toHaveCSS('background-color', selectedFill)
