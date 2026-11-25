@@ -194,9 +194,9 @@ jobs:
       - name: Install it
         run: |
           if [ "$RUNNER_OS" = Windows ]; then
-            # one-click, per user: %LOCALAPPDATA%\Programs\Noe Taker, as on a person's PC
+            # per user: %LOCALAPPDATA%\Programs\noetaker (the executable name; the display name has a space)
             ./app/dist/noetaker-windows-x64.exe //S
-            dir="$LOCALAPPDATA/Programs/Noe Taker/resources"
+            dir="$LOCALAPPDATA/Programs/noetaker/resources"
             for i in $(seq 1 60); do [ -f "$dir/bin/noetaker-audio.exe" ] && break; sleep 2; done
           else
             mkdir -p "$RUNNER_TEMP/appimage" && cd "$RUNNER_TEMP/appimage"

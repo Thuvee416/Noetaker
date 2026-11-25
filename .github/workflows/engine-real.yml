@@ -59,7 +59,7 @@ jobs:
         run: |
           if [ "$RUNNER_OS" = Windows ]; then
             "$RUNNER_TEMP"/preview/noetaker-windows-x64.exe //S
-            dir="$LOCALAPPDATA/Programs/Noe Taker/resources"
+            dir="$LOCALAPPDATA/Programs/noetaker/resources"
             for i in $(seq 1 90); do [ -f "$dir/app.asar" ] && [ -d "$dir/app.asar.unpacked/node_modules/@node-llama-cpp" ] && break; sleep 2; done
             sleep 5
           else
